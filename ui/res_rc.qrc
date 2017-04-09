@@ -1,0 +1,22 @@
+<RCC>
+  <qresource prefix="interface">
+    <file>res/interface/meta.png</file>
+    <file>res/interface/btn_stop.png</file>
+    <file>res/interface/btn_search.png</file>
+    <file>res/interface/find.png</file>
+    <file>res/interface/about.png</file>
+  </qresource>
+  <qresource prefix="spiders">
+    <file>res/spiders/bangumi.ico</file>
+    <file>res/spiders/douban.ico</file>
+    <file>res/spiders/aventer.ico</file>
+    <file>res/spiders/caribbean.ico</file>
+    <file>res/spiders/dmm.ico</file>
+    <file>res/spiders/erovi.ico</file>
+    <file>res/spiders/javbus.ico</file>
+    <file>res/spiders/scute.ico</file>
+    <file>res/spiders/tokyohot.ico</file>
+    <file>res/spiders/uradvd.ico</file>
+    <file>res/spiders/1pondo.ico</file>
+  </qresource>
+</RCC>
