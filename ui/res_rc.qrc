@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="interface">
+    <file>res/interface/-.png</file>
+    <file>res/interface/+.png</file>
     <file>res/interface/all_video.png</file>
     <file>res/interface/record.png</file>
     <file>res/interface/home_video.png</file>

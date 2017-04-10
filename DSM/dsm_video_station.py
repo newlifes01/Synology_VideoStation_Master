@@ -109,7 +109,7 @@ class DSMAPI(QThread):
                 self.cache.save_cache(cache_name, bytes_res, utils.IMG_CACHE_KEEPTIME, 'img')
         return bytes_res
 
-    def get_video_backdrop(self, mapper_id, mtime): #todo 不是所有类型都有背景图
+    def get_video_backdrop(self, mapper_id, mtime):  # todo 不是所有类型都有背景图
         if not mtime:
             return
 
@@ -127,7 +127,7 @@ class DSMAPI(QThread):
         return bytes_res
 
     # 列出指定资料库所有影片
-    def list_videos(self, library_id, api, stype):
+    def list_videos(self, library_id, api, stype, keyword=''):
         if library_id is None or not api:
             return
         param = None
@@ -140,6 +140,8 @@ class DSMAPI(QThread):
                 'library_id': '{}'.format(library_id),
                 'additional': '["poster_mtime","summary","watched_ratio","collection","backdrop_mtime"]',
             }
+
+
         elif stype == 'tvshow':
             param = {
                 'offset': '0',
@@ -159,6 +161,9 @@ class DSMAPI(QThread):
                 'additional': '["summary","collection","poster_mtime","watched_ratio","backdrop_mtime"]',
             }
 
+        if keyword:
+            param.update({'keyword': '"{}"'.format(keyword)})
+
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(api), 'list', param)
         if json_res and json_res.get('success'):
             total = json_res.get('total')
@@ -176,9 +181,8 @@ class DSMAPI(QThread):
 
                 # if stype != 'home_video':
                 backdrop = self.get_video_backdrop(data.get('mapper_id'),
-                                               data.get('additional').get('backdrop_mtime'))
+                                                   data.get('additional').get('backdrop_mtime'))
                 result_data['backdrop'] = backdrop
-
 
                 result_data.update(data)
                 result_data['total_seasons'] = data.get('additional').get('total_seasons', 0)
@@ -187,6 +191,66 @@ class DSMAPI(QThread):
                 result_data['original_available'] = utils.format_date_str(data.get('original_available', ''))
 
                 yield result_data
+
+    def get_video_info(self, id, stype):
+        if not id or not stype:
+            return
+
+        param = {
+            'id': '[{}]'.format(id),
+        }
+        if stype == 'tvshow':
+            param.update({'additional': '["poster_mtime","summary","backdrop_mtime"]'})
+
+        if stype == 'movie' or stype == 'home_video':
+            param.update({
+                'additional': '["summary","poster_mtime","backdrop_mtime","file","collection","watched_ratio","conversion_produced","actor","director","genre","writer","extra"]'
+            })
+
+        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)),
+                                     'getinfo', param)
+        if json_res:
+
+
+
+            if stype == 'home_video':
+                result = json_res.get('data').get('video')[0]
+            else:
+                result = json_res.get('data').get(stype)[0]
+
+            # try:
+            #     poster = self.get_video_poster(stype, id,
+            #                                    json_res.get('data').get(stype)[0].get('additional').get('poster_mtime'))
+            #     if poster:
+            #         result['poster'] = poster
+            # except Exception:
+            #     result['poster'] = None
+
+            # result = json_res.get('data').get(stype)[0]
+            return result
+
+    def get_tvshow_episodes_info(self, library_id, tvshow_id):
+        data = {
+            'library_id': '{}'.format(library_id),
+            'tvshow_id': '{}'.format(tvshow_id),
+            'limit': '500000',
+            'additional': '["summary","collection","poster_mtime","watched_ratio","file"]',
+        }
+        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.TVShowEpisode', 'list', data)
+        if json_res:
+            episodes = json_res.get('data').get('episode')  # list
+            for episode in episodes:
+
+                # try:
+                #     poster = self.get_video_poster('tvshow_episode', episode.get('id'),
+                #                                    episode.get('additional').get(
+                #                                        'poster_mtime'))
+                #     if poster:
+                #         episode['poster'] = poster
+                # except Exception:
+                #     episode['poster'] = None
+
+                yield episode
 
 
 if __name__ == '__main__':
