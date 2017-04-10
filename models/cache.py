@@ -34,7 +34,7 @@ class ConfigCache(object):
                 with open(cache_file_path, 'rb') as handle:
                     return pickle.load(handle)
             except Exception as e:
-                self.logger.error('get_cache:{}'.format(e))
+                utils.add_log(self.logger, 'error', 'get_cache:', e)
 
     def save_cache(self, data, filename='config'):
         try:
@@ -45,7 +45,7 @@ class ConfigCache(object):
                 pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         except Exception as e:
-            self.logger.error('save_cache:{}'.format(e))
+            utils.add_log(self.logger, 'error', 'save_cache:', e)
 
 
 class DownCache(object):
@@ -81,11 +81,12 @@ class DownCache(object):
                     if time_ticks - load_time_ticks < keep_secs:
                         return data.get('data')
                     else:
-                        self.logger.debug('过期删除:{}'.format(cache_file_path))
+                        # self.logger.debug('过期删除:{}'.format(cache_file_path))
+                        utils.add_log(self.logger, 'info', '过期删除:', cache_file_path)
                         os.remove(cache_file_path)
                         return None
             except Exception as e:
-                self.logger.error('get_data_cache', e)
+                utils.add_log(self.logger, 'error', 'get_cache:', cache_file_path)
 
     def save_cache(self, filename, data, keep_secs=utils.CACHE_KEEPTIME, subdir='url'):
         try:
@@ -103,18 +104,19 @@ class DownCache(object):
                 'data': data,
                 'keep_secs': keep_secs
             }
-            self.logger.debug('save_cache:{}'.format(save_data))
+            # self.logger.debug('save_cache:{}'.format(save_data))
+            utils.add_log(self.logger, 'info', 'save_cache:', save_data)
             with open(cache_file_path, 'wb') as handle:
                 pickle.dump(save_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
         except Exception as e:
-            self.logger.error('save_cache:{}'.format(e))
+            utils.add_log(self.logger, 'error', 'save_cache:', e)
 
 
 
 
 
 
-if __name__ == '__main__':
-    cache = DownCache()
-    # cache.save_cache('1','xx')
-    print(cache.get_cache('2'))
+# if __name__ == '__main__':
+#     cache = DownCache()
+#     # cache.save_cache('1','xx')
+#     print(cache.get_cache('2'))

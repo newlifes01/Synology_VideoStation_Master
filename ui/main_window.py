@@ -163,7 +163,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.status_bar)
 
         self.retranslateUi(MainWindow)
-        self.toolBox.setCurrentIndex(1)
+        self.toolBox.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -187,4 +187,4 @@ class Ui_MainWindow(object):
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_metadata), _translate("MainWindow", "刮削元数据与写入VideoStaiton"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_about), _translate("MainWindow", "设置与反馈"))
 
-import ui.res_rc
+import ui.res_rc_rc
