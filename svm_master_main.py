@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import imghdr
 from time import sleep
 
 import logging
 import os
 import requests
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QByteArray, QBuffer, QIODevice
 from PyQt5.QtGui import QPixmap, QIcon, QColor
 
 import utils
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem, QAbstractItemView, QListView, \
+    QFileDialog, QMessageBox
 
 from DSM.dsm_video_station import DSMAPI
 from models.cache import ConfigCache
@@ -23,6 +25,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
         super(MainForm, self).__init__(parent)
         self.setupUi(self)
         self.initUi()
+        self.initListPices()
+
         self.logger = logging.getLogger('MainForm')
         self.show_finished = False
         self.cb_current_video_add_finish = False
@@ -40,10 +44,17 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.dsm_seach_stop = False
         self.dsm_seach_running = False
 
-    def enabel_pages(self, enable):
-        self.page_search_DSM.setEnabled(enable[0])
-        self.page_metadata.setEnabled(enable[1])
-        self.page_about.setEnabled(enable[2])
+    #     self.btn_meta_search.clicked.connect(self.test)
+    #
+    # def test(self):
+    #     self.btn_meta_search.setStyleSheet(
+    #         '''
+    #         background-image: url(:/interface/res/interface/btn_stop.png);
+	 #        background-repeat:no-repeat;
+	 #        background-position: center center;
+	 #        border:0
+    #         '''
+    #     )
 
     def load_config(self):
 
@@ -58,8 +69,29 @@ class MainForm(QMainWindow, Ui_MainWindow):
         if self.config:
             self.edt_dsm_search_keyword.setText(self.config.get('dsm_search_keyword', ''))
 
+    def initListPices(self):
+        self.lst_pices.setIconSize(QSize(200, 200))
+        self.lst_pices.setDragEnabled(True)
+        self.lst_pices.setDragDropMode(QAbstractItemView.InternalMove)
+        self.lst_pices.setMovement(QListView.Snap)
+        self.lst_pices.setResizeMode(QListView.Adjust)
+        self.lst_pices.setViewMode(QListView.ListMode)
+        self.lst_pices.setFlow(QListView.LeftToRight)
+        self.lst_pices.setWrapping(True)
+
+        self.hs_zoom.setMaximum(200)
+        self.hs_zoom.setProperty("value", 100)
+
+        self.hs_zoom.valueChanged.connect(self.pic_zoom)
+        self.btn_del_pic.clicked.connect(self.del_pic)
+        self.btn_add_pic.clicked.connect(self.add_pic)
+
+        self.tab_pices.setAcceptDrops(True)
+        self.tab_pices.dragEnterEvent = self.tab_pices_dragEnterEvent
+        self.tab_pices.dropEvent = self.tab_pices_dropEvent
+
     def initUi(self):
-        self.enabel_pages((0, 0, 0))
+        self.tabWidget.setEnabled(False)
 
         self.lst_dsm_search_result.setSpacing(5)
         self.setStyleSheet('''
@@ -74,27 +106,27 @@ class MainForm(QMainWindow, Ui_MainWindow):
                         }
                 ''')
 
-        self.toolBox.setCurrentIndex(0)
-        self.page_metadata.setEnabled(False)
-        self.page_about.setEnabled(False)
+        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setEnabled(False)
 
         self.lb_dsm_status_cap = QLabel('DSM状态:')
-        self.status_bar.addPermanentWidget(self.lb_dsm_status_cap)
+        self.statusbar.addPermanentWidget(self.lb_dsm_status_cap)
 
         self.lb_dsm_status = QLabel('未登陆')
-        self.status_bar.addPermanentWidget(self.lb_dsm_status)
+        self.statusbar.addPermanentWidget(self.lb_dsm_status)
 
         self.cb_dsm_search_kind.currentIndexChanged.connect(self.library_selected)
         # self.cb_dsm_search_kind.currentIndexChanged[str].connect(self.library_selected)
 
         self.btn_dsm_search.clicked.connect(lambda: self.btn_dsm_search_clicked(self.edt_dsm_search_keyword.text()))
 
-        self.lst_dsm_search_result.itemDoubleClicked.connect(self.select_dsm_video)
+        self.lst_dsm_search_result.itemPressed.connect(self.select_dsm_video)
 
         self.cb_current_video.currentIndexChanged.connect(self.select_single_video)
+        self.cb_current_video.currentIndexChanged[str].connect(self.status_msg)
 
     def status_msg(self, msg):
-        self.status_bar.showMessage(msg)
+        self.statusbar.showMessage(msg)
 
     # 检测是否登陆dsm 并登陆
     def check_login_status(self):
@@ -150,9 +182,9 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
             total = 0
 
-            self.btn_dsm_search.setIcon(QIcon(':/interface/res/interface/btn_stop.png'))
-            self.btn_dsm_search.repaint()
-            app.processEvents()
+            # self.btn_dsm_search.setIcon(QIcon(':/interface/res/interface/btn_stop.png'))
+            # self.btn_dsm_search.repaint()
+            # app.processEvents()
 
             for current_library in current_librarys:
                 if not current_library:
@@ -170,7 +202,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.status_msg('[VideoStation搜索]完成！共找到[{}]个,双击选择影片进一步处理'.format(total))
             self.lst_dsm_search_result.setEnabled(True)
             self.cb_dsm_search_kind.setEnabled(True)
-            self.btn_dsm_search.setIcon(QIcon(':/interface/res/interface/btn_search.png'))
+            self.btn_dsm_search.setChecked(False)
+            # self.btn_dsm_search.setIcon(QIcon(':/interface/res/interface/btn_search.png'))
 
     def list_videos(self, current_library, total, keyword):
         stype = current_library.get('type')
@@ -229,100 +262,164 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 utils.add_log(self.logger, 'error', 'add_dsm_search_result', e)
 
     ####搜索dsm
+    ##########海报列表
+    def add_pic_fromData(self, data, boshowsize=True):
+        if not data:
+            return
+
+        pixmap = None
+        if isinstance(data, str):
+            if os.path.isfile(data):
+                pixmap = QPixmap(data)
+        elif isinstance(data, bytes):
+            pixmap = QPixmap()
+            pixmap.loadFromData(data)
+        if not pixmap:
+            return
+        icon = QIcon(pixmap)
+
+        s_size = ''
+        if boshowsize:
+            s_size = '{}*{}'.format(pixmap.width(), pixmap.height())
+
+        item = QListWidgetItem(icon, self.tr(s_size))
+        self.lst_pices.addItem(item)
+        self.lst_pices.scrollToItem(item)
+
+
+    def get_piclist_data_to_dict(self):
+        for i in range(self.lst_pices.count()):
+            try:
+                item = self.lst_pices.item(i)
+                icon = item.icon()
+                pixmap = icon.pixmap(icon.availableSizes()[0])
+                array = QByteArray()
+                buffer = QBuffer(array)
+                buffer.open(QIODevice.WriteOnly)
+                pixmap.save(buffer, 'JPG')
+                buffer.close()
+                yield array.data()
+            except Exception:
+                pass
+
+    def pic_zoom(self, value):
+        size = 200 * value // 100
+        self.lst_pices.setIconSize(QSize(size, size))
+
+    # +按钮点击后添加图片
+    def add_pic(self):
+        fileName = QFileDialog.getOpenFileName(
+            self, '选择图像文件', '', 'Images (*.jpg *.png *.gif *.bmp)')
+        if fileName and os.path.isfile(fileName[0]):
+            print(fileName[0])
+            imgType = imghdr.what(fileName[0])
+            print(imgType)
+            if imgType:
+                self.add_pic_fromData(fileName[0])
+            else:
+                QMessageBox.warning(self, '错误', '选择的文件无法读取！', QMessageBox.Ok)
+
+    # -按钮 删除图片
+    def del_pic(self):
+        for item in self.lst_pices.selectedItems():
+            self.lst_pices.takeItem(self.lst_pices.row(item))
+
+    def tab_pices_dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():  # 判断是否有效路径
+            event.accept()
+        else:
+            event.ignore()
+
+    def tab_pices_dropEvent(self, event):
+        for url in event.mimeData().urls():
+            path = url.toLocalFile()
+            if os.path.isfile(path):
+                imgType = imghdr.what(path)
+                if imgType:
+                    self.add_pic_fromData(path)
+                else:
+                    QMessageBox.warning(self, '错误', '选择的不是图像文件！', QMessageBox.Ok)
 
     #####选择视频
+
+    def add_cb_current_videoitems(self, videos, stype):
+        if not videos:
+            return
+        for video in videos:
+            meta_cb = {
+                'type': stype,
+                'id': video.get('id'),
+                'library_id': video.get('library_id'),
+                'mapper_id': video.get('mapper_id'),
+                'title': video.get('title'),
+                'path': '',
+                'sharepath': '',
+            }
+            file_data = video.get('additional').get('file')
+            if file_data:
+                meta_cb.update({
+                    'path': video.get('additional').get('file')[0].get('path'),
+                    'sharepath': video.get('additional').get('file')[0].get('sharepath'),
+                })
+            file_name = os.path.basename(meta_cb.get('path'))
+            if not file_name:
+                if stype == 'tvshow_episode':
+                    file_name = '{}.S{}.E{}.{}'.format(video.get('title'),
+                                                       str(video.get('season')).zfill(2),
+                                                       str(video.get('episode')).zfill(2),
+                                                       video.get('tagline'))
+                else:
+                    file_name = meta_cb.get('title')
+
+            self.cb_current_video.addItem(QIcon(':/interface/res/interface/{}.png'.format(stype)), file_name, meta_cb)
+
     def select_dsm_video(self, item):
         if item:
             try:
                 self.cb_current_video_add_finish = False
+                self.cb_current_video.clear()
 
                 meta = item.data(Qt.UserRole)
-
                 stype = meta.get('type')
                 sid = meta.get('id')
                 slibrary_id = meta.get('library_id')
-                smapper_id = meta.get('mapper_id')
+                # smapper_id = meta.get('mapper_id')
 
-                video = self.DSM.get_video_info(sid, stype)
-                if not video:
-                    return
-                meta_cb = {
-                    'type': stype,
-                    'id': sid,
-                    'library_id': slibrary_id,
-                    'mapper_id': smapper_id,
-                    'title': video.get('title'),
-                    'path': '',
-                    'sharepath': '',
-                    # 'poster': video.get('poster'),
-                }
-                file_data = video.get('additional').get('file')
-                if file_data:
-                    meta_cb.update({
-                        'path': video.get('additional').get('file')[0].get('path'),
-                        'sharepath': video.get('additional').get('file')[0].get('sharepath'),
-                    })
-
-
-                self.cb_current_video.clear()
-
-                file_name = os.path.basename(meta_cb.get('path'))
-                if not file_name:
-                    file_name = meta_cb.get('title')
-
-                # self.cb_current_video.setIconSize(QSize(36, 36))
-                # poster_data = meta_cb.get('poster')
-                # if poster_data:
-                #     pixmap = QPixmap()
-                #     pixmap.loadFromData(poster_data)
-                #     icon = QIcon(pixmap)
-                #         # pixmap.scaled(24, 36, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
-                # else:
-                #     icon = QIcon(':/interface/res/interface/{}.png'.format(stype))
-
-                self.cb_current_video.addItem(QIcon(':/interface/res/interface/{}.png'.format(stype)), file_name, meta_cb)
-
+                videos = self.DSM.get_video_info(sid, stype, slibrary_id)
+                self.add_cb_current_videoitems(videos, stype)
+                app.processEvents()
                 if stype == 'tvshow':
-                    for episode in self.DSM.get_tvshow_episodes_info(slibrary_id, sid):
+                    episodes = self.DSM.get_video_info(sid, 'tvshow_episode', slibrary_id)
+                    self.add_cb_current_videoitems(episodes, 'tvshow_episode')
+                    app.processEvents()
 
-                        meta_cb['id'] = episode.get('id')
-                        # meta_cb['poster'] = episode.get('poster')
-
-                        file_data = episode.get('additional').get('file')
-                        if file_data:
-                            meta_cb.update({
-                                'path': episode.get('additional').get('file')[0].get('path'),
-                                'sharepath': episode.get('additional').get('file')[0].get('sharepath'),
-                            })
-
-                        file_name = os.path.basename(meta_cb.get('path'))
-                        if not file_name:
-                            file_name = '{}.S{}.E{}.{}'.format(episode.get('title'),
-                                                               str(episode.get('season')).zfill(2),
-                                                               str(episode.get('episode')).zfill(2),
-                                                               episode.get('tagline'))
-
-                        # self.cb_current_video.setIconSize(QSize(36, 36))
-                        # poster_data = meta_cb.get('poster')
-                        # if poster_data:
-                        #     pixmap = QPixmap()
-                        #     pixmap.loadFromData(poster_data)
-                        #     icon = QIcon(pixmap)
-                        # else:
-                        #     icon = QIcon(':/interface/res/interface/{}.png'.format(stype))
-
-                        self.cb_current_video.addItem(QIcon(':/interface/res/interface/{}.png'.format(stype)), file_name, meta_cb)
-                        app.processEvents()
             finally:
-                self.page_metadata.setEnabled(True)
-                self.toolBox.setCurrentIndex(1)
+
                 self.cb_current_video.setCurrentIndex(-1)
                 self.cb_current_video_add_finish = True
                 self.cb_current_video.setCurrentIndex(0)
+                self.tabWidget.setEnabled(True)
+                self.tabWidget.setCurrentIndex(0)
 
     def select_single_video(self, idx):
-        if self.cb_current_video_add_finish:
-            self.cb_current_video.currentData(Qt.UserRole)
+        self.setEnabled(False)
+
+        try:
+            if self.cb_current_video_add_finish:
+                video = self.cb_current_video.currentData(Qt.UserRole)
+                if video:
+                    self.status_msg('[VideoStation]正在读取……')
+                    print(video)
+                    video_dital = self.DSM.get_video_dital_info(video.get('id'), video.get('type'))
+                    self.table_video_meta.ref_table(video_dital)
+
+                    self.lst_pices.clear()
+                    if video_dital.get('poster'):
+                        self.add_pic_fromData(video_dital.get('poster'))
+                    if video_dital.get('backdrop'):
+                        self.add_pic_fromData(video_dital.get('backdrop'))
+        finally:
+            self.setEnabled(True)
 
     # 窗口显示后执行
     def form_showed(self):
@@ -330,7 +427,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.check_login_status()
         self.lb_dsm_status.setText('已登陆')
         self.get_dsm_librarys()
-        self.enabel_pages((1, 0, 0))
+        self.tabWidget.setEnabled(False)
 
         self.show_finished = True
 

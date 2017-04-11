@@ -192,7 +192,7 @@ class DSMAPI(QThread):
 
                 yield result_data
 
-    def get_video_info(self, id, stype):
+    def get_video_info(self, id, stype, library_id):
         if not id or not stype:
             return
 
@@ -207,51 +207,145 @@ class DSMAPI(QThread):
                 'additional': '["summary","poster_mtime","backdrop_mtime","file","collection","watched_ratio","conversion_produced","actor","director","genre","writer","extra"]'
             })
 
+        if stype == 'tvshow_episode':
+            param = {
+                'library_id': '{}'.format(library_id),
+                'tvshow_id': '{}'.format(id),
+                'limit': '500000',
+                'additional': '["summary","collection","poster_mtime","watched_ratio","file"]',
+            }
+
+        meth = 'getinfo'
+        if stype == 'tvshow_episode':
+            meth = 'list'
+
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)),
-                                     'getinfo', param)
+                                     meth, param)
         if json_res:
 
+            if stype == 'home_video':
+                results = json_res.get('data').get('video')
+            elif stype == 'tvshow_episode':
+                results = json_res.get('data').get('episode')
+            else:
+                results = json_res.get('data').get(stype)
+            for result in results:
+                yield result
+
+    def get_video_dital_info(self, sid, stype):
+        param = {
+            'id': '[{}]'.format(sid),
+        }
+        if stype == 'tvshow':
+            param.update({'additional': '["poster_mtime","summary","backdrop_mtime"]'})
+
+        if stype == 'tvshow_episode':
+            param.update({
+                'additional': '["summary","poster_mtime","backdrop_mtime","file","collection","watched_ratio","conversion_produced","actor","director","genre","writer","extra","tvshow_summary"]'})
+
+        if stype == 'movie' or stype == 'home_video':
+            param.update({
+                             'additional': '["summary","poster_mtime","backdrop_mtime","file","collection","watched_ratio","conversion_produced","actor","director","genre","writer","extra"]'})
+
+        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)),
+                                     'getinfo', param)
+
+        if json_res:
+            video_meta = None
+            if stype == 'tvshow_episode':
+                meta = json_res.get('data').get('episode')[0]
+                video_meta = utils.get_dital_episode_struck()
+                poster = self.get_video_poster(stype, meta.get('id'),
+                                               meta.get('additional').get('poster_mtime'))
+                video_meta['poster'] = poster
+
+                video_meta['文件名'] = os.path.basename(meta.get('additional').get('file')[0].get('sharepath'))
+
+                video_meta['电视节目标题'] = meta.get('title', '')
+                video_meta['发布日期(电视节目)'] = utils.format_date_str(meta.get('tvshow_original_available', ''))
+                video_meta['集标题'] = meta.get('tagline', '')
+                video_meta['季'] = str(meta.get('season', 0))
+                video_meta['集'] = str(meta.get('episode', 0))
+                video_meta['发布日期(集)'] = utils.format_date_str(meta.get('original_available', ''))
+                video_meta['级别'] = meta.get('certificate', '')
+                video_meta['评级'] = str(meta.get('rating', 0))
+                video_meta['类型'] = ','.join(meta.get('additional').get('genre', []))
+                video_meta['演员'] = ','.join(meta.get('additional').get('actor', []))
+                video_meta['作者'] = ','.join(meta.get('additional').get('writer', []))
+                video_meta['导演'] = ','.join(meta.get('additional').get('director', []))
+                video_meta['摘要'] = meta.get('additional').get('summary', '')
+
+
+
+            if stype == 'tvshow':
+                meta = json_res.get('data').get(stype)[0]
+                video_meta = utils.get_dital_tvshow_struck()
+                poster = self.get_video_poster(stype, meta.get('id'),
+                                               meta.get('additional').get('poster_mtime'))
+                video_meta['poster'] = poster
+
+                backdrop = self.get_video_backdrop(meta.get('mapper_id'),
+                                                   meta.get('additional').get('backdrop_mtime'))
+                video_meta['backdrop'] = backdrop
+
+
+
+                video_meta['电视节目标题'] = meta.get('title', '')
+                video_meta['发布日期'] = utils.format_date_str(meta.get('original_available', ''))
+
+                video_meta['摘要'] = meta.get('additional').get('summary', '')
+                video_meta['季数'] = str(meta.get('additional').get('total_seasons', 0))
+
+
+
+            if stype == 'movie':
+                meta = json_res.get('data').get(stype)[0]
+                video_meta = utils.get_dital_movie_struck()
+                poster = self.get_video_poster(stype, meta.get('id'),
+                                               meta.get('additional').get('poster_mtime'))
+                video_meta['poster'] = poster
+
+                backdrop = self.get_video_backdrop(meta.get('mapper_id'),
+                                                   meta.get('additional').get('backdrop_mtime'))
+                video_meta['backdrop'] = backdrop
+
+                video_meta['文件名'] = os.path.basename(meta.get('additional').get('file')[0].get('sharepath'))
+
+                video_meta['标题'] = meta.get('title', '')
+                video_meta['标语'] = meta.get('tagline', '')
+
+                video_meta['发布日期'] = utils.format_date_str(meta.get('original_available', ''))
+                video_meta['级别'] = meta.get('certificate', '')
+                video_meta['评级'] = str(meta.get('rating', 0))
+                video_meta['类型'] = ','.join(meta.get('additional').get('genre', []))
+                video_meta['演员'] = ','.join(meta.get('additional').get('actor', []))
+                video_meta['作者'] = ','.join(meta.get('additional').get('writer', []))
+                video_meta['导演'] = ','.join(meta.get('additional').get('director', []))
+                video_meta['摘要'] = meta.get('additional').get('summary', '')
 
 
             if stype == 'home_video':
-                result = json_res.get('data').get('video')[0]
-            else:
-                result = json_res.get('data').get(stype)[0]
+                meta = json_res.get('data').get('video')[0]
+                video_meta = utils.get_dital_homevideo_struck()
+                poster = self.get_video_poster(stype, meta.get('id'),
+                                               meta.get('additional').get('poster_mtime'))
+                video_meta['poster'] = poster
 
-            # try:
-            #     poster = self.get_video_poster(stype, id,
-            #                                    json_res.get('data').get(stype)[0].get('additional').get('poster_mtime'))
-            #     if poster:
-            #         result['poster'] = poster
-            # except Exception:
-            #     result['poster'] = None
+                video_meta['文件名'] = os.path.basename(meta.get('additional').get('file')[0].get('sharepath'))
 
-            # result = json_res.get('data').get(stype)[0]
-            return result
+                video_meta['标题'] = meta.get('title', '')
 
-    def get_tvshow_episodes_info(self, library_id, tvshow_id):
-        data = {
-            'library_id': '{}'.format(library_id),
-            'tvshow_id': '{}'.format(tvshow_id),
-            'limit': '500000',
-            'additional': '["summary","collection","poster_mtime","watched_ratio","file"]',
-        }
-        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.TVShowEpisode', 'list', data)
-        if json_res:
-            episodes = json_res.get('data').get('episode')  # list
-            for episode in episodes:
+                video_meta['录制开始时间'] = utils.format_date_str(meta.get('record_date', ''))
+                video_meta['级别'] = meta.get('certificate', '')
+                video_meta['评级'] = str(meta.get('rating', 0))
+                video_meta['类型'] = ','.join(meta.get('additional').get('genre', []))
+                video_meta['演员'] = ','.join(meta.get('additional').get('actor', []))
+                video_meta['作者'] = ','.join(meta.get('additional').get('writer', []))
+                video_meta['导演'] = ','.join(meta.get('additional').get('director', []))
+                video_meta['摘要'] = meta.get('additional').get('summary', '')
 
-                # try:
-                #     poster = self.get_video_poster('tvshow_episode', episode.get('id'),
-                #                                    episode.get('additional').get(
-                #                                        'poster_mtime'))
-                #     if poster:
-                #         episode['poster'] = poster
-                # except Exception:
-                #     episode['poster'] = None
 
-                yield episode
-
+            return video_meta
 
 if __name__ == '__main__':
     session = requests.session()

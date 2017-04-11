@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="interface">
+    <file>res/interface/tvshow_episode.png</file>
+    <file>res/interface/btn_stop_hover.png</file>
+    <file>res/interface/btn_search_hover.png</file>
     <file>res/interface/-.png</file>
     <file>res/interface/+.png</file>
     <file>res/interface/all_video.png</file>

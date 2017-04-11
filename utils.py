@@ -12,7 +12,7 @@ CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
 CONFIG_PATH = os.path.join(PROJECT_PATH, '.config')
 
 CACHE_KEEPTIME = 20 * 60  # 秒
-IMG_CACHE_KEEPTIME = 3600 * 24
+IMG_CACHE_KEEPTIME = 3600 * 24 * 365
 
 ITEM_WIDTH, ITEM_HEIGHT = 120, 180
 
@@ -42,6 +42,8 @@ def get_library_API(stype):
         return 'TVShow'
     if stype == 'home_video':
         return 'HomeVideo'
+    if stype == 'tvshow_episode':
+        return 'TVShowEpisode'
 
 
 def get_dsm_find_video_struct():
@@ -57,6 +59,109 @@ def get_dsm_find_video_struct():
         'poster': b'',
         'backdrop': b'',
     }
+
+def get_dital_tvshow_struck():
+    return {
+        '电视节目标题': '',
+        '发布日期': '',
+        '摘要': '',
+        '季数': '',
+
+        'poster': b'',
+        'backdrop': b'',
+    }
+
+def get_dital_episode_struck():
+    return {
+        '文件名':'',
+        '电视节目标题':'',
+        '发布日期(电视节目)':'',
+        '集标题': '',
+        '季': '',
+        '集': '',
+        '发布日期(集)': '',
+        '级别': '',
+        '评级': '',
+        '类型': '',
+        '演员': '',
+        '作者': '',
+        '导演': '',
+        '摘要': '',
+
+        'poster': b'',
+
+    }
+def get_dital_movie_struck():
+    return {
+        '文件名': '',
+        '标题': '',
+        '标语': '',
+
+        '发布日期': '',
+        '级别': '',
+        '评级': '',
+        '类型': '',
+        '演员': '',
+        '作者': '',
+        '导演': '',
+        '摘要': '',
+
+        'poster': b'',
+        'backdrop': b'',
+    }
+
+def get_dital_homevideo_struck():
+    return {
+        '文件名': '',
+        '标题': '',
+        '录制开始时间': '',
+        '级别': '',
+        '评级': '',
+        '类型': '',
+        '演员': '',
+        '作者': '',
+        '导演': '',
+        '摘要': '',
+
+        'poster': b'',
+    }
+
+def get_rating_lst():
+    return [
+        {'🎬PG': 'PG'},
+        {'🎬PG12': 'PG12'},
+        {'🎬R15+': 'R15+'},
+        {'🎬R18+': 'R18+'},
+
+        # {'🇺🇸G': 'G'},
+        # {'🇺🇸PG': 'PG'},
+        # {'🇺🇸PG-13': 'PG-13'},
+        # {'🇺🇸R': 'R'},
+        # {'🇺🇸NC-17': 'NC-17'},
+
+        {'🎬Unrated': 'Unrated'},
+    ]
+
+def get_cert_idx(cert):
+    data = {
+        'PG': 0,
+        'PG12': 1,
+        'R15+': 2,
+        'R18+': 3,
+        'Unrated': 4,
+    }
+    return data.get(cert, -1)
+
+
+def get_cert_txt(idx):
+    data = {
+        0: 'PG',
+        1: 'PG12',
+        2: 'R15+',
+        3: 'R18+',
+        4: 'Unrated',
+    }
+    return data.get(idx, 'Unrated')
 
 
 def get_screen_width(input_str, max_width=None, tail='.', tail_length=2):
