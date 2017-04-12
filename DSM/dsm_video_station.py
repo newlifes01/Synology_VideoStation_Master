@@ -349,6 +349,32 @@ class DSMAPI(QThread):
 
             return video_meta
 
+    # 删除封面:
+    def del_poster(self, stype, sid):
+        if not stype or not sid :
+            return
+        param = {
+            'id': '{}'.format(sid),
+            'type': '"{}"'.format(stype),
+        }
+        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'delete', param)
+        return json_res and json_res.get('success')
+
+    # 删除背景
+    def del_backdrop(self, stype, sid,mapper_id):
+        if not stype or not sid:
+            return
+        param = {
+
+            'id': '{}'.format(sid),
+            'type': '"{}"'.format(stype),
+            'image': '"clear"',
+            'keep_one': 'true',
+            'mapper_id': '{}'.format(mapper_id),
+        }
+        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Backdrop', 'delete_all', param)
+        return json_res and json_res.get('success')
+
     # 设置封面
     def set_poster(self, stype, sid, image_data):
         if not stype or not sid or not image_data:
@@ -357,6 +383,7 @@ class DSMAPI(QThread):
             os.remove(utils.POSTER_PATH)
 
         if image_data:
+            utils.add_log(self.logger,'info','创建临时封面:',utils.POSTER_PATH)
             with open(utils.POSTER_PATH, 'wb') as f:
                 f.write(image_data)
 
@@ -370,6 +397,9 @@ class DSMAPI(QThread):
                 'url': '"http://{}:{}/{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.IMG_CACHE_SUBDIR,utils.POSTER_FILE),
             }
             json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'set', param)
+            if os.path.isfile(utils.POSTER_PATH):
+                utils.add_log(self.logger, 'info', '删除临时封面:', utils.POSTER_PATH)
+                os.remove(utils.POSTER_PATH)
             return json_res and json_res.get('success')
     # 设置背景图
     def set_backdrop(self, stype, sid, image_data):
@@ -379,6 +409,7 @@ class DSMAPI(QThread):
             os.remove(utils.BACKDROP_PATH)
 
         if image_data:
+            utils.add_log(self.logger, 'info', '创建临时背景:', utils.BACKDROP_PATH)
             with open(utils.BACKDROP_PATH, 'wb') as f:
                 f.write(image_data)
 
@@ -393,6 +424,9 @@ class DSMAPI(QThread):
                 'keep_one': 'true',
             }
             json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Backdrop', 'add', data)
+            if os.path.isfile(utils.BACKDROP_PATH):
+                utils.add_log(self.logger, 'info', '删除临时背景:', utils.BACKDROP_PATH)
+                os.remove(utils.BACKDROP_PATH)
             return json_res.get('success')
 
     def set_video_info(self, meta):
@@ -482,6 +516,8 @@ class DSMAPI(QThread):
         if not param:
             return
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)), 'edit', param)
+
+        # print(json_res)
 
         return json_res.get('success')
 

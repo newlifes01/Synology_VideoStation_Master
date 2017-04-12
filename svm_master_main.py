@@ -247,6 +247,9 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     summary = '{}\n{} 共{}季\n{}'.format(title, dsm_finded.get('type'),
                                                        dsm_finded.get('total_seasons'),
                                                        dsm_finded.get('original_available'))
+                elif stype == 'home_video':
+                    summary = '{}\n{}\n{}'.format(title, dsm_finded.get('type'),
+                                                  utils.format_date_str(dsm_finded.get('record_date')))
                 else:
                     summary = '{}\n{}\n{}'.format(title, dsm_finded.get('type'),
                                                   dsm_finded.get('original_available'))
@@ -296,13 +299,14 @@ class MainForm(QMainWindow, Ui_MainWindow):
             try:
                 item = self.lst_pices.item(i)
                 icon = item.icon()
-                pixmap = icon.pixmap(icon.availableSizes()[0])
-                array = QByteArray()
-                buffer = QBuffer(array)
-                buffer.open(QIODevice.WriteOnly)
-                pixmap.save(buffer, 'JPG')
-                buffer.close()
-                yield array.data()
+                if icon :
+                    pixmap = icon.pixmap(icon.availableSizes()[0])
+                    array = QByteArray()
+                    buffer = QBuffer(array)
+                    buffer.open(QIODevice.WriteOnly)
+                    pixmap.save(buffer, 'JPG')
+                    buffer.close()
+                    yield array.data()
             except Exception:
                 pass
 
@@ -450,10 +454,15 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 self.DSM.set_poster(meta.get('type'),meta.get('id'),meta.get('poster'))
                 self.status_msg('[VideoStation]写入封面海报……')
                 app.processEvents()
+            else:
+                self.DSM.del_poster(meta.get('type'),meta.get('id'))
+
             if meta.get('backdrop'):
                 self.DSM.set_backdrop(meta.get('type'),meta.get('id'),meta.get('backdrop'))
                 self.status_msg('[VideoStation]写入背景海报……')
                 app.processEvents()
+            else:
+                self.DSM.del_backdrop(meta.get('type'), meta.get('id'),meta.get('mapper_id'))
 
             self.status_msg('[VideoStation]写入元数据……')
             app.processEvents()
@@ -462,7 +471,62 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 return
 
 
+
             self.select_single_video(0)
+
+            item = self.lst_dsm_search_result.currentItem()
+            data = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
+            data.update({
+                'poster': b'',
+                'backdrop': b'',
+            })
+            for i, img_data in enumerate(self.get_piclist_data_to_dict()):
+                app.processEvents()
+                if not img_data:
+                    break
+                if i == 0:
+                    data['poster'] = img_data
+                elif i == 1:
+                    data['backdrop'] = img_data
+                else:
+                    break
+
+
+            if data and item:
+                stype = data.get('type')
+                if stype != 'tvshow_episode':
+
+                    pixmap = QPixmap()
+                    pixmap.loadFromData(data['poster'])
+
+                    if stype == 'home_video':
+                        icon_width, icon_heigh = utils.HOMEVIEDO_WIDTH, utils.HOMEVIEDO_WIDTH
+                    else:
+                        icon_width, icon_heigh = utils.ITEM_WIDTH, utils.ITEM_HEIGHT
+
+                    icon = QIcon(
+                        pixmap.scaled(icon_width, icon_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+
+                    item.setIcon(icon)
+
+                    if stype == 'tvshow':
+                        title = utils.get_screen_width(data.get('电视节目标题'), max_width=19, tail_length=2)
+                        summary = '{}\n{} 共{}季\n{}'.format(title, data.get('type'),
+                                                           data.get('季数'),
+                                                           data.get('发布日期'))
+                        item.setText(summary)
+                    elif stype == 'home_video':
+                        title = utils.get_screen_width(data.get('标题'), max_width=19, tail_length=2)
+                        summary = '{}\n{}\n{}'.format(title, data.get('type'),
+                                                      utils.format_date_str(data.get('录制开始时间')))
+                        item.setText(summary)
+                    elif stype == 'movie':
+                        title = utils.get_screen_width(data.get('标题'), max_width=19, tail_length=2)
+                        summary = '{}\n{}\n{}'.format(title, data.get('type'),
+                                                      data.get('发布日期'))
+                        item.setText(summary)
+
+
             app.processEvents()
         finally:
             self.setEnabled(True)
