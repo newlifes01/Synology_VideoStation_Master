@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem, 
 
 from DSM.dsm_video_station import DSMAPI
 from models.cache import ConfigCache
+from models.http_server import HttpServer
 from svm_login_main import LoginDialog
 from ui.main_window import Ui_MainWindow
 
@@ -124,6 +125,9 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
         self.cb_current_video.currentIndexChanged.connect(self.select_single_video)
         self.cb_current_video.currentIndexChanged[str].connect(self.status_msg)
+
+        self.btn_fresh.clicked.connect(self.select_single_video)
+        self.btn_save.clicked.connect(self.save_to_dsm)
 
     def status_msg(self, msg):
         self.statusbar.showMessage(msg)
@@ -412,7 +416,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     print(video)
                     video_dital = self.DSM.get_video_dital_info(video.get('id'), video.get('type'))
                     self.table_video_meta.ref_table(video_dital)
-
                     self.lst_pices.clear()
                     if video_dital.get('poster'):
                         self.add_pic_fromData(video_dital.get('poster'))
@@ -421,6 +424,25 @@ class MainForm(QMainWindow, Ui_MainWindow):
         finally:
             self.setEnabled(True)
 
+    def save_to_dsm(self):
+        meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
+        meta.update({
+            'poster': b'',
+            'backdrop': b'',
+        })
+        for i,img_data in enumerate(self.get_piclist_data_to_dict()):
+            if not img_data:
+                break
+            if i == 0  :
+                meta['poster'] = img_data
+            elif i == 1:
+                meta['backdrop'] = img_data
+            else:
+                break
+
+        print(meta)
+
+
     # 窗口显示后执行
     def form_showed(self):
         utils.add_log(self.logger, 'info', '检测是否登陆dsm')
@@ -428,6 +450,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.lb_dsm_status.setText('已登陆')
         self.get_dsm_librarys()
         self.tabWidget.setEnabled(False)
+        self.HttpServer = HttpServer(utils.HTTP_SERVER_PORT)
 
         self.show_finished = True
 

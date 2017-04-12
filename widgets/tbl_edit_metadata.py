@@ -88,3 +88,29 @@ class TblMetadata(QTableWidget):
                 self.rating_cb.setCurrentIndex(cb_cert_idx)
 
             count += 1
+
+    def get_metadata(self,meta):
+        if not meta:
+            return
+        stype = meta.get('type')
+        library_id = meta.get('library_id')
+        sid = meta.get('id')
+        mapper_id = meta.get('mapper_id')
+
+        if not stype or library_id is None or sid is None or mapper_id is None:
+            return
+
+
+
+        row = self.rowCount()
+        for i in range(0, row):
+            key = self.item(i, 0).text()
+            value = self.item(i, 1).text()
+            if key == '海报':
+                continue
+            if key == '级别':
+                value = utils.get_cert_txt(self.rating_cb.currentIndex())
+
+            meta[key] = value
+
+        return meta

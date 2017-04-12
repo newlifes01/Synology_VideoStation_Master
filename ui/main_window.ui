@@ -71,20 +71,20 @@
           <property name="styleSheet">
            <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/btn_search.png);
+	background-image:url(:/interface/res/interface/search.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/btn_search_hover.png);
+	background-image:url(:/interface/res/interface/search (1).png);
 }
 QPushButton:checked {
-    background-image:url(:/interface/res/interface/btn_stop.png);
+    background-image:url(:/interface/res/interface/stop.png);
 }
 QPushButton:checked:hover {
-    background-image:url(:/interface/res/interface/btn_stop_hover.png);
+    background-image:url(:/interface/res/interface/stop (1).png);
 }</string>
           </property>
           <property name="text">
@@ -215,20 +215,20 @@ QPushButton:checked:hover {
             <property name="styleSheet">
              <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/btn_search.png);
+	background-image:url(:/interface/res/interface/search.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/btn_search_hover.png);
+	background-image:url(:/interface/res/interface/search (1).png);
 }
 QPushButton:checked {
-    background-image:url(:/interface/res/interface/btn_stop.png);
+    background-image:url(:/interface/res/interface/stop.png);
 }
 QPushButton:checked:hover {
-    background-image:url(:/interface/res/interface/btn_stop_hover.png);
+    background-image:url(:/interface/res/interface/stop (1).png);
 }</string>
             </property>
             <property name="text">
@@ -236,6 +236,38 @@ QPushButton:checked:hover {
             </property>
             <property name="checkable">
              <bool>true</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_fresh">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="statusTip">
+             <string>刷新当前视频元数据</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton
+{
+	background-image:url(:/interface/res/interface/refresh-button.png);
+	background-repeat:no-repeat;
+	background-position: center center;
+	border:none;
+}
+QPushButton:hover
+{
+	background-image:url(:/interface/res/interface/refresh-button (1).png);
+}</string>
+            </property>
+            <property name="text">
+             <string/>
             </property>
             <property name="flat">
              <bool>false</bool>
@@ -253,8 +285,53 @@ QPushButton:checked:hover {
             <property name="statusTip">
              <string>保存修改结果到VideoStation</string>
             </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton
+{
+	background-image:url(:/interface/res/interface/save.png);
+	background-repeat:no-repeat;
+	background-position: center center;
+	border:none;
+}
+QPushButton:hover
+{
+	background-image:url(:/interface/res/interface/save (1).png);
+}</string>
+            </property>
             <property name="text">
-             <string>保存</string>
+             <string/>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_setting">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="statusTip">
+             <string>设置</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton
+{
+	background-image:url(:/interface/res/interface/settings.png);
+	background-repeat:no-repeat;
+	background-position: center center;
+	border:none;
+}
+QPushButton:hover
+{
+	background-image:url(:/interface/res/interface/settings (1).png);
+}</string>
+            </property>
+            <property name="text">
+             <string/>
             </property>
             <property name="flat">
              <bool>false</bool>
@@ -313,55 +390,115 @@ QPushButton:checked:hover {
            <attribute name="title">
             <string>海报</string>
            </attribute>
-           <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0" colspan="4">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
              <widget class="QListWidget" name="lst_pices"/>
             </item>
-            <item row="1" column="0">
-             <widget class="QToolButton" name="btn_add_pic">
-              <property name="text">
-               <string>+</string>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <property name="spacing">
+               <number>0</number>
               </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QToolButton" name="btn_del_pic">
-              <property name="text">
-               <string>-</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2">
-             <widget class="QLabel" name="label_3">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">color:rgb(161, 88, 255)</string>
-              </property>
-              <property name="text">
-               <string>可以直接拖入多张图片，前两张图片会写入VideoStation。第一张为海报，第二张为背景；在列表内拖动图片可以调整图片顺序。</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="3">
-             <widget class="QSlider" name="hs_zoom">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
+              <item>
+               <widget class="QPushButton" name="btn_add_pic">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>添加图片</string>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton
+{
+	background-image:url(:/interface/res/interface/add.png);
+	background-repeat:no-repeat;
+	background-position: center center;
+	border:none;
+}
+QPushButton:hover
+{
+	background-image:url(:/interface/res/interface/add (1).png);
+}</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="flat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btn_del_pic">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>删除选中图片</string>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton
+{
+	background-image:url(:/interface/res/interface/substract.png);
+	background-repeat:no-repeat;
+	background-position: center center;
+	border:none;
+}
+QPushButton:hover
+{
+	background-image:url(:/interface/res/interface/substract (1).png);
+}</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="flat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_3">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">color:rgb(161, 88, 255)</string>
+                </property>
+                <property name="text">
+                 <string>可以直接拖入多张图片，前两张图片会写入VideoStation。第一张为海报，第二张为背景；在列表内拖动图片可以调整图片顺序。</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSlider" name="hs_zoom">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>缩放图片</string>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

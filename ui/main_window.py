@@ -40,20 +40,20 @@ class Ui_MainWindow(object):
         self.btn_dsm_search.setSizePolicy(sizePolicy)
         self.btn_dsm_search.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/btn_search.png);\n"
+"    background-image:url(:/interface/res/interface/search.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/btn_search_hover.png);\n"
+"    background-image:url(:/interface/res/interface/search (1).png);\n"
 "}\n"
 "QPushButton:checked {\n"
-"    background-image:url(:/interface/res/interface/btn_stop.png);\n"
+"    background-image:url(:/interface/res/interface/stop.png);\n"
 "}\n"
 "QPushButton:checked:hover {\n"
-"    background-image:url(:/interface/res/interface/btn_stop_hover.png);\n"
+"    background-image:url(:/interface/res/interface/stop (1).png);\n"
 "}")
         self.btn_dsm_search.setText("")
         self.btn_dsm_search.setCheckable(True)
@@ -102,35 +102,89 @@ class Ui_MainWindow(object):
         self.btn_meta_search.setSizePolicy(sizePolicy)
         self.btn_meta_search.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/btn_search.png);\n"
+"    background-image:url(:/interface/res/interface/search.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/btn_search_hover.png);\n"
+"    background-image:url(:/interface/res/interface/search (1).png);\n"
 "}\n"
 "QPushButton:checked {\n"
-"    background-image:url(:/interface/res/interface/btn_stop.png);\n"
+"    background-image:url(:/interface/res/interface/stop.png);\n"
 "}\n"
 "QPushButton:checked:hover {\n"
-"    background-image:url(:/interface/res/interface/btn_stop_hover.png);\n"
+"    background-image:url(:/interface/res/interface/stop (1).png);\n"
 "}")
         self.btn_meta_search.setText("")
         self.btn_meta_search.setCheckable(True)
         self.btn_meta_search.setFlat(False)
         self.btn_meta_search.setObjectName("btn_meta_search")
         self.horizontalLayout_2.addWidget(self.btn_meta_search)
+        self.btn_fresh = QtWidgets.QPushButton(self.groupBox)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btn_fresh.sizePolicy().hasHeightForWidth())
+        self.btn_fresh.setSizePolicy(sizePolicy)
+        self.btn_fresh.setStyleSheet("QPushButton\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/refresh-button.png);\n"
+"    background-repeat:no-repeat;\n"
+"    background-position: center center;\n"
+"    border:none;\n"
+"}\n"
+"QPushButton:hover\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/refresh-button (1).png);\n"
+"}")
+        self.btn_fresh.setText("")
+        self.btn_fresh.setFlat(False)
+        self.btn_fresh.setObjectName("btn_fresh")
+        self.horizontalLayout_2.addWidget(self.btn_fresh)
         self.btn_save = QtWidgets.QPushButton(self.groupBox)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_save.sizePolicy().hasHeightForWidth())
         self.btn_save.setSizePolicy(sizePolicy)
+        self.btn_save.setStyleSheet("QPushButton\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/save.png);\n"
+"    background-repeat:no-repeat;\n"
+"    background-position: center center;\n"
+"    border:none;\n"
+"}\n"
+"QPushButton:hover\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/save (1).png);\n"
+"}")
+        self.btn_save.setText("")
         self.btn_save.setFlat(False)
         self.btn_save.setObjectName("btn_save")
         self.horizontalLayout_2.addWidget(self.btn_save)
+        self.btn_setting = QtWidgets.QPushButton(self.groupBox)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btn_setting.sizePolicy().hasHeightForWidth())
+        self.btn_setting.setSizePolicy(sizePolicy)
+        self.btn_setting.setStyleSheet("QPushButton\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/settings.png);\n"
+"    background-repeat:no-repeat;\n"
+"    background-position: center center;\n"
+"    border:none;\n"
+"}\n"
+"QPushButton:hover\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/settings (1).png);\n"
+"}")
+        self.btn_setting.setText("")
+        self.btn_setting.setFlat(False)
+        self.btn_setting.setObjectName("btn_setting")
+        self.horizontalLayout_2.addWidget(self.btn_setting)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.tabWidget = QtWidgets.QTabWidget(self.groupBox)
         self.tabWidget.setObjectName("tabWidget")
@@ -153,17 +207,56 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab_meta, "")
         self.tab_pices = QtWidgets.QWidget()
         self.tab_pices.setObjectName("tab_pices")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.tab_pices)
-        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.tab_pices)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.lst_pices = QtWidgets.QListWidget(self.tab_pices)
         self.lst_pices.setObjectName("lst_pices")
-        self.gridLayout_2.addWidget(self.lst_pices, 0, 0, 1, 4)
-        self.btn_add_pic = QtWidgets.QToolButton(self.tab_pices)
+        self.verticalLayout_3.addWidget(self.lst_pices)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setSpacing(0)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.btn_add_pic = QtWidgets.QPushButton(self.tab_pices)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btn_add_pic.sizePolicy().hasHeightForWidth())
+        self.btn_add_pic.setSizePolicy(sizePolicy)
+        self.btn_add_pic.setStyleSheet("QPushButton\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/add.png);\n"
+"    background-repeat:no-repeat;\n"
+"    background-position: center center;\n"
+"    border:none;\n"
+"}\n"
+"QPushButton:hover\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/add (1).png);\n"
+"}")
+        self.btn_add_pic.setText("")
+        self.btn_add_pic.setFlat(False)
         self.btn_add_pic.setObjectName("btn_add_pic")
-        self.gridLayout_2.addWidget(self.btn_add_pic, 1, 0, 1, 1)
-        self.btn_del_pic = QtWidgets.QToolButton(self.tab_pices)
+        self.horizontalLayout_3.addWidget(self.btn_add_pic)
+        self.btn_del_pic = QtWidgets.QPushButton(self.tab_pices)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btn_del_pic.sizePolicy().hasHeightForWidth())
+        self.btn_del_pic.setSizePolicy(sizePolicy)
+        self.btn_del_pic.setStyleSheet("QPushButton\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/substract.png);\n"
+"    background-repeat:no-repeat;\n"
+"    background-position: center center;\n"
+"    border:none;\n"
+"}\n"
+"QPushButton:hover\n"
+"{\n"
+"    background-image:url(:/interface/res/interface/substract (1).png);\n"
+"}")
+        self.btn_del_pic.setText("")
+        self.btn_del_pic.setFlat(False)
         self.btn_del_pic.setObjectName("btn_del_pic")
-        self.gridLayout_2.addWidget(self.btn_del_pic, 1, 1, 1, 1)
+        self.horizontalLayout_3.addWidget(self.btn_del_pic)
         self.label_3 = QtWidgets.QLabel(self.tab_pices)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -173,7 +266,7 @@ class Ui_MainWindow(object):
         self.label_3.setStyleSheet("color:rgb(161, 88, 255)")
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.label_3.setObjectName("label_3")
-        self.gridLayout_2.addWidget(self.label_3, 1, 2, 1, 1)
+        self.horizontalLayout_3.addWidget(self.label_3)
         self.hs_zoom = QtWidgets.QSlider(self.tab_pices)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -182,7 +275,8 @@ class Ui_MainWindow(object):
         self.hs_zoom.setSizePolicy(sizePolicy)
         self.hs_zoom.setOrientation(QtCore.Qt.Horizontal)
         self.hs_zoom.setObjectName("hs_zoom")
-        self.gridLayout_2.addWidget(self.hs_zoom, 1, 3, 1, 1)
+        self.horizontalLayout_3.addWidget(self.hs_zoom)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_3)
         self.tabWidget.addTab(self.tab_pices, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.verticalLayout_2.addWidget(self.splitter)
@@ -207,12 +301,14 @@ class Ui_MainWindow(object):
         self.lst_dsm_search_result.setToolTip(_translate("MainWindow", "双击选择影片进行下一步操作"))
         self.cb_current_video.setStatusTip(_translate("MainWindow", "当前修改的视频"))
         self.btn_meta_search.setStatusTip(_translate("MainWindow", "查找当前视频元数据"))
+        self.btn_fresh.setStatusTip(_translate("MainWindow", "刷新当前视频元数据"))
         self.btn_save.setStatusTip(_translate("MainWindow", "保存修改结果到VideoStation"))
-        self.btn_save.setText(_translate("MainWindow", "保存"))
+        self.btn_setting.setStatusTip(_translate("MainWindow", "设置"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_meta), _translate("MainWindow", "元数据"))
-        self.btn_add_pic.setText(_translate("MainWindow", "+"))
-        self.btn_del_pic.setText(_translate("MainWindow", "-"))
+        self.btn_add_pic.setStatusTip(_translate("MainWindow", "添加图片"))
+        self.btn_del_pic.setStatusTip(_translate("MainWindow", "删除选中图片"))
         self.label_3.setText(_translate("MainWindow", "可以直接拖入多张图片，前两张图片会写入VideoStation。第一张为海报，第二张为背景；在列表内拖动图片可以调整图片顺序。"))
+        self.hs_zoom.setStatusTip(_translate("MainWindow", "缩放图片"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_pices), _translate("MainWindow", "海报"))
 
 from widgets.tbl_edit_metadata import TblMetadata

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
+import socket
+
 import os
 import requests
 from PyQt5.QtCore import QThread
@@ -98,7 +100,7 @@ class DSMAPI(QThread):
 
         cache_name = '{}-{}-{}'.format(stype, id, mtime)
 
-        bytes_res = self.cache.get_cache(cache_name, 'img')
+        bytes_res = self.cache.get_cache(cache_name,utils.IMG_CACHE_SUBDIR)
         if not bytes_res:
             param = {
                 'type': '{}'.format(stype),  # movie
@@ -106,7 +108,7 @@ class DSMAPI(QThread):
             }
             bytes_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'get', param, bytes=True)
             if bytes_res:
-                self.cache.save_cache(cache_name, bytes_res, utils.IMG_CACHE_KEEPTIME, 'img')
+                self.cache.save_cache(cache_name, bytes_res, utils.IMG_CACHE_KEEPTIME, utils.IMG_CACHE_SUBDIR)
         return bytes_res
 
     def get_video_backdrop(self, mapper_id, mtime):  # todo 不是所有类型都有背景图
@@ -115,14 +117,14 @@ class DSMAPI(QThread):
 
         cache_name = '{}-{}'.format(mapper_id, mtime)
 
-        bytes_res = self.cache.get_cache(cache_name, 'img')
+        bytes_res = self.cache.get_cache(cache_name, utils.IMG_CACHE_SUBDIR)
         if not bytes_res:
             param = {
                 'mapper_id': '{}'.format(mapper_id),
             }
             bytes_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Backdrop', 'get', param, bytes=True)
             if bytes_res:
-                self.cache.save_cache(cache_name, bytes_res, utils.IMG_CACHE_KEEPTIME, 'img')
+                self.cache.save_cache(cache_name, bytes_res, utils.IMG_CACHE_KEEPTIME, utils.IMG_CACHE_SUBDIR)
 
         return bytes_res
 
@@ -245,7 +247,7 @@ class DSMAPI(QThread):
 
         if stype == 'movie' or stype == 'home_video':
             param.update({
-                             'additional': '["summary","poster_mtime","backdrop_mtime","file","collection","watched_ratio","conversion_produced","actor","director","genre","writer","extra"]'})
+                'additional': '["summary","poster_mtime","backdrop_mtime","file","collection","watched_ratio","conversion_produced","actor","director","genre","writer","extra"]'})
 
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)),
                                      'getinfo', param)
@@ -275,8 +277,6 @@ class DSMAPI(QThread):
                 video_meta['导演'] = ','.join(meta.get('additional').get('director', []))
                 video_meta['摘要'] = meta.get('additional').get('summary', '')
 
-
-
             if stype == 'tvshow':
                 meta = json_res.get('data').get(stype)[0]
                 video_meta = utils.get_dital_tvshow_struck()
@@ -288,15 +288,11 @@ class DSMAPI(QThread):
                                                    meta.get('additional').get('backdrop_mtime'))
                 video_meta['backdrop'] = backdrop
 
-
-
                 video_meta['电视节目标题'] = meta.get('title', '')
                 video_meta['发布日期'] = utils.format_date_str(meta.get('original_available', ''))
 
                 video_meta['摘要'] = meta.get('additional').get('summary', '')
                 video_meta['季数'] = str(meta.get('additional').get('total_seasons', 0))
-
-
 
             if stype == 'movie':
                 meta = json_res.get('data').get(stype)[0]
@@ -323,7 +319,6 @@ class DSMAPI(QThread):
                 video_meta['导演'] = ','.join(meta.get('additional').get('director', []))
                 video_meta['摘要'] = meta.get('additional').get('summary', '')
 
-
             if stype == 'home_video':
                 meta = json_res.get('data').get('video')[0]
                 video_meta = utils.get_dital_homevideo_struck()
@@ -344,8 +339,30 @@ class DSMAPI(QThread):
                 video_meta['导演'] = ','.join(meta.get('additional').get('director', []))
                 video_meta['摘要'] = meta.get('additional').get('summary', '')
 
-
             return video_meta
+
+    # 设置封面
+    def set_poster(self, stype, sid, image_data):
+        if not stype or not sid or not image_data:
+            return
+        if os.path.isfile(utils.POSTER_PATH):
+            os.remove(utils.POSTER_PATH)
+
+        if image_data:
+            with open(utils.POSTER_PATH, 'wb') as f:
+                f.write(image_data)
+
+        if os.path.isfile(utils.POSTER_PATH):
+            myname = socket.getfqdn(socket.gethostname())
+            addr = socket.gethostbyname(myname)
+            data = {
+                'id': '{}'.format(sid),
+                'type': '"{}"'.format(stype),
+                'target': '"url"',
+                'url': '"http://{}:{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.POSTER_FILE),
+            }
+            json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'set', data)
+
 
 if __name__ == '__main__':
     session = requests.session()

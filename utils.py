@@ -17,22 +17,46 @@ IMG_CACHE_KEEPTIME = 3600 * 24 * 365
 ITEM_WIDTH, ITEM_HEIGHT = 120, 180
 
 HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 180,100
+HTTP_SERVER_PORT = 8000
+
+IMG_CACHE_SUBDIR ='img'
+
+POSTER_FILE = 'poster.jpg'
+BACKDROP_FILE = 'backdrop.jpg'
+
+POSTER_PATH = os.path.join(CACHE_PATH, IMG_CACHE_SUBDIR,POSTER_FILE)
+BACKDROP_PATH = os.path.join(CACHE_PATH,IMG_CACHE_SUBDIR, BACKDROP_FILE)
 
 
 def add_log(loger, level, *msg):
     if not loger or not len(msg):
         return
-    f_s = '{}'
+    f_s = ' '
+    for each in msg:
+        f_s = f_s+' {}'.format(each)
+    f_s = f_s.strip()
     if level == 'debug':
-        loger.debug(f_s.format(msg))
+        loger.debug(f_s)
     if level == 'info':
-        loger.info(f_s.format(msg))
+        loger.info(f_s)
     elif level == 'warn':
-        loger.warn(f_s.format(msg))
+        loger.warn(f_s)
     elif level == 'error':
-        loger.error(f_s.format(msg))
+        loger.error(f_s)
     else:
-        loger.critical(f_s.format(msg))
+        loger.critical(f_s)
+
+
+            # if level == 'debug':
+    #     loger.debug(f_s.format(msg))
+    # if level == 'info':
+    #     loger.info(f_s.format(msg))
+    # elif level == 'warn':
+    #     loger.warn(f_s.format(msg))
+    # elif level == 'error':
+    #     loger.error(f_s.format(msg))
+    # else:
+    #     loger.critical(f_s.format(msg))
 
 
 def get_library_API(stype):
