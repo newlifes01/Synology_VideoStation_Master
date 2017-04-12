@@ -45,15 +45,16 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.dsm_seach_stop = False
         self.dsm_seach_running = False
 
-    #     self.btn_meta_search.clicked.connect(self.test)
-    #
-    # def test(self):
-    #     self.btn_meta_search.setStyleSheet(
-    #         '''
-    #         background-image: url(:/interface/res/interface/btn_stop.png);
-	 #        background-repeat:no-repeat;
-	 #        background-position: center center;
-	 #        border:0
+        #     self.btn_meta_search.clicked.connect(self.test)
+        #
+        # def test(self):
+        #     self.btn_meta_search.setStyleSheet(
+        #         '''
+        #         background-image: url(:/interface/res/interface/btn_stop.png);
+        #        background-repeat:no-repeat;
+        #        background-position: center center;
+        #        border:0
+
     #         '''
     #     )
 
@@ -293,13 +294,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.lst_pices.addItem(item)
         self.lst_pices.scrollToItem(item)
 
-
     def get_piclist_data_to_dict(self):
         for i in range(self.lst_pices.count()):
             try:
                 item = self.lst_pices.item(i)
                 icon = item.icon()
-                if icon :
+                if icon:
                     pixmap = icon.pixmap(icon.availableSizes()[0])
                     array = QByteArray()
                     buffer = QBuffer(array)
@@ -440,37 +440,35 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 'poster': b'',
                 'backdrop': b'',
             })
-            for i,img_data in enumerate(self.get_piclist_data_to_dict()):
+            for i, img_data in enumerate(self.get_piclist_data_to_dict()):
                 app.processEvents()
                 if not img_data:
                     break
-                if i == 0  :
+                if i == 0:
                     meta['poster'] = img_data
                 elif i == 1:
                     meta['backdrop'] = img_data
                 else:
                     break
             if meta.get('poster'):
-                self.DSM.set_poster(meta.get('type'),meta.get('id'),meta.get('poster'))
+                self.DSM.set_poster(meta.get('type'), meta.get('id'), meta.get('poster'))
                 self.status_msg('[VideoStation]写入封面海报……')
                 app.processEvents()
             else:
-                self.DSM.del_poster(meta.get('type'),meta.get('id'))
+                self.DSM.del_poster(meta.get('type'), meta.get('id'))
 
             if meta.get('backdrop'):
-                self.DSM.set_backdrop(meta.get('type'),meta.get('id'),meta.get('backdrop'))
+                self.DSM.set_backdrop(meta.get('type'), meta.get('id'), meta.get('backdrop'))
                 self.status_msg('[VideoStation]写入背景海报……')
                 app.processEvents()
             else:
-                self.DSM.del_backdrop(meta.get('type'), meta.get('id'),meta.get('mapper_id'))
+                self.DSM.del_backdrop(meta.get('type'), meta.get('id'), meta.get('mapper_id'))
 
             self.status_msg('[VideoStation]写入元数据……')
             app.processEvents()
             if not self.DSM.set_video_info(meta):
                 QMessageBox.warning(self, '错误', '写入元数据失败！', QMessageBox.Ok)
                 return
-
-
 
             self.select_single_video(0)
 
@@ -490,7 +488,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     data['backdrop'] = img_data
                 else:
                     break
-
 
             if data and item:
                 stype = data.get('type')
@@ -526,11 +523,9 @@ class MainForm(QMainWindow, Ui_MainWindow):
                                                       data.get('发布日期'))
                         item.setText(summary)
 
-
             app.processEvents()
         finally:
             self.setEnabled(True)
-
 
     # 窗口显示后执行
     def form_showed(self):
