@@ -298,7 +298,6 @@ class Ui_MainWindow(object):
         self.btn_dsm_search.setStatusTip(_translate("MainWindow", "查找VideoStation视频"))
         self.cb_dsm_search_kind.setStatusTip(_translate("MainWindow", "VideoStation资料库"))
         self.label_2.setText(_translate("MainWindow", "范围"))
-        self.lst_dsm_search_result.setToolTip(_translate("MainWindow", "双击选择影片进行下一步操作"))
         self.cb_current_video.setStatusTip(_translate("MainWindow", "当前修改的视频"))
         self.btn_meta_search.setStatusTip(_translate("MainWindow", "查找当前视频元数据"))
         self.btn_fresh.setStatusTip(_translate("MainWindow", "刷新当前视频元数据"))

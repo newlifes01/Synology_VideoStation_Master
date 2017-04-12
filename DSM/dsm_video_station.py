@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import socket
+from datetime import datetime
 
 import os
 import requests
@@ -20,6 +21,9 @@ class DSMAPI(QThread):
         self.config = ConfigCache()
         self.set_cookie_form_cache()
         self.cache = DownCache()
+
+    def format_time(self,timestr):
+        return datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S.%f')
 
     def __load_cookie(self):
         login_data = self.config.get_cache('cookies')
@@ -96,11 +100,12 @@ class DSMAPI(QThread):
 
     def get_video_poster(self, stype, id, mtime):
         if not mtime:
-            mtime = 0
+            mtime = '2000-01-01 00:00:00.000000'
 
-        cache_name = '{}-{}-{}'.format(stype, id, mtime)
+        # cache_name = '{}-{}-{}'.format(stype, id, mtime)
+        cache_name = '{}-{}'.format(stype, id)
 
-        bytes_res = self.cache.get_cache(cache_name,utils.IMG_CACHE_SUBDIR)
+        bytes_res = self.cache.get_cache(cache_name,self.format_time(mtime),utils.IMG_CACHE_SUBDIR)
         if not bytes_res:
             param = {
                 'type': '{}'.format(stype),  # movie
@@ -108,23 +113,24 @@ class DSMAPI(QThread):
             }
             bytes_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'get', param, bytes=True)
             if bytes_res:
-                self.cache.save_cache(cache_name, bytes_res, utils.IMG_CACHE_KEEPTIME, utils.IMG_CACHE_SUBDIR)
+                self.cache.save_cache(cache_name, bytes_res, self.format_time(mtime), utils.IMG_CACHE_SUBDIR)
         return bytes_res
 
     def get_video_backdrop(self, mapper_id, mtime):  # todo 不是所有类型都有背景图
         if not mtime:
             return
 
-        cache_name = '{}-{}'.format(mapper_id, mtime)
+        # cache_name = '{}-{}'.format(mapper_id, mtime)
+        cache_name = '{}'.format(mapper_id)
 
-        bytes_res = self.cache.get_cache(cache_name, utils.IMG_CACHE_SUBDIR)
+        bytes_res = self.cache.get_cache(cache_name,self.format_time(mtime), utils.IMG_CACHE_SUBDIR)
         if not bytes_res:
             param = {
                 'mapper_id': '{}'.format(mapper_id),
             }
             bytes_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Backdrop', 'get', param, bytes=True)
             if bytes_res:
-                self.cache.save_cache(cache_name, bytes_res, utils.IMG_CACHE_KEEPTIME, utils.IMG_CACHE_SUBDIR)
+                self.cache.save_cache(cache_name, bytes_res, self.format_time(mtime), utils.IMG_CACHE_SUBDIR)
 
         return bytes_res
 
@@ -330,7 +336,9 @@ class DSMAPI(QThread):
 
                 video_meta['标题'] = meta.get('title', '')
 
-                video_meta['录制开始时间'] = utils.format_date_str(meta.get('record_date', ''))
+                video_meta['录制开始时间'] = utils.format_date_time_str(meta.get('record_date', ''))
+                # video_meta['录制开始时间'] = utils.format_date_str(meta.get('record_date', ''))
+                # video_meta['时间'] = utils.format_time_str(meta.get('record_date', ''))
                 video_meta['级别'] = meta.get('certificate', '')
                 video_meta['评级'] = str(meta.get('rating', 0))
                 video_meta['类型'] = ','.join(meta.get('additional').get('genre', []))
@@ -355,14 +363,127 @@ class DSMAPI(QThread):
         if os.path.isfile(utils.POSTER_PATH):
             myname = socket.getfqdn(socket.gethostname())
             addr = socket.gethostbyname(myname)
+            param = {
+                'id': '{}'.format(sid),
+                'type': '"{}"'.format(stype),
+                'target': '"url"',
+                'url': '"http://{}:{}/{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.IMG_CACHE_SUBDIR,utils.POSTER_FILE),
+            }
+            json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'set', param)
+            return json_res and json_res.get('success')
+    # 设置背景图
+    def set_backdrop(self, stype, sid, image_data):
+        if not stype or not sid or not image_data:
+            return
+        if os.path.isfile(utils.BACKDROP_PATH):
+            os.remove(utils.BACKDROP_PATH)
+
+        if image_data:
+            with open(utils.BACKDROP_PATH, 'wb') as f:
+                f.write(image_data)
+
+        if os.path.isfile(utils.BACKDROP_PATH):
+            myname = socket.getfqdn(socket.gethostname())
+            addr = socket.gethostbyname(myname)
             data = {
                 'id': '{}'.format(sid),
                 'type': '"{}"'.format(stype),
                 'target': '"url"',
-                'url': '"http://{}:{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.POSTER_FILE),
+                'url': '"http://{}:{}/{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.IMG_CACHE_SUBDIR,utils.BACKDROP_FILE),
+                'keep_one': 'true',
             }
-            json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'set', data)
+            json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Backdrop', 'add', data)
+            return json_res.get('success')
 
+    def set_video_info(self, meta):
+        if not meta:
+            return
+        stype = meta.get('type')
+        if not stype:
+            return
+        param =None
+
+        if stype == 'home_video':
+            param = {
+                'library_id': '{}'.format(meta.get('library_id')),
+                'target': '"video"',
+                'id': '{}'.format(meta.get('id')),
+                'title': '"{}"'.format(meta.get('标题', '')),
+
+                'record_date_date': '"{}"'.format(utils.format_date_str(meta.get('录制开始时间', ''))),
+                'record_date_time': '"{}"'.format(utils.format_time_str(meta.get('录制开始时间', ''))),
+                'certificate': '"{}"'.format(meta.get('级别', '')),
+                'rating': '{}'.format(meta.get('评级', '')),
+                'genre': utils.gen_liststr(meta.get('类型', '')),
+                'actor': utils.gen_liststr(meta.get('演员', '')),
+                'writer': utils.gen_liststr(meta.get('作者', '')),
+                'director': utils.gen_liststr(meta.get('导演', '')),
+                'metadata_locked': 'true',
+                'summary': '"{}"'.format(meta.get('摘要', '')),
+                'record_date': '"{}"'.format(utils.format_date_time_str(meta.get('录制开始时间', ''))),
+
+            }
+
+
+        if stype == 'tvshow':
+            param = {
+                'library_id': '{}'.format(meta.get('library_id')),
+                'target': '"video"',
+                'id': '{}'.format(meta.get('id')),
+                'title': '"{}"'.format(meta.get('电视节目标题', '')),
+                'original_available': '"{}"'.format(utils.format_date_str(meta.get('发布日期', ''))),
+                'metadata_locked': 'true',
+                'summary': '"{}"'.format(meta.get('摘要', '')),
+                'extra': '"null"',
+                'update_tvshow': '""',
+            }
+
+        if stype == 'tvshow_episode':
+            param = {
+                'library_id': '{}'.format(meta.get('library_id')),
+                'target': '"video"',
+                'id': '{}'.format(meta.get('id')),
+                'title': '"{}"'.format(meta.get('电视节目标题', '')),
+                'tvshow_original_available': '"{}"'.format(utils.format_date_str(meta.get('发布日期(电视节目)', ''))),
+                'tagline': '"{}"'.format(meta.get('集标题', '')),
+                'season': '{}'.format(meta.get('季', '')),
+                'episode': '{}'.format(meta.get('集', '')),
+                'original_available': '"{}"'.format(utils.format_date_str(meta.get('发布日期(集)', ''))),
+                'certificate': '"{}"'.format(meta.get('级别', '')),
+                'rating': '{}'.format(meta.get('评级', '')),
+                'genre': utils.gen_liststr(meta.get('类型', '')),
+                'actor': utils.gen_liststr(meta.get('演员', '')),
+                'writer': utils.gen_liststr(meta.get('作者', '')),
+                'director': utils.gen_liststr(meta.get('导演', '')),
+                'metadata_locked': 'true',
+                'summary': '"{}"'.format(meta.get('摘要', '')),
+                'extra': '"null"',
+                'tvshow_extra': '"null"',
+            }
+        if stype == 'movie':
+            param = {
+                'library_id': '{}'.format(meta.get('library_id')),
+                'target': '"video"',
+                'id': '{}'.format(meta.get('id')),
+                'title': '"{}"'.format(meta.get('标题', '')),
+                'tagline': '"{}"'.format(meta.get('标语', '')),
+                'original_available': '"{}"'.format(utils.format_date_str(meta.get('发布日期', ''))),
+                'certificate': '"{}"'.format(meta.get('级别', '')),
+                'rating': '{}'.format(meta.get('评级', '')),
+                'genre': utils.gen_liststr(meta.get('类型', '')),
+                'actor': utils.gen_liststr(meta.get('演员', '')),
+                'writer': utils.gen_liststr(meta.get('作者', '')),
+                'director': utils.gen_liststr(meta.get('导演', '')),
+                'metadata_locked': 'true',
+                'summary': '"{}"'.format(meta.get('摘要', '')),
+                'extra': '"null"',
+                'tvshow_extra': '"null"',
+            }
+        if not param:
+            return
+        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)), 'edit', param)
+
+        return json_res.get('success')
 
 if __name__ == '__main__':
     session = requests.session()

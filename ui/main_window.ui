@@ -132,9 +132,6 @@ QPushButton:checked:hover {
             <italic>true</italic>
            </font>
           </property>
-          <property name="toolTip">
-           <string>双击选择影片进行下一步操作</string>
-          </property>
           <property name="iconSize">
            <size>
             <width>120</width>

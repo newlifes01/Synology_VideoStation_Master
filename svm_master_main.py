@@ -215,7 +215,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         library_id = current_library.get('id')
         count = 0
         self.status_msg('[VideoStation搜索:{}]搜索中……'.format(current_library.get('title')))
-
+        app.processEvents()
         for video in self.DSM.list_videos(library_id, sAPI, stype, keyword):
             if self.dsm_seach_stop:
                 self.dsm_seach_running = False
@@ -413,7 +413,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 video = self.cb_current_video.currentData(Qt.UserRole)
                 if video:
                     self.status_msg('[VideoStation]正在读取……')
-                    print(video)
+                    # print(video)
                     video_dital = self.DSM.get_video_dital_info(video.get('id'), video.get('type'))
                     self.table_video_meta.ref_table(video_dital)
                     self.lst_pices.clear()
@@ -422,25 +422,50 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     if video_dital.get('backdrop'):
                         self.add_pic_fromData(video_dital.get('backdrop'))
         finally:
+            self.status_msg('[VideoStation]读取完成')
             self.setEnabled(True)
 
     def save_to_dsm(self):
-        meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
-        meta.update({
-            'poster': b'',
-            'backdrop': b'',
-        })
-        for i,img_data in enumerate(self.get_piclist_data_to_dict()):
-            if not img_data:
-                break
-            if i == 0  :
-                meta['poster'] = img_data
-            elif i == 1:
-                meta['backdrop'] = img_data
-            else:
-                break
+        self.setEnabled(False)
+        app.processEvents()
+        sleep(0.1)
+        app.processEvents()
+        try:
+            meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
+            meta.update({
+                'poster': b'',
+                'backdrop': b'',
+            })
+            for i,img_data in enumerate(self.get_piclist_data_to_dict()):
+                app.processEvents()
+                if not img_data:
+                    break
+                if i == 0  :
+                    meta['poster'] = img_data
+                elif i == 1:
+                    meta['backdrop'] = img_data
+                else:
+                    break
+            if meta.get('poster'):
+                self.DSM.set_poster(meta.get('type'),meta.get('id'),meta.get('poster'))
+                self.status_msg('[VideoStation]写入封面海报……')
+                app.processEvents()
+            if meta.get('backdrop'):
+                self.DSM.set_backdrop(meta.get('type'),meta.get('id'),meta.get('backdrop'))
+                self.status_msg('[VideoStation]写入背景海报……')
+                app.processEvents()
 
-        print(meta)
+            self.status_msg('[VideoStation]写入元数据……')
+            app.processEvents()
+            if not self.DSM.set_video_info(meta):
+                QMessageBox.warning(self, '错误', '写入元数据失败！', QMessageBox.Ok)
+                return
+
+
+            self.select_single_video(0)
+            app.processEvents()
+        finally:
+            self.setEnabled(True)
 
 
     # 窗口显示后执行

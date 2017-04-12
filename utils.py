@@ -11,8 +11,8 @@ PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
 CONFIG_PATH = os.path.join(PROJECT_PATH, '.config')
 
-CACHE_KEEPTIME = 20 * 60  # 秒
-IMG_CACHE_KEEPTIME = 3600 * 24 * 365
+# CACHE_KEEPTIME = 20 * 60  # 秒
+# IMG_CACHE_KEEPTIME = 3600 * 24 * 365
 
 ITEM_WIDTH, ITEM_HEIGHT = 120, 180
 
@@ -139,6 +139,7 @@ def get_dital_homevideo_struck():
         '文件名': '',
         '标题': '',
         '录制开始时间': '',
+        # '时间': '',
         '级别': '',
         '评级': '',
         '类型': '',
@@ -186,6 +187,27 @@ def get_cert_txt(idx):
         4: 'Unrated',
     }
     return data.get(idx, 'Unrated')
+
+def gen_liststr(list_str):
+    if not list_str:
+        return '[""]'
+    list_str = re.sub(r'([,，\s]+)',',',list_str.strip())
+    list = list_str.split(',')
+
+
+
+    if list and len(list):
+        result_str = '['
+        for each in list:
+            result_str = result_str + '"{}"'.format(each) + ','
+
+        if result_str.endswith(','):
+            result_str = result_str[:-1]
+        result_str = result_str + ']'
+
+        return result_str
+
+    return '[""]'
 
 
 def get_screen_width(input_str, max_width=None, tail='.', tail_length=2):
@@ -285,3 +307,18 @@ def format_date_str(date_str):
         return ''
     except:
         return ''
+
+def format_time_str(time_str):
+    try:
+        res = re.search(r'(\d{2}):(\d{2}):(\d{2})', time_str)
+        if res:
+            return '{}:{}:{}'.format(res.group(1).zfill(2), res.group(2).zfill(2), res.group(3).zfill(2))
+        return '00:01:00'
+    except:
+        return '00:01:00'
+
+def format_date_time_str(date_time_str):
+    return '{} {}'.format(format_date_str(date_time_str),format_time_str(date_time_str))
+
+if __name__ == '__main__':
+    print(re.sub(r'([,，\s]+)',',','aaa,bbb ccc   ddd，eee'))
