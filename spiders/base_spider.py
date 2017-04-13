@@ -1,3 +1,4 @@
+from datetime import timedelta, datetime
 from time import sleep
 from urllib.parse import urljoin
 
@@ -27,6 +28,11 @@ class BaseSpider:
         self.logger = logging.getLogger('spider:{}'.format(name))
 
         self.retry = 0
+
+
+    def __del__(self):
+        expire_after = timedelta(seconds=utils.SPIDER_CACHE_KEEP_TIME)
+        self.RequestSession.cache.remove_old_entries(datetime.utcnow() - expire_after)
 
     def make_throttle_hook(self,timeout=1.0):
         """

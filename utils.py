@@ -420,4 +420,16 @@ def format_date_time_str(date_time_str):
 
 
 if __name__ == '__main__':
-    print(re.sub(r'([,，\s]+)', ',', 'aaa,bbb ccc   ddd，eee'))
+    pass
+    # print(re.sub(r'([,，\s]+)', ',', 'aaa,bbb ccc   ddd，eee'))
+    #
+    # import sqlite3
+    #
+    # conn = sqlite3.connect('test.db')
+    # cursor = conn.cursor()
+    # cursor.execute('create table user (id varchar(20) primary key, name varchar(20))')
+    # cursor.execute('insert into user (id, name) values (\'4\', \'Michael\')')
+    # print(cursor.rowcount)
+    # cursor.close()
+    # conn.commit()
+    # conn.close()

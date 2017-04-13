@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import imghdr
+from datetime import timedelta, datetime
 from time import sleep
 
 
@@ -9,6 +10,7 @@ import os
 import requests
 from PyQt5.QtCore import Qt, QSize, QByteArray, QBuffer, QIODevice
 from PyQt5.QtGui import QPixmap, QIcon, QColor
+from requests_cache import CachedSession
 
 import utils
 import sys
@@ -39,13 +41,14 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.set_config()
 
         # DSM参数
-        self.session = requests.session()
+        self.session =  requests.session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'})
         self.DSM = DSMAPI(self.session, '')
 
         self.dsm_seach_stop = False
         self.dsm_seach_running = False
+
 
         #     self.btn_meta_search.clicked.connect(self.test)
         #

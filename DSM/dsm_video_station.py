@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 import logging
 import socket
-from datetime import datetime
+from datetime import datetime, timedelta
+from time import sleep
 
 import os
 import requests
 from PyQt5.QtCore import QThread
+from requests_cache import CachedSession
 
 import utils
 from models.cache import ConfigCache, DownCache
@@ -17,10 +19,14 @@ class DSMAPI(QThread):
         super().__init__()
         self.logger = logging.getLogger('DSMAPI')
         self.ip = ip
+
+
         self.session = session
         self.config = ConfigCache()
         self.set_cookie_form_cache()
         self.cache = DownCache()
+
+
 
     def format_time(self, timestr):
         return datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S.%f')
@@ -39,7 +45,7 @@ class DSMAPI(QThread):
             'ip': self.ip
         }, 'cookies')
 
-    def post_request(self, cgi, api='', method='', extra=None, bytes=False):
+    def post_request(self, cgi, api='', method='', extra=None, bytes=False,cache=False):
         if not self.ip:
             return None
         try:
@@ -51,7 +57,10 @@ class DSMAPI(QThread):
             if extra:
                 data.update(extra)
 
+
             res = self.session.post('http://{}/webapi/{}'.format(self.ip, cgi), data=data)
+
+
             if res.status_code == 200:
                 if bytes:
                     return res.content
@@ -99,6 +108,7 @@ class DSMAPI(QThread):
             return liblist
 
     def get_video_poster(self, stype, id, mtime):
+
         if not mtime:
             mtime = '2000-01-01 00:00:00.000000'
 
@@ -117,6 +127,8 @@ class DSMAPI(QThread):
         return bytes_res
 
     def get_video_backdrop(self, mapper_id, mtime):  # todo 不是所有类型都有背景图
+
+
         if not mtime:
             return
 
