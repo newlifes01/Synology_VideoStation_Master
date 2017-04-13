@@ -6,10 +6,14 @@ import os
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
+RETRYMAX = 5
 
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
 CONFIG_PATH = os.path.join(PROJECT_PATH, '.config')
+
+SPIDER_DOWNLOAD_SLEEP_TIME = 0.1  # 爬虫下载间隔
+SPIDER_CACHE_KEEP_TIME = 3600  # 爬虫缓存保留时间 秒
 
 # CACHE_KEEPTIME = 20 * 60  # 秒
 # IMG_CACHE_KEEPTIME = 3600 * 24 * 365
