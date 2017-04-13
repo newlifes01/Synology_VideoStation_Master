@@ -22,7 +22,7 @@ class DSMAPI(QThread):
         self.set_cookie_form_cache()
         self.cache = DownCache()
 
-    def format_time(self,timestr):
+    def format_time(self, timestr):
         return datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S.%f')
 
     def __load_cookie(self):
@@ -105,7 +105,7 @@ class DSMAPI(QThread):
         # cache_name = '{}-{}-{}'.format(stype, id, mtime)
         cache_name = '{}-{}'.format(stype, id)
 
-        bytes_res = self.cache.get_cache(cache_name,self.format_time(mtime),utils.IMG_CACHE_SUBDIR)
+        bytes_res = self.cache.get_cache(cache_name, self.format_time(mtime), utils.IMG_CACHE_SUBDIR)
         if not bytes_res:
             param = {
                 'type': '{}'.format(stype),  # movie
@@ -123,7 +123,7 @@ class DSMAPI(QThread):
         # cache_name = '{}-{}'.format(mapper_id, mtime)
         cache_name = '{}'.format(mapper_id)
 
-        bytes_res = self.cache.get_cache(cache_name,self.format_time(mtime), utils.IMG_CACHE_SUBDIR)
+        bytes_res = self.cache.get_cache(cache_name, self.format_time(mtime), utils.IMG_CACHE_SUBDIR)
         if not bytes_res:
             param = {
                 'mapper_id': '{}'.format(mapper_id),
@@ -135,68 +135,67 @@ class DSMAPI(QThread):
         return bytes_res
 
     # 列出指定资料库所有影片
-    def list_videos(self, library_id, api, stype, keyword=''):
-        if library_id is None or not api:
+    def list_videos(self, meta, keyword=''):
+        if not meta:
             return
-        param = None
-        if stype == 'movie':
-            param = {
-                'offset': '0',
-                'limit': '5000',
-                'sort_by': '"added"',
-                'sort_direction': '"desc"',
-                'library_id': '{}'.format(library_id),
-                'additional': '["poster_mtime","summary","watched_ratio","collection","backdrop_mtime"]',
-            }
+        stype = meta.get('type')
+        sAPI = utils.get_library_API(stype)
+        library_id = meta.get('id')
+        heads = utils.get_dsm_json_head(stype)
 
+        if library_id is None or not sAPI:
+            return
 
-        elif stype == 'tvshow':
-            param = {
-                'offset': '0',
-                'limit': '5000',
-                'sort_by': '"title"',
-                'sort_direction': '"asc"',
-                'library_id': '{}'.format(library_id),
-                'additional': '["poster_mtime","summary","backdrop_mtime"]',
-            }
-        elif stype == 'home_video':
-            param = {
-                'offset': '0',
-                'limit': '120',
-                'sort_by': '"title"',
-                'sort_direction': '"asc"',
-                'library_id': '{}'.format(library_id),
-                'additional': '["summary","collection","poster_mtime","watched_ratio","backdrop_mtime"]',
-            }
+        param = {
+            'offset': '0',
+            'limit': '5000',
+            'sort_by': '"title"',  # added
+            'sort_direction': '"desc"',
+            'library_id': '{}'.format(library_id),
+            'additional': '["poster_mtime","backdrop_mtime"]'
+        }
 
         if keyword:
             param.update({'keyword': '"{}"'.format(keyword)})
 
-        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(api), 'list', param)
+        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(sAPI), 'list', param)
         if json_res and json_res.get('success'):
-            total = json_res.get('total')
-            if stype == 'home_video':
-                datas = json_res.get('data').get('video')
-            else:
-                datas = json_res.get('data').get(stype)
+            total = json_res.get('data').get('total')
+            if total:
+                yield total
+            datas = json_res.get('data').get(heads)
 
             for data in datas:
-                result_data = utils.get_dsm_find_video_struct()
+                result_data = {}
 
-                poster = self.get_video_poster(stype, data.get('id'),
-                                               data.get('additional').get('poster_mtime'))
-                result_data['poster'] = poster
+                poster_mtime = data.get('additional').get('poster_mtime')
 
-                # if stype != 'home_video':
-                backdrop = self.get_video_backdrop(data.get('mapper_id'),
-                                                   data.get('additional').get('backdrop_mtime'))
-                result_data['backdrop'] = backdrop
+                poster = self.get_video_poster(stype, data.get('id'), poster_mtime)
 
-                result_data.update(data)
-                result_data['total_seasons'] = data.get('additional').get('total_seasons', 0)
-                result_data['type'] = stype
+                backdrop_mtime = data.get('additional').get('backdrop_mtime')
 
-                result_data['original_available'] = utils.format_date_str(data.get('original_available', ''))
+                backdrop = self.get_video_backdrop(data.get('mapper_id'), backdrop_mtime)
+
+                result_data.update({
+                    'type': stype,
+                    'API': sAPI,
+                    'json_head': heads,
+
+                    'title': data.get('title'),
+
+                    'id': data.get('id'),
+                    'library_id': data.get('library_id'),
+                    'mapper_id': data.get('mapper_id'),
+
+                    'poster_mtime': poster_mtime,
+                    'backdrop_mtime': backdrop_mtime,
+                    'poster': poster,
+                    'backdrop': backdrop,
+                    'total_seasons': data.get('additional').get('total_seasons', 0),
+                    'original_available': utils.format_date_str(data.get('original_available', '')),
+                    'record_date': utils.format_date_str(data.get('record_date', '')),
+
+                })
 
                 yield result_data
 
@@ -230,13 +229,13 @@ class DSMAPI(QThread):
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)),
                                      meth, param)
         if json_res:
-
-            if stype == 'home_video':
-                results = json_res.get('data').get('video')
-            elif stype == 'tvshow_episode':
-                results = json_res.get('data').get('episode')
-            else:
-                results = json_res.get('data').get(stype)
+            results = json_res.get('data').get(utils.get_dsm_json_head(stype))
+            # if stype == 'home_video':
+            #     results = json_res.get('data').get('video')
+            # elif stype == 'tvshow_episode':
+            #     results = json_res.get('data').get('episode')
+            # else:
+            #     results = json_res.get('data').get(stype)
             for result in results:
                 yield result
 
@@ -351,7 +350,7 @@ class DSMAPI(QThread):
 
     # 删除封面:
     def del_poster(self, stype, sid):
-        if not stype or not sid :
+        if not stype or not sid:
             return
         param = {
             'id': '{}'.format(sid),
@@ -361,7 +360,7 @@ class DSMAPI(QThread):
         return json_res and json_res.get('success')
 
     # 删除背景
-    def del_backdrop(self, stype, sid,mapper_id):
+    def del_backdrop(self, stype, sid, mapper_id):
         if not stype or not sid:
             return
         param = {
@@ -383,7 +382,7 @@ class DSMAPI(QThread):
             os.remove(utils.POSTER_PATH)
 
         if image_data:
-            utils.add_log(self.logger,'info','创建临时封面:',utils.POSTER_PATH)
+            utils.add_log(self.logger, 'info', '创建临时封面:', utils.POSTER_PATH)
             with open(utils.POSTER_PATH, 'wb') as f:
                 f.write(image_data)
 
@@ -394,13 +393,15 @@ class DSMAPI(QThread):
                 'id': '{}'.format(sid),
                 'type': '"{}"'.format(stype),
                 'target': '"url"',
-                'url': '"http://{}:{}/{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.IMG_CACHE_SUBDIR,utils.POSTER_FILE),
+                'url': '"http://{}:{}/{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.IMG_CACHE_SUBDIR,
+                                                     utils.POSTER_FILE),
             }
             json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'set', param)
             if os.path.isfile(utils.POSTER_PATH):
                 utils.add_log(self.logger, 'info', '删除临时封面:', utils.POSTER_PATH)
                 os.remove(utils.POSTER_PATH)
             return json_res and json_res.get('success')
+
     # 设置背景图
     def set_backdrop(self, stype, sid, image_data):
         if not stype or not sid or not image_data:
@@ -420,7 +421,8 @@ class DSMAPI(QThread):
                 'id': '{}'.format(sid),
                 'type': '"{}"'.format(stype),
                 'target': '"url"',
-                'url': '"http://{}:{}/{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.IMG_CACHE_SUBDIR,utils.BACKDROP_FILE),
+                'url': '"http://{}:{}/{}/{}"'.format(addr, utils.HTTP_SERVER_PORT, utils.IMG_CACHE_SUBDIR,
+                                                     utils.BACKDROP_FILE),
                 'keep_one': 'true',
             }
             json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Backdrop', 'add', data)
@@ -435,7 +437,7 @@ class DSMAPI(QThread):
         stype = meta.get('type')
         if not stype:
             return
-        param =None
+        param = None
 
         if stype == 'home_video':
             param = {
@@ -457,7 +459,6 @@ class DSMAPI(QThread):
                 'record_date': '"{}"'.format(utils.format_date_time_str(meta.get('录制开始时间', ''))),
 
             }
-
 
         if stype == 'tvshow':
             param = {
@@ -515,11 +516,13 @@ class DSMAPI(QThread):
             }
         if not param:
             return
-        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)), 'edit', param)
+        json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)), 'edit',
+                                     param)
 
         # print(json_res)
 
         return json_res.get('success')
+
 
 if __name__ == '__main__':
     session = requests.session()

@@ -16,16 +16,16 @@ CONFIG_PATH = os.path.join(PROJECT_PATH, '.config')
 
 ITEM_WIDTH, ITEM_HEIGHT = 120, 180
 
-HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 180,100
+HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 180, 100
 HTTP_SERVER_PORT = 8000
 
-IMG_CACHE_SUBDIR ='img'
+IMG_CACHE_SUBDIR = 'img'
 
 POSTER_FILE = 'poster.jpg'
 BACKDROP_FILE = 'backdrop.jpg'
 
-POSTER_PATH = os.path.join(CACHE_PATH, IMG_CACHE_SUBDIR,POSTER_FILE)
-BACKDROP_PATH = os.path.join(CACHE_PATH,IMG_CACHE_SUBDIR, BACKDROP_FILE)
+POSTER_PATH = os.path.join(CACHE_PATH, IMG_CACHE_SUBDIR, POSTER_FILE)
+BACKDROP_PATH = os.path.join(CACHE_PATH, IMG_CACHE_SUBDIR, BACKDROP_FILE)
 
 
 def add_log(loger, level, *msg):
@@ -33,7 +33,7 @@ def add_log(loger, level, *msg):
         return
     f_s = ' '
     for each in msg:
-        f_s = f_s+' {}'.format(each)
+        f_s = f_s + ' {}'.format(each)
     f_s = f_s.strip()
     if level == 'debug':
         loger.debug(f_s)
@@ -47,16 +47,16 @@ def add_log(loger, level, *msg):
         loger.critical(f_s)
 
 
-            # if level == 'debug':
-    #     loger.debug(f_s.format(msg))
-    # if level == 'info':
-    #     loger.info(f_s.format(msg))
-    # elif level == 'warn':
-    #     loger.warn(f_s.format(msg))
-    # elif level == 'error':
-    #     loger.error(f_s.format(msg))
-    # else:
-    #     loger.critical(f_s.format(msg))
+        # if level == 'debug':
+        #     loger.debug(f_s.format(msg))
+        # if level == 'info':
+        #     loger.info(f_s.format(msg))
+        # elif level == 'warn':
+        #     loger.warn(f_s.format(msg))
+        # elif level == 'error':
+        #     loger.error(f_s.format(msg))
+        # else:
+        #     loger.critical(f_s.format(msg))
 
 
 def get_library_API(stype):
@@ -70,19 +70,106 @@ def get_library_API(stype):
         return 'TVShowEpisode'
 
 
-def get_dsm_find_video_struct():
-    return {
-        'type': '',
-        'id': 0,
-        'library_id': 0,
-        'mapper_id': 0,
-        'title': '',
-        'original_available': '',
-        'summary': '',
-        'total_seasons': 0,
-        'poster': b'',
-        'backdrop': b'',
-    }
+def get_dsm_json_head(stype):
+    if stype == 'movie':
+        return 'movie'
+    if stype == 'tvshow':
+        return 'tvshow'
+    if stype == 'home_video':
+        return 'video'
+    if stype == 'tvshow_episode':
+        return 'episode'
+
+
+# def dsm_search_result_struct(stype):
+#     return {
+#         'type': '',
+#         'API': get_library_API(stype),
+#         'json_head': get_dsm_json_head(stype),
+#
+#         'id': 0,
+#         'library_id': 0,
+#         'mapper_id': 0,
+#
+#
+#         'poster_mtime': '',
+#         'backdrop_mtime': '',
+#         'poster': b'',
+#         'backdrop': b'',
+#         'file':'',
+#
+#
+#         'table': get_table_show_struck(stype)
+#     }
+#
+# def get_table_show_struck(stype='movie'):
+#     if stype == 'tvshow':
+#         return {
+#             '电视节目标题': '',
+#             '发布日期': '',
+#             '摘要': '',
+#             '季数': '',
+#         }
+#     if stype == 'tvshow_episode':
+#         return {
+#             '文件名':'',
+#             '电视节目标题':'',
+#             '发布日期(电视节目)':'',
+#             '集标题': '',
+#             '季': '',
+#             '集': '',
+#             '发布日期(集)': '',
+#             '级别': '',
+#             '评级': '',
+#             '类型': '',
+#             '演员': '',
+#             '作者': '',
+#             '导演': '',
+#             '摘要': '',
+#          }
+#     if stype == 'movie':
+#         return {
+#             '文件名': '',
+#             '标题': '',
+#             '标语': '',
+#
+#             '发布日期': '',
+#             '级别': '',
+#             '评级': '',
+#             '类型': '',
+#             '演员': '',
+#             '作者': '',
+#             '导演': '',
+#             '摘要': '',
+#         }
+#     if stype == 'home_video':
+#         return {
+#             '文件名': '',
+#             '标题': '',
+#             '录制开始时间': '',
+#             '级别': '',
+#             '评级': '',
+#             '类型': '',
+#             '演员': '',
+#             '作者': '',
+#             '导演': '',
+#             '摘要': '',
+#         }
+
+
+# def get_dsm_find_video_struct():
+#     return {
+#         'type': '',
+#         'id': 0,
+#         'library_id': 0,
+#         'mapper_id': 0,
+#         'title': '',
+#         'original_available': '',
+#         'summary': '',
+#         'total_seasons': 0,
+#         'poster': b'',
+#         'backdrop': b'',
+#     }
 
 def get_dital_tvshow_struck():
     return {
@@ -95,11 +182,12 @@ def get_dital_tvshow_struck():
         'backdrop': b'',
     }
 
+
 def get_dital_episode_struck():
     return {
-        '文件名':'',
-        '电视节目标题':'',
-        '发布日期(电视节目)':'',
+        '文件名': '',
+        '电视节目标题': '',
+        '发布日期(电视节目)': '',
         '集标题': '',
         '季': '',
         '集': '',
@@ -115,6 +203,8 @@ def get_dital_episode_struck():
         'poster': b'',
 
     }
+
+
 def get_dital_movie_struck():
     return {
         '文件名': '',
@@ -134,6 +224,7 @@ def get_dital_movie_struck():
         'backdrop': b'',
     }
 
+
 def get_dital_homevideo_struck():
     return {
         '文件名': '',
@@ -151,6 +242,7 @@ def get_dital_homevideo_struck():
         'poster': b'',
     }
 
+
 def get_rating_lst():
     return [
         {'🎬PG': 'PG'},
@@ -166,6 +258,7 @@ def get_rating_lst():
 
         {'🎬Unrated': 'Unrated'},
     ]
+
 
 def get_cert_idx(cert):
     data = {
@@ -188,13 +281,12 @@ def get_cert_txt(idx):
     }
     return data.get(idx, 'Unrated')
 
+
 def gen_liststr(list_str):
     if not list_str:
         return '[""]'
-    list_str = re.sub(r'([,，\s]+)',',',list_str.strip())
+    list_str = re.sub(r'([,，\s]+)', ',', list_str.strip())
     list = list_str.split(',')
-
-
 
     if list and len(list):
         result_str = '['
@@ -308,6 +400,7 @@ def format_date_str(date_str):
     except:
         return ''
 
+
 def format_time_str(time_str):
     try:
         res = re.search(r'(\d{2}):(\d{2}):(\d{2})', time_str)
@@ -317,8 +410,10 @@ def format_time_str(time_str):
     except:
         return '00:01:00'
 
+
 def format_date_time_str(date_time_str):
-    return '{} {}'.format(format_date_str(date_time_str),format_time_str(date_time_str))
+    return '{} {}'.format(format_date_str(date_time_str), format_time_str(date_time_str))
+
 
 if __name__ == '__main__':
-    print(re.sub(r'([,，\s]+)',',','aaa,bbb ccc   ddd，eee'))
+    print(re.sub(r'([,，\s]+)', ',', 'aaa,bbb ccc   ddd，eee'))

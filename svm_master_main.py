@@ -122,7 +122,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
         self.btn_dsm_search.clicked.connect(lambda: self.btn_dsm_search_clicked(self.edt_dsm_search_keyword.text()))
 
-        self.lst_dsm_search_result.itemPressed.connect(self.select_dsm_video)
+        self.lst_dsm_search_result.itemPressed.connect(self.select_dsm_video)  #
 
         self.cb_current_video.currentIndexChanged.connect(self.select_single_video)
         self.cb_current_video.currentIndexChanged[str].connect(self.status_msg)
@@ -130,146 +130,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.btn_fresh.clicked.connect(self.select_single_video)
         self.btn_save.clicked.connect(self.save_to_dsm)
 
-    def status_msg(self, msg):
-        self.statusbar.showMessage(msg)
-
-    # 检测是否登陆dsm 并登陆
-    def check_login_status(self):
-        if not self.DSM.check_login_status():
-            self.login_form = LoginDialog(self.DSM)
-            if not self.login_form.exec_():
-                utils.add_log(self.logger, 'info', '登陆失败')
-                sys.exit(0)
-            else:
-                return True
-        else:
-            return True
-
-    # 获得视频库列表
-    def get_dsm_librarys(self):
-        libs = self.DSM.get_librarys()
-        if not libs: return
-
-        self.cb_dsm_search_kind.addItem(QIcon(':/interface/res/interface/all_video.png'), 'All', libs)
-
-        for lib in libs:
-
-            if lib.get('visible'):
-                # lib.update({'title_tip':lib.get('type')})
-                self.cb_dsm_search_kind.addItem(QIcon(':/interface/res/interface/{}.png'.format(lib.get('type'))),
-                                                lib.get('title'), lib)
-
-        idx = min(self.cb_dsm_search_kind.count(), self.config.get('library_select_idx', 0))
-        self.cb_dsm_search_kind.setCurrentIndex(idx)
-
-    def library_selected(self, idx):
-        if self.show_finished:
-            self.config['library_select_idx'] = idx
-
-    ##### 搜索dsm
-
-    def btn_dsm_search_clicked(self, keyword):
-        # todo 全部枚举
-        if self.dsm_seach_running:
-            self.dsm_seach_stop = True
-        else:
-            if self.cb_dsm_search_kind.currentIndex() == 0:
-                current_librarys = self.cb_dsm_search_kind.currentData(Qt.UserRole)
-
-            else:
-                current_librarys = [self.cb_dsm_search_kind.currentData(Qt.UserRole)]
-
-            self.dsm_seach_stop = False
-            self.dsm_seach_running = True
-            self.lst_dsm_search_result.clear()
-            self.lst_dsm_search_result.setEnabled(False)
-            self.cb_dsm_search_kind.setEnabled(False)
-
-            total = 0
-
-            # self.btn_dsm_search.setIcon(QIcon(':/interface/res/interface/btn_stop.png'))
-            # self.btn_dsm_search.repaint()
-            # app.processEvents()
-
-            for current_library in current_librarys:
-                if not current_library:
-                    return
-
-                if self.dsm_seach_stop:
-                    self.dsm_seach_running = False
-                    break
-
-                count = self.list_videos(current_library, total, keyword)
-                app.processEvents()
-                total += count
-
-            self.dsm_seach_running = False
-            self.status_msg('[VideoStation搜索]完成！共找到[{}]个,双击选择影片进一步处理'.format(total))
-            self.lst_dsm_search_result.setEnabled(True)
-            self.cb_dsm_search_kind.setEnabled(True)
-            self.btn_dsm_search.setChecked(False)
-            # self.btn_dsm_search.setIcon(QIcon(':/interface/res/interface/btn_search.png'))
-
-    def list_videos(self, current_library, total, keyword):
-        stype = current_library.get('type')
-        sAPI = utils.get_library_API(stype)
-        library_id = current_library.get('id')
-        count = 0
-        self.status_msg('[VideoStation搜索:{}]搜索中……'.format(current_library.get('title')))
-        app.processEvents()
-        for video in self.DSM.list_videos(library_id, sAPI, stype, keyword):
-            if self.dsm_seach_stop:
-                self.dsm_seach_running = False
-                break
-            self.add_dsm_search_result(video)
-            count += 1
-
-            self.status_msg('[VideoStation搜索:{}]找到[{}]个'.format(current_library.get('title'), count + total))
-            app.processEvents()
-
-        return count
-
-    def add_dsm_search_result(self, dsm_finded):
-        if dsm_finded:
-            try:
-                stype = dsm_finded.get('type')
-                pixmap = QPixmap()
-                pixmap.loadFromData(dsm_finded['poster'])
-
-                if stype == 'home_video':
-                    icon_width, icon_heigh = utils.HOMEVIEDO_WIDTH, utils.HOMEVIEDO_WIDTH
-                else:
-                    icon_width, icon_heigh = utils.ITEM_WIDTH, utils.ITEM_HEIGHT
-
-                icon = QIcon(
-                    pixmap.scaled(icon_width, icon_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
-                title = utils.get_screen_width(dsm_finded.get('title'), max_width=19, tail_length=2)
-                if stype == 'tvshow':
-                    summary = '{}\n{} 共{}季\n{}'.format(title, dsm_finded.get('type'),
-                                                       dsm_finded.get('total_seasons'),
-                                                       dsm_finded.get('original_available'))
-                elif stype == 'home_video':
-                    summary = '{}\n{}\n{}'.format(title, dsm_finded.get('type'),
-                                                  utils.format_date_str(dsm_finded.get('record_date')))
-                else:
-                    summary = '{}\n{}\n{}'.format(title, dsm_finded.get('type'),
-                                                  dsm_finded.get('original_available'))
-                item = QListWidgetItem(icon, summary)
-                item.setData(Qt.UserRole, dsm_finded)
-                item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
-                if stype == 'tvshow':
-                    item.setBackground(QColor(255, 222, 222))
-                elif stype == 'movie':
-                    item.setBackground(QColor(222, 222, 255))
-                else:
-                    item.setBackground(QColor(222, 225, 222))
-                self.lst_dsm_search_result.addItem(item)
-                self.lst_dsm_search_result.scrollToBottom()
-
-            except Exception as e:
-                utils.add_log(self.logger, 'error', 'add_dsm_search_result', e)
-
-    ####搜索dsm
     ##########海报列表
     def add_pic_fromData(self, data, boshowsize=True):
         if not data:
@@ -348,12 +208,163 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 else:
                     QMessageBox.warning(self, '错误', '选择的不是图像文件！', QMessageBox.Ok)
 
+    def status_msg(self, msg):
+        self.statusbar.showMessage(msg)
+
+    # 检测是否登陆dsm 并登陆
+    def check_login_status(self):
+        if not self.DSM.check_login_status():
+            self.login_form = LoginDialog(self.DSM)
+            if not self.login_form.exec_():
+                utils.add_log(self.logger, 'info', '登陆失败')
+                sys.exit(0)
+            else:
+                return True
+        else:
+            return True
+
+    # 获得视频库列表
+    def get_dsm_librarys(self):
+        libs = self.DSM.get_librarys()
+        if not libs: return
+
+        self.cb_dsm_search_kind.addItem(QIcon(':/interface/res/interface/all_video.png'), 'All', libs)
+
+        for lib in libs:
+
+            if lib.get('visible'):
+                # lib.update({'title_tip':lib.get('type')})
+                self.cb_dsm_search_kind.addItem(QIcon(':/interface/res/interface/{}.png'.format(lib.get('type'))),
+                                                lib.get('title'), lib)
+
+        idx = min(self.cb_dsm_search_kind.count(), self.config.get('library_select_idx', 0))
+        self.cb_dsm_search_kind.setCurrentIndex(idx)
+
+    def library_selected(self, idx):
+        if self.show_finished:
+            self.config['library_select_idx'] = idx
+
+    ##### 搜索dsm
+
+
+    def add_dsm_search_result(self, dsm_finded):
+        if dsm_finded:
+            try:
+                stype = dsm_finded.get('type')
+                pixmap = QPixmap()
+                pixmap.loadFromData(dsm_finded['poster'])
+
+                if stype == 'home_video':
+                    icon_width, icon_heigh = utils.HOMEVIEDO_WIDTH, utils.HOMEVIEDO_WIDTH
+                else:
+                    icon_width, icon_heigh = utils.ITEM_WIDTH, utils.ITEM_HEIGHT
+
+                icon = QIcon(
+                    pixmap.scaled(icon_width, icon_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+                title = utils.get_screen_width(dsm_finded.get('title'), max_width=19, tail_length=2)
+                if stype == 'tvshow':
+                    summary = '{}\n{} 共{}季\n{}'.format(title, dsm_finded.get('type'),
+                                                       dsm_finded.get('total_seasons'),
+                                                       dsm_finded.get('original_available'))
+                elif stype == 'home_video':
+                    summary = '{}\n{}\n{}'.format(title, dsm_finded.get('type'),
+                                                  utils.format_date_str(dsm_finded.get('record_date')))
+                else:
+                    summary = '{}\n{}\n{}'.format(title, dsm_finded.get('type'),
+                                                  dsm_finded.get('original_available'))
+                item = QListWidgetItem(icon, summary)
+                item.setData(Qt.UserRole, dsm_finded)
+                item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
+                if stype == 'tvshow':
+                    item.setBackground(QColor(255, 222, 222))
+                elif stype == 'movie':
+                    item.setBackground(QColor(222, 222, 255))
+                else:
+                    item.setBackground(QColor(222, 225, 222))
+                self.lst_dsm_search_result.addItem(item)
+                self.lst_dsm_search_result.scrollToBottom()
+
+            except Exception as e:
+                utils.add_log(self.logger, 'error', 'add_dsm_search_result', e)
+
+    def dsm_seach_videos(self, current_librarys, keyword):
+
+        for current_library in current_librarys:
+            if self.dsm_seach_stop:
+                self.dsm_seach_running = False
+                break
+            yield current_library.get('title')
+
+            for video in self.DSM.list_videos(current_library, keyword):
+                if self.dsm_seach_stop:
+                    self.dsm_seach_running = False
+                    break
+
+                yield video
+
+    def btn_dsm_search_clicked(self, keyword):
+        if self.dsm_seach_running:
+            self.dsm_seach_stop = True
+        else:
+            if self.cb_dsm_search_kind.currentIndex() == 0:
+                current_librarys = self.cb_dsm_search_kind.currentData(Qt.UserRole)
+
+            else:
+                current_librarys = [self.cb_dsm_search_kind.currentData(Qt.UserRole)]
+
+            self.dsm_seach_stop = False
+            self.dsm_seach_running = True
+            self.lst_dsm_search_result.clear()
+            self.lst_dsm_search_result.setEnabled(False)
+            self.cb_dsm_search_kind.setEnabled(False)
+            try:
+
+                total = 0
+                count = 0
+                current_library_title = ''
+
+                for video in self.dsm_seach_videos(current_librarys, keyword):
+                    if isinstance(video, int):
+                        total += video
+                        continue
+                    if isinstance(video, str):
+                        current_library_title = video
+                        continue
+                    count += 1
+                    self.add_dsm_search_result(video)
+                    app.processEvents()
+
+                    self.status_msg(
+                        '[VideoStation搜索:{}]找到[{}/{}]个'.format(current_library_title, count, total))
+                self.status_msg('[VideoStation搜索]完成！共找到[{}/{}]个,双击选择影片进一步处理'.format(count, total))
+
+            except Exception as e:
+                utils.add_log(self.logger, 'error', 'btn_dsm_search_clicked', e.args)
+            finally:
+                self.dsm_seach_running = False
+                self.lst_dsm_search_result.setEnabled(True)
+                self.cb_dsm_search_kind.setEnabled(True)
+                self.btn_dsm_search.setChecked(False)
+
     #####选择视频
+
+    # def get_select_video(self, videos, stype):
+    #     if not videos or not stype:
+    #         return
+    #     for video in videos:
+    #         video_dital = self.DSM.get_video_dital_info(video.get('id'), stype)
+    #         if video_dital:
+    #             yield video_dital
+    #         if stype == 'tvshow':
+    #             episodes = self.DSM.get_video_info(video.get('id'), 'tvshow_episode', video.get('library_id'))
+    #             for episode in episodes:
+    #                 yield episode
 
     def add_cb_current_videoitems(self, videos, stype):
         if not videos:
             return
         for video in videos:
+
             meta_cb = {
                 'type': stype,
                 'id': video.get('id'),
@@ -381,17 +392,20 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
             self.cb_current_video.addItem(QIcon(':/interface/res/interface/{}.png'.format(stype)), file_name, meta_cb)
 
-    def select_dsm_video(self, item):
+    def select_dsm_video(self, item):  # 鼠标选中视频
         if item:
+            self.setEnabled(False)
+            self.repaint()
+            app.processEvents()
             try:
                 self.cb_current_video_add_finish = False
                 self.cb_current_video.clear()
 
                 meta = item.data(Qt.UserRole)
+
                 stype = meta.get('type')
                 sid = meta.get('id')
                 slibrary_id = meta.get('library_id')
-                # smapper_id = meta.get('mapper_id')
 
                 videos = self.DSM.get_video_info(sid, stype, slibrary_id)
                 self.add_cb_current_videoitems(videos, stype)
@@ -403,15 +417,18 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
             finally:
 
-                self.cb_current_video.setCurrentIndex(-1)
+                # self.cb_current_video.setCurrentIndex(-1)
                 self.cb_current_video_add_finish = True
-                self.cb_current_video.setCurrentIndex(0)
+                self.select_single_video(0)
+                # self.cb_current_video.setCurrentIndex(0)
                 self.tabWidget.setEnabled(True)
                 self.tabWidget.setCurrentIndex(0)
+                self.setEnabled(True)
 
     def select_single_video(self, idx):
-        self.setEnabled(False)
-
+        # self.setEnabled(False)
+        # self.repaint()
+        # app.processEvents()
         try:
             if self.cb_current_video_add_finish:
                 video = self.cb_current_video.currentData(Qt.UserRole)
@@ -427,7 +444,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                         self.add_pic_fromData(video_dital.get('backdrop'))
         finally:
             self.status_msg('[VideoStation]读取完成')
-            self.setEnabled(True)
+            # self.setEnabled(True)
 
     def save_to_dsm(self):
         self.setEnabled(False)
