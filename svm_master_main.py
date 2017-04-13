@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem, 
 from DSM.dsm_video_station import DSMAPI
 from models.cache import ConfigCache
 from models.http_server import HttpServer
+from search_metadata_main import SearchMetadataDialog
 from svm_login_main import LoginDialog
 from ui.main_window import Ui_MainWindow
 
@@ -130,6 +131,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.btn_fresh.clicked.connect(self.select_single_video)
         self.btn_save.clicked.connect(self.save_to_dsm)
 
+        self.btn_meta_search.clicked.connect(self.search_metadata)
+
     ##########海报列表
     def add_pic_fromData(self, data, boshowsize=True):
         if not data:
@@ -228,13 +231,13 @@ class MainForm(QMainWindow, Ui_MainWindow):
         libs = self.DSM.get_librarys()
         if not libs: return
 
-        self.cb_dsm_search_kind.addItem(QIcon(':/interface/res/interface/all_video.png'), 'All', libs)
+        self.cb_dsm_search_kind.addItem(QIcon(':/icons/ui_icons/all_video.png'), 'All', libs)
 
         for lib in libs:
 
             if lib.get('visible'):
                 # lib.update({'title_tip':lib.get('type')})
-                self.cb_dsm_search_kind.addItem(QIcon(':/interface/res/interface/{}.png'.format(lib.get('type'))),
+                self.cb_dsm_search_kind.addItem(QIcon(':/icons/ui_icons/{}.png'.format(lib.get('type'))),
                                                 lib.get('title'), lib)
 
         idx = min(self.cb_dsm_search_kind.count(), self.config.get('library_select_idx', 0))
@@ -390,7 +393,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 else:
                     file_name = meta_cb.get('title')
 
-            self.cb_current_video.addItem(QIcon(':/interface/res/interface/{}.png'.format(stype)), file_name, meta_cb)
+            self.cb_current_video.addItem(QIcon(':/icons/ui_icons/{}.png'.format(stype)), file_name, meta_cb)
 
     def select_dsm_video(self, item):  # 鼠标选中视频
         if item:
@@ -565,6 +568,15 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
         utils.add_log(self.logger, 'info', '保存配置文件：', 'closeEvent', self.config)
 
+    #搜索元数据
+    def search_metadata(self):
+
+        self.search_meta_form = SearchMetadataDialog()
+        meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
+        if meta:
+            result = self.search_meta_form.open_dialog(meta)
+            print(result)
+            self.btn_meta_search.setChecked(False)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -48,6 +48,9 @@
           <property name="placeholderText">
            <string>输入关键字查找(留空表示显示全部视频)</string>
           </property>
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item row="0" column="2">
@@ -71,20 +74,20 @@
           <property name="styleSheet">
            <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/search.png);
+	background-image:url(:/icons/ui_icons/search.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/search (1).png);
+	background-image:url(:/icons/ui_icons/search (1).png);
 }
 QPushButton:checked {
-    background-image:url(:/interface/res/interface/stop.png);
+    background-image:url(:/icons/ui_icons/stop.png);
 }
 QPushButton:checked:hover {
-    background-image:url(:/interface/res/interface/stop (1).png);
+    background-image:url(:/icons/ui_icons/stop (1).png);
 }</string>
           </property>
           <property name="text">
@@ -212,20 +215,20 @@ QPushButton:checked:hover {
             <property name="styleSheet">
              <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/search.png);
+	background-image:url(:/icons/ui_icons/search.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/search (1).png);
+	background-image:url(:/icons/ui_icons/search (1).png);
 }
 QPushButton:checked {
-    background-image:url(:/interface/res/interface/stop.png);
+    background-image:url(:/icons/ui_icons/stop.png);
 }
 QPushButton:checked:hover {
-    background-image:url(:/interface/res/interface/stop (1).png);
+    background-image:url(:/icons/ui_icons/stop (1).png);
 }</string>
             </property>
             <property name="text">
@@ -253,14 +256,14 @@ QPushButton:checked:hover {
             <property name="styleSheet">
              <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/refresh-button.png);
+	background-image:url(:/icons/ui_icons/refresh-button.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/refresh-button (1).png);
+	background-image:url(:/icons/ui_icons/refresh-button (1).png);
 }</string>
             </property>
             <property name="text">
@@ -285,14 +288,14 @@ QPushButton:hover
             <property name="styleSheet">
              <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/save.png);
+	background-image:url(:/icons/ui_icons/save.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/save (1).png);
+	background-image:url(:/icons/ui_icons/save (1).png);
 }</string>
             </property>
             <property name="text">
@@ -317,14 +320,14 @@ QPushButton:hover
             <property name="styleSheet">
              <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/settings.png);
+	background-image:url(:/icons/ui_icons/settings.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/settings (1).png);
+	background-image:url(:/icons/ui_icons/settings (1).png);
 }</string>
             </property>
             <property name="text">
@@ -517,7 +520,7 @@ QPushButton:hover
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="res_rc.qrc"/>
+  <include location="res/interface.qrc"/>
  </resources>
  <connections/>
 </ui>

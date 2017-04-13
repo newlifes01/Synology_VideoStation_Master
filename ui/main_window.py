@@ -27,6 +27,7 @@ class Ui_MainWindow(object):
         self.gridLayout = QtWidgets.QGridLayout(self.gb_dsm_search_result)
         self.gridLayout.setObjectName("gridLayout")
         self.edt_dsm_search_keyword = QtWidgets.QLineEdit(self.gb_dsm_search_result)
+        self.edt_dsm_search_keyword.setClearButtonEnabled(True)
         self.edt_dsm_search_keyword.setObjectName("edt_dsm_search_keyword")
         self.gridLayout.addWidget(self.edt_dsm_search_keyword, 0, 3, 1, 1)
         self.label = QtWidgets.QLabel(self.gb_dsm_search_result)
@@ -40,20 +41,20 @@ class Ui_MainWindow(object):
         self.btn_dsm_search.setSizePolicy(sizePolicy)
         self.btn_dsm_search.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/search.png);\n"
+"    background-image:url(:/icons/ui_icons/search.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/search (1).png);\n"
+"    background-image:url(:/icons/ui_icons/search (1).png);\n"
 "}\n"
 "QPushButton:checked {\n"
-"    background-image:url(:/interface/res/interface/stop.png);\n"
+"    background-image:url(:/icons/ui_icons/stop.png);\n"
 "}\n"
 "QPushButton:checked:hover {\n"
-"    background-image:url(:/interface/res/interface/stop (1).png);\n"
+"    background-image:url(:/icons/ui_icons/stop (1).png);\n"
 "}")
         self.btn_dsm_search.setText("")
         self.btn_dsm_search.setCheckable(True)
@@ -102,20 +103,20 @@ class Ui_MainWindow(object):
         self.btn_meta_search.setSizePolicy(sizePolicy)
         self.btn_meta_search.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/search.png);\n"
+"    background-image:url(:/icons/ui_icons/search.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/search (1).png);\n"
+"    background-image:url(:/icons/ui_icons/search (1).png);\n"
 "}\n"
 "QPushButton:checked {\n"
-"    background-image:url(:/interface/res/interface/stop.png);\n"
+"    background-image:url(:/icons/ui_icons/stop.png);\n"
 "}\n"
 "QPushButton:checked:hover {\n"
-"    background-image:url(:/interface/res/interface/stop (1).png);\n"
+"    background-image:url(:/icons/ui_icons/stop (1).png);\n"
 "}")
         self.btn_meta_search.setText("")
         self.btn_meta_search.setCheckable(True)
@@ -130,14 +131,14 @@ class Ui_MainWindow(object):
         self.btn_fresh.setSizePolicy(sizePolicy)
         self.btn_fresh.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/refresh-button.png);\n"
+"    background-image:url(:/icons/ui_icons/refresh-button.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/refresh-button (1).png);\n"
+"    background-image:url(:/icons/ui_icons/refresh-button (1).png);\n"
 "}")
         self.btn_fresh.setText("")
         self.btn_fresh.setFlat(False)
@@ -151,14 +152,14 @@ class Ui_MainWindow(object):
         self.btn_save.setSizePolicy(sizePolicy)
         self.btn_save.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/save.png);\n"
+"    background-image:url(:/icons/ui_icons/save.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/save (1).png);\n"
+"    background-image:url(:/icons/ui_icons/save (1).png);\n"
 "}")
         self.btn_save.setText("")
         self.btn_save.setFlat(False)
@@ -172,14 +173,14 @@ class Ui_MainWindow(object):
         self.btn_setting.setSizePolicy(sizePolicy)
         self.btn_setting.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/settings.png);\n"
+"    background-image:url(:/icons/ui_icons/settings.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/settings (1).png);\n"
+"    background-image:url(:/icons/ui_icons/settings (1).png);\n"
 "}")
         self.btn_setting.setText("")
         self.btn_setting.setFlat(False)
@@ -311,4 +312,4 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_pices), _translate("MainWindow", "海报"))
 
 from widgets.tbl_edit_metadata import TblMetadata
-import ui.res_rc_rc
+import ui.res.interface_rc
