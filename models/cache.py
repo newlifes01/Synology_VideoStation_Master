@@ -1,54 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import pickle
-from datetime import datetime, timedelta
-from time import time, sleep
+import sqlite3
+from datetime import datetime
+from time import time
 
 import hashlib
-import logging
-import os
-import sqlite3
 
 import utils
-
-
-class ConfigCache(object):
-    def __init__(self, cache_path=utils.CONFIG_PATH):
-        self.cache_path = cache_path
-        self.logger = logging.getLogger('ConfigCache')
-
-        if not os.path.exists(cache_path):
-            os.mkdir(cache_path)
-
-    def __is_cache(self, cache_file_path):
-        if not cache_file_path: return
-        if os.path.exists(cache_file_path):
-            return True
-        return False
-
-    def get_cache(self, filename='config'):
-        if not filename: return None
-        cache_file_path = os.path.join(self.cache_path, filename)
-        if self.__is_cache(cache_file_path):
-            try:
-                with open(cache_file_path, 'rb') as handle:
-                    return pickle.load(handle)
-            except Exception as e:
-                utils.add_log(self.logger, 'error', 'get_cache:', e)
-
-    def save_cache(self, data, filename='config'):
-        try:
-            if not filename or not data: return None
-            cache_file_path = os.path.join(self.cache_path, filename)
-
-            with open(cache_file_path, 'wb') as handle:
-                pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        except Exception as e:
-            utils.add_log(self.logger, 'error', 'save_cache:', e)
 
 
 class DownCache(object):
@@ -73,7 +36,6 @@ class DownCache(object):
                 )
                 '''.format(self.table_name))
             try:
-                # cursor.execute('CREATE UNIQUE INDEX {}_name ON {} (name) '.format(self.table_name,self.table_name))
                 cursor.execute(
                     'CREATE UNIQUE INDEX {}_name_uindex ON {} (name_hash) '.format(self.table_name, self.table_name))
 
@@ -134,7 +96,8 @@ class DownCache(object):
 
                 else:
                     utils.add_log(self.logger, 'info', '删除过期缓存:', filename, mtime, expire)
-                    cursor.execute('DELETE FROM {} WHERE name_hash=?'.format(self.table_name), (self.__url_md5(filename),))
+                    cursor.execute('DELETE FROM {} WHERE name_hash=?'.format(self.table_name),
+                                   (self.__url_md5(filename),))
                     return None
 
         except Exception as e:

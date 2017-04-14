@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import imghdr
-from datetime import timedelta, datetime
+import logging
+import sys
 from time import sleep, time
 
-import logging
 import os
 import requests
 from PyQt5.QtCore import Qt, QSize, QByteArray, QBuffer, QIODevice
-from PyQt5.QtGui import QPixmap, QIcon, QColor
-from requests_cache import CachedSession
-
-import utils
-import sys
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem, QAbstractItemView, QListView, \
     QFileDialog, QMessageBox
 
+import utils
 from DSM.dsm_video_station import DSMAPI
-from models.cache import ConfigCache, DownCache
+from models.cache import DownCache
 from models.http_server import HttpServer
 from search_metadata_main import SearchMetadataDialog
 from svm_login_main import LoginDialog
@@ -88,19 +85,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def initUi(self):
         self.tabWidget.setEnabled(False)
 
-        self.lst_dsm_search_result.setSpacing(5)
-        self.setStyleSheet('''
-                        QListView::item:selected:!active {
-                            background: rgb(255, 222, 21);
-                        }
-                        QListView::item:selected:active {
-                            background: rgb(255, 222, 122);
-                        }
-                        QListView::item:hover {
-                            background: rgb(255, 222, 122);
-                        }
-                ''')
-
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget.setEnabled(False)
 
@@ -111,11 +95,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.lb_dsm_status)
 
         self.cb_dsm_search_kind.currentIndexChanged.connect(self.library_selected)
-        # self.cb_dsm_search_kind.currentIndexChanged[str].connect(self.library_selected)
 
         self.btn_dsm_search.clicked.connect(lambda: self.btn_dsm_search_clicked(self.edt_dsm_search_keyword.text()))
 
-        self.lst_dsm_search_result.itemPressed.connect(self.select_dsm_video)  #
+        self.tbl_search_result_widget.put_meta.connect(self.select_dsm_video)
 
         self.cb_current_video.currentIndexChanged.connect(self.select_single_video)
         self.cb_current_video.currentIndexChanged[str].connect(self.status_msg)
@@ -125,7 +108,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
         self.btn_meta_search.clicked.connect(self.search_metadata)
 
-    ##########海报列表
+    # 海报列表
     def add_pic_fromData(self, data, boshowsize=True):
         if not data:
             return
@@ -188,7 +171,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.lst_pices.takeItem(self.lst_pices.row(item))
 
     def tab_pices_dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():  # 判断是否有效路径
+        if event.mimeData().hasUrls():
             event.accept()
         else:
             event.ignore()
@@ -226,9 +209,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.cb_dsm_search_kind.addItem(QIcon(':/icons/ui_icons/all_video.png'), 'All', libs)
 
         for lib in libs:
-
             if lib.get('visible'):
-                # lib.update({'title_tip':lib.get('type')})
                 self.cb_dsm_search_kind.addItem(QIcon(':/icons/ui_icons/{}.png'.format(lib.get('type'))),
                                                 lib.get('title'), lib)
 
@@ -239,46 +220,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
         if self.show_finished:
             self.config['library_select_idx'] = idx
 
-    ##### 搜索dsm
-
-
+    # 搜索dsm
     def add_dsm_search_result(self, dsm_finded):
         if dsm_finded:
             try:
-                stype = dsm_finded.get('type')
-                pixmap = QPixmap()
-                pixmap.loadFromData(dsm_finded['poster'])
-
-                if stype == 'home_video':
-                    icon_width, icon_heigh = utils.HOMEVIEDO_WIDTH, utils.HOMEVIEDO_WIDTH
-                else:
-                    icon_width, icon_heigh = utils.ITEM_WIDTH, utils.ITEM_HEIGHT
-
-                icon = QIcon(
-                    pixmap.scaled(icon_width, icon_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
-                title = utils.get_screen_width(dsm_finded.get('title'), max_width=19, tail_length=2)
-                if stype == 'tvshow':
-                    summary = '{}\n{} 共{}季\n{}'.format(title, dsm_finded.get('type'),
-                                                       dsm_finded.get('total_seasons'),
-                                                       dsm_finded.get('original_available'))
-                elif stype == 'home_video':
-                    summary = '{}\n{}\n{}'.format(title, dsm_finded.get('type'),
-                                                  utils.format_date_str(dsm_finded.get('record_date')))
-                else:
-                    summary = '{}\n{}\n{}'.format(title, dsm_finded.get('type'),
-                                                  dsm_finded.get('original_available'))
-                item = QListWidgetItem(icon, summary)
-                item.setData(Qt.UserRole, dsm_finded)
-                item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
-                if stype == 'tvshow':
-                    item.setBackground(QColor(255, 222, 222))
-                elif stype == 'movie':
-                    item.setBackground(QColor(222, 222, 255))
-                else:
-                    item.setBackground(QColor(222, 225, 222))
-                self.lst_dsm_search_result.addItem(item)
-                self.lst_dsm_search_result.scrollToBottom()
-
+                self.tbl_search_result_widget.insert_data(dsm_finded)
             except Exception as e:
                 utils.add_log(self.logger, 'error', 'add_dsm_search_result', e)
 
@@ -309,8 +255,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
             self.dsm_seach_stop = False
             self.dsm_seach_running = True
-            self.lst_dsm_search_result.clear()
-            self.lst_dsm_search_result.setEnabled(False)
+            self.tbl_search_result_widget.clear_data()
+            self.tbl_search_result_widget.setEnabled(False)
             self.cb_dsm_search_kind.setEnabled(False)
             start_time = time()
             try:
@@ -321,6 +267,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 current_library_title = ''
 
                 for video in self.dsm_seach_videos(current_librarys, keyword):
+                    if self.dsm_seach_stop:
+                        break
                     if isinstance(video, int):
                         total += video
                         continue
@@ -342,24 +290,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 utils.add_log(self.logger, 'error', 'btn_dsm_search_clicked', e.args)
             finally:
                 self.dsm_seach_running = False
-                self.lst_dsm_search_result.setEnabled(True)
+                self.tbl_search_result_widget.setEnabled(True)
                 self.cb_dsm_search_kind.setEnabled(True)
                 self.btn_dsm_search.setChecked(False)
 
     #####选择视频
-
-    # def get_select_video(self, videos, stype):
-    #     if not videos or not stype:
-    #         return
-    #     for video in videos:
-    #         video_dital = self.DSM.get_video_dital_info(video.get('id'), stype)
-    #         if video_dital:
-    #             yield video_dital
-    #         if stype == 'tvshow':
-    #             episodes = self.DSM.get_video_info(video.get('id'), 'tvshow_episode', video.get('library_id'))
-    #             for episode in episodes:
-    #                 yield episode
-
     def add_cb_current_videoitems(self, videos, stype):
         if not videos:
             return
@@ -392,16 +327,15 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
             self.cb_current_video.addItem(QIcon(':/icons/ui_icons/{}.png'.format(stype)), file_name, meta_cb)
 
-    def select_dsm_video(self, item):  # 鼠标选中视频
-        if item:
+    # 鼠标选中视频
+    def select_dsm_video(self, meta):
+        if meta:
             self.setEnabled(False)
             self.repaint()
             app.processEvents()
             try:
                 self.cb_current_video_add_finish = False
                 self.cb_current_video.clear()
-
-                meta = item.data(Qt.UserRole)
 
                 stype = meta.get('type')
                 sid = meta.get('id')
@@ -416,19 +350,13 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     app.processEvents()
 
             finally:
-
-                # self.cb_current_video.setCurrentIndex(-1)
                 self.cb_current_video_add_finish = True
                 self.select_single_video(0)
-                # self.cb_current_video.setCurrentIndex(0)
                 self.tabWidget.setEnabled(True)
                 self.tabWidget.setCurrentIndex(0)
                 self.setEnabled(True)
 
     def select_single_video(self, idx):
-        # self.setEnabled(False)
-        # self.repaint()
-        # app.processEvents()
         try:
             if self.cb_current_video_add_finish:
                 video = self.cb_current_video.currentData(Qt.UserRole)
@@ -444,7 +372,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                         self.add_pic_fromData(video_dital.get('backdrop'))
         finally:
             self.status_msg('[VideoStation]读取完成')
-            # self.setEnabled(True)
 
     def save_to_dsm(self):
         self.setEnabled(False)
@@ -488,8 +415,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 return
 
             self.select_single_video(0)
-
-            item = self.lst_dsm_search_result.currentItem()
+            # 回写搜索结果
+            row = self.tbl_search_result_widget.currentRow()
             data = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
             data.update({
                 'poster': b'',
@@ -505,45 +432,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     data['backdrop'] = img_data
                 else:
                     break
-
-            if data and item:
-                stype = data.get('type')
-                if stype != 'tvshow_episode':
-
-                    pixmap = QPixmap()
-                    poster = data['poster']
-                    if not poster:
-                        poster = utils.get_res_to_bytes(':/icons/others/empty.png')
-
-                    pixmap.loadFromData(poster)
-
-
-                    if stype == 'home_video':
-                        icon_width, icon_heigh = utils.HOMEVIEDO_WIDTH, utils.HOMEVIEDO_WIDTH
-                    else:
-                        icon_width, icon_heigh = utils.ITEM_WIDTH, utils.ITEM_HEIGHT
-
-                    icon = QIcon(
-                        pixmap.scaled(icon_width, icon_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
-
-                    item.setIcon(icon)
-
-                    if stype == 'tvshow':
-                        title = utils.get_screen_width(data.get('电视节目标题'), max_width=19, tail_length=2)
-                        summary = '{}\n{} 共{}季\n{}'.format(title, data.get('type'),
-                                                           data.get('季数'),
-                                                           data.get('发布日期'))
-                        item.setText(summary)
-                    elif stype == 'home_video':
-                        title = utils.get_screen_width(data.get('标题'), max_width=19, tail_length=2)
-                        summary = '{}\n{}\n{}'.format(title, data.get('type'),
-                                                      utils.format_date_str(data.get('录制开始时间')))
-                        item.setText(summary)
-                    elif stype == 'movie':
-                        title = utils.get_screen_width(data.get('标题'), max_width=19, tail_length=2)
-                        summary = '{}\n{}\n{}'.format(title, data.get('type'),
-                                                      data.get('发布日期'))
-                        item.setText(summary)
+            self.tbl_search_result_widget.insert_data(data,row)
 
             app.processEvents()
         finally:
@@ -563,6 +452,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
     # 窗口关闭后执行
     def closeEvent(self, event):
         super().closeEvent(event)
+        if self.dsm_seach_running:
+            event.ignore()
+            QMessageBox.warning(self, '错误', '请先停止搜索再尝试关闭！', QMessageBox.Ok)
+            return
         self.config['dsm_search_keyword'] = self.edt_dsm_search_keyword.text()
 
         self.db_config.save_cache('main_config', self.config, 0, 0)

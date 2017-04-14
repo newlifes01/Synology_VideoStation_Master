@@ -40,6 +40,42 @@
         <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>范围</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="cb_dsm_search_kind">
+          <property name="minimumSize">
+           <size>
+            <width>181</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>181</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="statusTip">
+           <string>VideoStation资料库</string>
+          </property>
+          <property name="frame">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>关键字</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="3">
          <widget class="QLineEdit" name="edt_dsm_search_keyword">
           <property name="statusTip">
@@ -50,13 +86,6 @@
           </property>
           <property name="clearButtonEnabled">
            <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>关键字</string>
           </property>
          </widget>
         </item>
@@ -98,58 +127,36 @@ QPushButton:checked:hover {
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="cb_dsm_search_kind">
-          <property name="minimumSize">
-           <size>
-            <width>181</width>
-            <height>26</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>181</width>
-            <height>26</height>
-           </size>
-          </property>
-          <property name="statusTip">
-           <string>VideoStation资料库</string>
-          </property>
-          <property name="frame">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>范围</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0" colspan="5">
-         <widget class="QListWidget" name="lst_dsm_search_result">
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <italic>true</italic>
-           </font>
+         <widget class="TblSeacheResult" name="tbl_search_result_widget">
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
           </property>
-          <property name="movement">
-           <enum>QListView::Static</enum>
+          <property name="showGrid">
+           <bool>false</bool>
           </property>
-          <property name="flow">
-           <enum>QListView::LeftToRight</enum>
+          <property name="gridStyle">
+           <enum>Qt::NoPen</enum>
           </property>
-          <property name="resizeMode">
-           <enum>QListView::Adjust</enum>
+          <property name="rowCount">
+           <number>0</number>
           </property>
-          <property name="layoutMode">
-           <enum>QListView::SinglePass</enum>
+          <property name="columnCount">
+           <number>4</number>
           </property>
-          <property name="spacing">
-           <number>5</number>
-          </property>
+          <attribute name="horizontalHeaderVisible">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <attribute name="verticalHeaderHighlightSections">
+           <bool>false</bool>
+          </attribute>
+          <column/>
+          <column/>
+          <column/>
+          <column/>
          </widget>
         </item>
        </layout>
@@ -505,6 +512,11 @@ QPushButton:hover
    <class>TblMetadata</class>
    <extends>QTableWidget</extends>
    <header>widgets.tbl_edit_metadata</header>
+  </customwidget>
+  <customwidget>
+   <class>TblSeacheResult</class>
+   <extends>QTableWidget</extends>
+   <header>widgets.tbl_search_widget</header>
   </customwidget>
  </customwidgets>
  <resources>

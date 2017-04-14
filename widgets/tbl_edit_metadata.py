@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QFont, QColor, QBrush
-from PyQt5.QtWidgets import QTableWidget, QComboBox, QTableWidgetItem, QHeaderView, QTextEdit
+from PyQt5.QtWidgets import QTableWidget, QComboBox, QTableWidgetItem, QHeaderView
 
 import utils
 
 
 class TblMetadata(QTableWidget):
-    out_msg = pyqtSignal(str)  # 显示信息
-
-    # set_edt_metat_keyword = pyqtSignal(str)
+    out_msg = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(TblMetadata, self).__init__(parent)
@@ -89,7 +87,7 @@ class TblMetadata(QTableWidget):
 
             count += 1
 
-    def get_metadata(self,meta):
+    def get_metadata(self, meta):
         if not meta:
             return
         stype = meta.get('type')
@@ -99,8 +97,6 @@ class TblMetadata(QTableWidget):
 
         if not stype or library_id is None or sid is None or mapper_id is None:
             return
-
-
 
         row = self.rowCount()
         for i in range(0, row):

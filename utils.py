@@ -1,40 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import logging
 from time import mktime, strptime
 
-import re
-
 import os
-import logging
-from datetime import datetime
-
+import re
 from PyQt5.QtCore import QFile
 
+# 日志登记
 logging.basicConfig(level=logging.DEBUG)
+# 下载最大重试次数
 RETRYMAX = 5
-
+# 项目根目录
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
+# 临时目录
 CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
-CONFIG_PATH = os.path.join(PROJECT_PATH, '.config')
-
+# 缓存文件路径
 DSM_CACHE_PATH = os.path.join(PROJECT_PATH, 'http_cache.sqlite')
-
-SPIDER_DOWNLOAD_SLEEP_TIME = 0.1  # 爬虫下载间隔
-SPIDER_CACHE_KEEP_TIME = 3600  # 爬虫缓存保留时间 秒
-
-CACHE_KEEP_TIME = 60  # 秒
-# IMG_CACHE_KEEPTIME = 3600 * 24 * 365
-
-ITEM_WIDTH, ITEM_HEIGHT = 40, 60 #120, 180
-
-HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 60, 35 #180, 100
+# 爬虫下载间隔
+SPIDER_DOWNLOAD_SLEEP_TIME = 0.1
+# 爬虫缓存保留时间 秒
+SPIDER_CACHE_KEEP_TIME = 3600
+# 缓存保留时间 秒
+CACHE_KEEP_TIME = 60
+# 表格宽高
+ITEM_WIDTH, ITEM_HEIGHT = 30, 40  # 120, 180
+HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 40, 30  # 180, 100
+# http服务端口
 HTTP_SERVER_PORT = 8000
-
-IMG_CACHE_SUBDIR = 'img'
-
+# 临时海报,背景路径
 POSTER_FILE = 'poster.jpg'
 BACKDROP_FILE = 'backdrop.jpg'
-
 POSTER_PATH = os.path.join(CACHE_PATH, POSTER_FILE)
 BACKDROP_PATH = os.path.join(CACHE_PATH, BACKDROP_FILE)
 
@@ -53,8 +49,8 @@ def seconds_to_struct(seconds):
     else:
         return "%02d时%02d分%02d秒" % (h, m, s)
 
-def format_time_stamp(timestr):
 
+def format_time_stamp(timestr):
     try:
         a = strptime(timestr, '%Y-%m-%d %H:%M:%S.%f')
         return mktime(a)
@@ -70,8 +66,6 @@ def format_time_stamp(timestr):
         return mktime(strptime(timestr, '%a, %d %b %Y %H:%M:%S %Z'))
     except Exception:
         pass
-
-
 
 
 def add_log(loger, level, *msg):
@@ -91,18 +85,6 @@ def add_log(loger, level, *msg):
         loger.error(f_s)
     else:
         loger.critical(f_s)
-
-
-        # if level == 'debug':
-        #     loger.debug(f_s.format(msg))
-        # if level == 'info':
-        #     loger.info(f_s.format(msg))
-        # elif level == 'warn':
-        #     loger.warn(f_s.format(msg))
-        # elif level == 'error':
-        #     loger.error(f_s.format(msg))
-        # else:
-        #     loger.critical(f_s.format(msg))
 
 
 def get_library_API(stype):
@@ -126,96 +108,6 @@ def get_dsm_json_head(stype):
     if stype == 'tvshow_episode':
         return 'episode'
 
-
-# def dsm_search_result_struct(stype):
-#     return {
-#         'type': '',
-#         'API': get_library_API(stype),
-#         'json_head': get_dsm_json_head(stype),
-#
-#         'id': 0,
-#         'library_id': 0,
-#         'mapper_id': 0,
-#
-#
-#         'poster_mtime': '',
-#         'backdrop_mtime': '',
-#         'poster': b'',
-#         'backdrop': b'',
-#         'file':'',
-#
-#
-#         'table': get_table_show_struck(stype)
-#     }
-#
-# def get_table_show_struck(stype='movie'):
-#     if stype == 'tvshow':
-#         return {
-#             '电视节目标题': '',
-#             '发布日期': '',
-#             '摘要': '',
-#             '季数': '',
-#         }
-#     if stype == 'tvshow_episode':
-#         return {
-#             '文件名':'',
-#             '电视节目标题':'',
-#             '发布日期(电视节目)':'',
-#             '集标题': '',
-#             '季': '',
-#             '集': '',
-#             '发布日期(集)': '',
-#             '级别': '',
-#             '评级': '',
-#             '类型': '',
-#             '演员': '',
-#             '作者': '',
-#             '导演': '',
-#             '摘要': '',
-#          }
-#     if stype == 'movie':
-#         return {
-#             '文件名': '',
-#             '标题': '',
-#             '标语': '',
-#
-#             '发布日期': '',
-#             '级别': '',
-#             '评级': '',
-#             '类型': '',
-#             '演员': '',
-#             '作者': '',
-#             '导演': '',
-#             '摘要': '',
-#         }
-#     if stype == 'home_video':
-#         return {
-#             '文件名': '',
-#             '标题': '',
-#             '录制开始时间': '',
-#             '级别': '',
-#             '评级': '',
-#             '类型': '',
-#             '演员': '',
-#             '作者': '',
-#             '导演': '',
-#             '摘要': '',
-#         }
-
-
-# def get_dsm_find_video_struct():
-#     return {
-#         'type': '',
-#         'id': 0,
-#         'library_id': 0,
-#         'mapper_id': 0,
-#         'title': '',
-#         'original_available': '',
-#         'summary': '',
-#         'total_seasons': 0,
-#         'poster': b'',
-#         'backdrop': b'',
-#     }
 
 def get_dital_tvshow_struck():
     return {
@@ -459,6 +351,7 @@ def format_time_str(time_str):
 
 def format_date_time_str(date_time_str):
     return '{} {}'.format(format_date_str(date_time_str), format_time_str(date_time_str))
+
 
 def get_res_to_bytes(res_str):
     if not res_str:

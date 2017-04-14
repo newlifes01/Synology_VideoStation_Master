@@ -9,8 +9,6 @@ from ui.search_metadata_window import Ui_search_meta_Dialog
 
 
 class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
-    # login_finished = pyqtSignal(str,str,str)
-
     def __init__(self):
         super().__init__()
         self.video = None
@@ -22,7 +20,6 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         self.edt_seasion.setValidator(validator)
         self.edt_episode.setValidator(validator)
 
-
         self.btn_tvshow_search.clicked.connect(self.search_meta)
 
     def open_dialog(self, video):
@@ -32,7 +29,6 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
             print(video)
             self.video = video
             self.ref_search_info()
-
             self.exec_()
 
     def ref_search_info(self):
@@ -66,31 +62,3 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
     def search_meta(self):
         search_info = self.get_search_info()
         print(search_info)
-
-
-
-
-
-
-
-        #
-        #     self.btn_login.clicked.connect(
-        #         lambda: self.login_to_dsm(self.edt_ip.text(), self.edt_id.text(), self.edt_psw.text()))
-        #
-        # def login_to_dsm(self, ip, account, password):
-        #     if not ip and not account and not password:
-        #         QMessageBox.warning(self, '错误', '登陆失败！', QMessageBox.Ok)
-        #         return
-        #     self.dsm.ip = ip
-        #     if self.dsm.login_dsm(account, password):
-        #         self.accept()
-        #     else:
-        #         QMessageBox.warning(self, '错误', '登陆失败！', QMessageBox.Ok)
-        #         return
-
-        # dsm = DSMAPI(self.session, ip)
-        # if dsm.login(account, password):
-        #     self.login_finished.emit({'ip':ip,'account':account,'password':password,'cookies':requests.utils.dict_from_cookiejar(self.session.cookies)})
-        #     self.accept()
-        # else:
-        #     QMessageBox.warning(self, '错误', '登陆失败！', QMessageBox.Ok)

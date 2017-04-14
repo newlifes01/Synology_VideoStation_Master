@@ -2,16 +2,13 @@
 # -*- coding: utf-8 -*-
 import logging
 import socket
-from datetime import datetime, timedelta
-from time import sleep, time
 
 import os
 import requests
 from PyQt5.QtCore import QThread
-from requests_cache import CachedSession
 
 import utils
-from models.cache import ConfigCache, DownCache
+from models.cache import DownCache
 
 
 class DSMAPI(QThread):
@@ -21,16 +18,9 @@ class DSMAPI(QThread):
         self.ip = ip
         self.session = session
         self.cache = DownCache(table_name='dsm_cache')
-        # self.config = ConfigCache()
         self.set_cookie_form_cache()
 
-
-    # def format_time(self, timestr):
-    #     return datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S.%f')
-
     def __load_cookie(self):
-        # login_data = self.config.get_cache('cookies')
-
         login_data = self.cache.get_cache('cookie')
 
         if login_data:
@@ -39,18 +29,12 @@ class DSMAPI(QThread):
             return ip, cookies
         return '', {}
 
-
-
     def __save_cookie(self):
-        # self.config.save_cache({
-        #     'cookies': requests.utils.dict_from_cookiejar(self.session.cookies),
-        #     'ip': self.ip
-        # }, 'cookies')
         cookies = {
             'cookies': requests.utils.dict_from_cookiejar(self.session.cookies),
             'ip': self.ip
         }
-        self.cache.save_cache('cookie',cookies,0,0)
+        self.cache.save_cache('cookie', cookies, 0, 0)
 
     def post_request(self, cgi, api='', method='', extra=None, bytes=False, cache=False):
         if not self.ip:
@@ -116,9 +100,7 @@ class DSMAPI(QThread):
 
         if not mtime:
             return utils.get_res_to_bytes(':/icons/others/empty.png')
-            # mtime = '2000-01-01 00:00:00.000000'FF
 
-        # cache_name = '{}-{}-{}'.format(stype, id, mtime)
         cache_name = 'poster-{}-{}'.format(stype, id)
 
         bytes_res = self.cache.get_cache(cache_name, utils.format_time_stamp(mtime))
@@ -133,12 +115,9 @@ class DSMAPI(QThread):
         return bytes_res
 
     def get_video_backdrop(self, mapper_id, mtime):  # todo 不是所有类型都有背景图
-
-
         if not mtime:
             return
 
-            # cache_name = '{}-{}'.format(mapper_id, mtime)
         cache_name = 'backdrop-{}'.format(mapper_id)
 
         bytes_res = self.cache.get_cache(cache_name, utils.format_time_stamp(mtime))
@@ -170,7 +149,7 @@ class DSMAPI(QThread):
             'sort_by': '"title"',  # added
             'sort_direction': '"desc"',
             'library_id': '{}'.format(library_id),
-            'additional': '["poster_mtime","backdrop_mtime"]'
+            'additional': '["poster_mtime","backdrop_mtime","summary"]'
         }
 
         if keyword:
@@ -187,12 +166,7 @@ class DSMAPI(QThread):
                 result_data = {}
 
                 poster_mtime = data.get('additional').get('poster_mtime')
-
                 poster = self.get_video_poster(stype, data.get('id'), poster_mtime)
-
-                # backdrop_mtime = data.get('additional').get('backdrop_mtime')
-                #
-                # backdrop = self.get_video_backdrop(data.get('mapper_id'), backdrop_mtime)
 
                 result_data.update({
                     'type': stype,
@@ -212,6 +186,7 @@ class DSMAPI(QThread):
                     'total_seasons': data.get('additional').get('total_seasons', 0),
                     'original_available': utils.format_date_str(data.get('original_available', '')),
                     'record_date': utils.format_date_str(data.get('record_date', '')),
+                    'summary': data.get('additional').get('summary')
 
                 })
 
@@ -248,12 +223,6 @@ class DSMAPI(QThread):
                                      meth, param)
         if json_res:
             results = json_res.get('data').get(utils.get_dsm_json_head(stype))
-            # if stype == 'home_video':
-            #     results = json_res.get('data').get('video')
-            # elif stype == 'tvshow_episode':
-            #     results = json_res.get('data').get('episode')
-            # else:
-            #     results = json_res.get('data').get(stype)
             for result in results:
                 yield result
 
@@ -397,8 +366,6 @@ class DSMAPI(QThread):
         if not stype or not sid or not image_data:
             return
 
-
-
         if os.path.isfile(utils.POSTER_PATH):
             os.remove(utils.POSTER_PATH)
 
@@ -415,7 +382,7 @@ class DSMAPI(QThread):
                 'type': '"{}"'.format(stype),
                 'target': '"url"',
                 'url': '"http://{}:{}/{}"'.format(addr, utils.HTTP_SERVER_PORT,
-                                                     utils.POSTER_FILE),
+                                                  utils.POSTER_FILE),
             }
             json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'set', param)
             if os.path.isfile(utils.POSTER_PATH):
@@ -427,8 +394,6 @@ class DSMAPI(QThread):
     def set_backdrop(self, stype, sid, image_data):
         if not stype or not sid or not image_data:
             return
-
-
 
         if os.path.isfile(utils.BACKDROP_PATH):
             os.remove(utils.BACKDROP_PATH)
@@ -446,7 +411,7 @@ class DSMAPI(QThread):
                 'type': '"{}"'.format(stype),
                 'target': '"url"',
                 'url': '"http://{}:{}/{}"'.format(addr, utils.HTTP_SERVER_PORT,
-                                                     utils.BACKDROP_FILE),
+                                                  utils.BACKDROP_FILE),
                 'keep_one': 'true',
             }
             json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Backdrop', 'add', data)
@@ -542,9 +507,6 @@ class DSMAPI(QThread):
             return
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)), 'edit',
                                      param)
-
-        # print(json_res)
-
         return json_res.get('success')
 
 
