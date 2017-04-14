@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 import imghdr
 from datetime import timedelta, datetime
-from time import sleep
-
+from time import sleep, time
 
 import logging
 import os
@@ -18,7 +17,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem, 
     QFileDialog, QMessageBox
 
 from DSM.dsm_video_station import DSMAPI
-from models.cache import ConfigCache
+from models.cache import ConfigCache, DownCache
 from models.http_server import HttpServer
 from search_metadata_main import SearchMetadataDialog
 from svm_login_main import LoginDialog
@@ -29,6 +28,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainForm, self).__init__(parent)
         self.setupUi(self)
+
+        self.db_config = DownCache(table_name='config')
         self.initUi()
         self.initListPices()
 
@@ -41,7 +42,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.set_config()
 
         # DSM参数
-        self.session =  requests.session()
+        self.session = requests.session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'})
         self.DSM = DSMAPI(self.session, '')
@@ -49,25 +50,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.dsm_seach_stop = False
         self.dsm_seach_running = False
 
-
-        #     self.btn_meta_search.clicked.connect(self.test)
-        #
-        # def test(self):
-        #     self.btn_meta_search.setStyleSheet(
-        #         '''
-        #         background-image: url(:/interface/res/interface/btn_stop.png);
-        #        background-repeat:no-repeat;
-        #        background-position: center center;
-        #        border:0
-
-    #         '''
-    #     )
-
     def load_config(self):
 
         self.config = {}
-        config = ConfigCache()
-        loadconfig = config.get_cache('main_config')
+
+        loadconfig = self.db_config.get_cache('main_config')
+
         if loadconfig:
             self.config.update(loadconfig)
         utils.add_log(self.logger, 'info', '读取配置文件：', self.config)
@@ -324,10 +312,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.lst_dsm_search_result.clear()
             self.lst_dsm_search_result.setEnabled(False)
             self.cb_dsm_search_kind.setEnabled(False)
+            start_time = time()
             try:
 
                 total = 0
                 count = 0
+
                 current_library_title = ''
 
                 for video in self.dsm_seach_videos(current_librarys, keyword):
@@ -342,8 +332,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     app.processEvents()
 
                     self.status_msg(
-                        '[VideoStation搜索:{}]找到[{}/{}]个'.format(current_library_title, count, total))
-                self.status_msg('[VideoStation搜索]完成！共找到[{}/{}]个,双击选择影片进一步处理'.format(count, total))
+                        '[VideoStation搜索:{}]找到[{}/{}]个,耗时:{}'.format(current_library_title, count, total,
+                                                                     utils.seconds_to_struct(time() - start_time)))
+                self.status_msg('[VideoStation搜索]完成！共找到[{}/{}]个,耗时:{},双击选择影片进一步处理'.format(count, total,
+                                                                                          utils.seconds_to_struct(
+                                                                                              time() - start_time)))
 
             except Exception as e:
                 utils.add_log(self.logger, 'error', 'btn_dsm_search_clicked', e.args)
@@ -518,7 +511,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 if stype != 'tvshow_episode':
 
                     pixmap = QPixmap()
-                    pixmap.loadFromData(data['poster'])
+                    poster = data['poster']
+                    if not poster:
+                        poster = utils.get_res_to_bytes(':/icons/others/empty.png')
+
+                    pixmap.loadFromData(poster)
+
 
                     if stype == 'home_video':
                         icon_width, icon_heigh = utils.HOMEVIEDO_WIDTH, utils.HOMEVIEDO_WIDTH
@@ -567,12 +565,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
         super().closeEvent(event)
         self.config['dsm_search_keyword'] = self.edt_dsm_search_keyword.text()
 
-        config = ConfigCache()
-        config.save_cache(self.config, 'main_config')
+        self.db_config.save_cache('main_config', self.config, 0, 0)
 
         utils.add_log(self.logger, 'info', '保存配置文件：', 'closeEvent', self.config)
 
-    #搜索元数据
+    # 搜索元数据
     def search_metadata(self):
 
         self.search_meta_form = SearchMetadataDialog()
@@ -581,6 +578,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             result = self.search_meta_form.open_dialog(meta)
             print(result)
             self.btn_meta_search.setChecked(False)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

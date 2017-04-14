@@ -135,12 +135,6 @@ QPushButton:checked:hover {
             <italic>true</italic>
            </font>
           </property>
-          <property name="iconSize">
-           <size>
-            <width>120</width>
-            <height>180</height>
-           </size>
-          </property>
           <property name="movement">
            <enum>QListView::Static</enum>
           </property>
@@ -155,12 +149,6 @@ QPushButton:checked:hover {
           </property>
           <property name="spacing">
            <number>5</number>
-          </property>
-          <property name="viewMode">
-           <enum>QListView::IconMode</enum>
-          </property>
-          <property name="wordWrap">
-           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -413,14 +401,14 @@ QPushButton:hover
                 <property name="styleSheet">
                  <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/add.png);
+	background-image:url(:/icons/ui_icons/add.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/add (1).png);
+	background-image:url(:/icons/ui_icons/add (1).png);
 }</string>
                 </property>
                 <property name="text">
@@ -445,14 +433,14 @@ QPushButton:hover
                 <property name="styleSheet">
                  <string notr="true">QPushButton
 {
-	background-image:url(:/interface/res/interface/substract.png);
+	background-image:url(:/icons/ui_icons/substract.png);
 	background-repeat:no-repeat;
 	background-position: center center;
 	border:none;
 }
 QPushButton:hover
 {
-	background-image:url(:/interface/res/interface/substract (1).png);
+	background-image:url(:/icons/ui_icons/substract (1).png);
 }</string>
                 </property>
                 <property name="text">

@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from time import mktime, strptime
+
 import re
 
 import os
 import logging
+from datetime import datetime
+
+from PyQt5.QtCore import QFile
 
 logging.basicConfig(level=logging.DEBUG)
 RETRYMAX = 5
@@ -12,15 +17,17 @@ PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
 CONFIG_PATH = os.path.join(PROJECT_PATH, '.config')
 
+DSM_CACHE_PATH = os.path.join(PROJECT_PATH, 'http_cache.sqlite')
+
 SPIDER_DOWNLOAD_SLEEP_TIME = 0.1  # 爬虫下载间隔
 SPIDER_CACHE_KEEP_TIME = 3600  # 爬虫缓存保留时间 秒
 
-# CACHE_KEEPTIME = 20 * 60  # 秒
+CACHE_KEEP_TIME = 60  # 秒
 # IMG_CACHE_KEEPTIME = 3600 * 24 * 365
 
-ITEM_WIDTH, ITEM_HEIGHT = 120, 180
+ITEM_WIDTH, ITEM_HEIGHT = 40, 60 #120, 180
 
-HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 180, 100
+HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 60, 35 #180, 100
 HTTP_SERVER_PORT = 8000
 
 IMG_CACHE_SUBDIR = 'img'
@@ -28,8 +35,43 @@ IMG_CACHE_SUBDIR = 'img'
 POSTER_FILE = 'poster.jpg'
 BACKDROP_FILE = 'backdrop.jpg'
 
-POSTER_PATH = os.path.join(CACHE_PATH, IMG_CACHE_SUBDIR, POSTER_FILE)
-BACKDROP_PATH = os.path.join(CACHE_PATH, IMG_CACHE_SUBDIR, BACKDROP_FILE)
+POSTER_PATH = os.path.join(CACHE_PATH, POSTER_FILE)
+BACKDROP_PATH = os.path.join(CACHE_PATH, BACKDROP_FILE)
+
+if not os.path.exists(CACHE_PATH):
+    os.mkdir(CACHE_PATH)
+
+
+def seconds_to_struct(seconds):
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    if int(h) == 0 and int(m) == 0:
+        return "%02d秒" % (s)
+
+    elif int(h) == 0:
+        return "%02d分%02d秒" % (m, s)
+    else:
+        return "%02d时%02d分%02d秒" % (h, m, s)
+
+def format_time_stamp(timestr):
+
+    try:
+        a = strptime(timestr, '%Y-%m-%d %H:%M:%S.%f')
+        return mktime(a)
+    except Exception:
+        pass
+
+    try:
+        return mktime(strptime(timestr, '%Y-%m-%d %H:%M:%S'))
+    except Exception:
+        pass
+
+    try:
+        return mktime(strptime(timestr, '%a, %d %b %Y %H:%M:%S %Z'))
+    except Exception:
+        pass
+
+
 
 
 def add_log(loger, level, *msg):
@@ -418,17 +460,32 @@ def format_time_str(time_str):
 def format_date_time_str(date_time_str):
     return '{} {}'.format(format_date_str(date_time_str), format_time_str(date_time_str))
 
+def get_res_to_bytes(res_str):
+    if not res_str:
+        return
+    stream = QFile(res_str)
+    if stream.open(QFile.ReadOnly):
+        return stream.readAll()
+
 
 if __name__ == '__main__':
     pass
+    print(format_time_stamp('2017-03-24 14:50:46.602983'))
+    print(format_time_stamp('Mon, 13 Mar 2017 00:16:37 GMT'))
+
+
+
+    # a = "Sat Mar 28 22:24:24 2016"
+    # print(mktime(time.strptime(a, "%a %b %d %H:%M:%S %Y")))
+    #
     # print(re.sub(r'([,，\s]+)', ',', 'aaa,bbb ccc   ddd，eee'))
     #
     # import sqlite3
     #
-    # conn = sqlite3.connect('test.db')
+    # conn = sqlite3.connect('x.db')
     # cursor = conn.cursor()
-    # cursor.execute('create table user (id varchar(20) primary key, name varchar(20))')
-    # cursor.execute('insert into user (id, name) values (\'4\', \'Michael\')')
+    # cursor.execute('create table test (id varchar(20) primary key, name image)')
+    # cursor.execute('insert into test (id, name) values (\'1\', \'xxx\')')
     # print(cursor.rowcount)
     # cursor.close()
     # conn.commit()

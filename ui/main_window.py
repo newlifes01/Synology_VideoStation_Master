@@ -224,14 +224,14 @@ class Ui_MainWindow(object):
         self.btn_add_pic.setSizePolicy(sizePolicy)
         self.btn_add_pic.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/add.png);\n"
+"    background-image:url(:/icons/ui_icons/add.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/add (1).png);\n"
+"    background-image:url(:/icons/ui_icons/add (1).png);\n"
 "}")
         self.btn_add_pic.setText("")
         self.btn_add_pic.setFlat(False)
@@ -245,14 +245,14 @@ class Ui_MainWindow(object):
         self.btn_del_pic.setSizePolicy(sizePolicy)
         self.btn_del_pic.setStyleSheet("QPushButton\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/substract.png);\n"
+"    background-image:url(:/icons/ui_icons/substract.png);\n"
 "    background-repeat:no-repeat;\n"
 "    background-position: center center;\n"
 "    border:none;\n"
 "}\n"
 "QPushButton:hover\n"
 "{\n"
-"    background-image:url(:/interface/res/interface/substract (1).png);\n"
+"    background-image:url(:/icons/ui_icons/substract (1).png);\n"
 "}")
         self.btn_del_pic.setText("")
         self.btn_del_pic.setFlat(False)

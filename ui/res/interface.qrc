@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>others/empty.png</file>
     <file>ui_icons/refresh-button (1).png</file>
     <file>ui_icons/refresh-button.png</file>
     <file>ui_icons/stop (1).png</file>
