@@ -109,7 +109,7 @@ class TblSeacheResult(QTableWidget):
             summary = meta.get('summary')
             if not title:
                 return
-            self.insertRow(self.rowCount())
+            self.insertRow(0)
             if icon_data:
                 pixmap = QPixmap()
                 pixmap.loadFromData(meta['poster'])
@@ -124,18 +124,18 @@ class TblSeacheResult(QTableWidget):
 
                 item.setIcon(icon)
                 item.setSizeHint(QSize(icon_width + 5, icon_heigh))
-                self.setItem(self.rowCount() - 1, 0, item)
+                self.setItem(0, 0, item)
 
                 item.setData(Qt.UserRole, meta)
 
             item = self.cell(text=stype, color=self.item_background)
-            self.setItem(self.rowCount() - 1, 1, item)
+            self.setItem(0, 1, item)
 
             item = self.cell(text=title, color=self.item_background)
-            self.setItem(self.rowCount() - 1, 2, item)
+            self.setItem(0, 2, item)
 
             item = self.cell(text=summary, color=self.item_background)
-            self.setItem(self.rowCount() - 1, 3, item)
+            self.setItem(0, 3, item)
 
     def item_select(self, item):
         row = self.currentRow()
