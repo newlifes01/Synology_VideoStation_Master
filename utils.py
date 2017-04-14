@@ -11,14 +11,18 @@ from PyQt5.QtCore import QFile
 logging.basicConfig(level=logging.DEBUG)
 # 下载最大重试次数
 RETRYMAX = 5
+# 下载超时时间
+DOWN_TIME_OUT = 5
+# 爬虫下载间隔
+SPIDER_DOWNLOAD_SLEEP_TIME = 0.1
+
 # 项目根目录
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 # 临时目录
 CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
 # 缓存文件路径
 DSM_CACHE_PATH = os.path.join(PROJECT_PATH, 'http_cache.sqlite')
-# 爬虫下载间隔
-SPIDER_DOWNLOAD_SLEEP_TIME = 0.1
+
 # 爬虫缓存保留时间 秒
 SPIDER_CACHE_KEEP_TIME = 3600
 # 缓存保留时间 秒
