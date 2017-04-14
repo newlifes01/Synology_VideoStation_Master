@@ -1,12 +1,12 @@
 from datetime import timedelta, datetime
-from time import sleep
+from time import sleep, time
 from urllib.parse import urljoin
 
 import os
 import requests
 from PyQt5.QtCore import QObject
 from requests import RequestException
-from requests_cache import CachedSession
+# from requests_cache import CachedSession
 
 import utils
 from models.cache import DownCache
@@ -16,9 +16,10 @@ import logging
 class BaseSpider:
     def __init__(self, name):
         self.name = name
+        self.cache = DownCache(table_name='spider_cache')
 
-        self.RequestSession = CachedSession(cache_name=os.path.join(utils.CACHE_PATH,'spider_cache'),include_get_headers=True,expire_after=utils.SPIDER_CACHE_KEEP_TIME)
-        self.RequestSession.hooks = {'response': self.make_throttle_hook(utils.SPIDER_DOWNLOAD_SLEEP_TIME)}
+        self.RequestSession = requests.session() #CachedSession(cache_name=os.path.join(utils.CACHE_PATH,'spider_cache'),include_get_headers=True,expire_after=utils.SPIDER_CACHE_KEEP_TIME)
+
         self.RequestSession.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'})
         self.urls = set()
@@ -30,23 +31,6 @@ class BaseSpider:
         self.retry = 0
 
 
-    def __del__(self):
-        expire_after = timedelta(seconds=utils.SPIDER_CACHE_KEEP_TIME)
-        self.RequestSession.cache.remove_old_entries(datetime.utcnow() - expire_after)
-
-    def make_throttle_hook(self,timeout=1.0):
-        """
-        Returns a response hook function which sleeps for `timeout` seconds if
-        response is not cached
-        """
-
-        def hook(response, *args, **kwargs):
-            if not getattr(response, 'from_cache', False):
-                print('sleeping')
-                sleep(timeout)
-            return response
-
-        return hook
 
     def spdider_login(self):
         pass
@@ -81,10 +65,31 @@ class BaseSpider:
             utils.add_log(self.logger,'error','Url为空', url)
             return
 
+        head = self.RequestSession.head(url, timeout=10)
         try:
+            if head.status_code == 200:
+                modify_time = utils.format_time_stamp(head.headers.get('Last-Modified'))
+                if modify_time:
+                    res = self.cache.get_cache(url,modify_time)
+                else:
+                    res = self.cache.get_cache(url)
+                if res:
+                    return res
+        except Exception:
+            pass
+
+        try:
+
             res = self.RequestSession.get(url, timeout=10)
             if res.status_code == 200:
                 self.RequestSession.headers.update({'referer': res.url, 'Referer': res.url})
+                modify_time = utils.format_time_stamp(res.headers.get('Last-Modified'))
+                if modify_time:
+                    utils.add_log(self.logger, 'info', 'save_cache modify_time:', url,modify_time)
+                    self.cache.save_cache(url,res,modify_time,0)
+                else:
+                    utils.add_log(self.logger, 'info', 'save_cache expire:', url, )
+                    self.cache.save_cache(url, res, time())
                 return res
             else:
                 if retry >= utils.RETRYMAX:
@@ -111,15 +116,18 @@ class BaseSpider:
 if __name__ == '__main__':
     a = BaseSpider('test')
     re = a.download_page_request('http://pics.dmm.co.jp/digital/video/mide00419/mide00419-9.jpg')
-    print(re.from_cache)
     print(re.headers)
     print(re.cookies)
     print(len(re.content))
-    re = a.download_page_request('http://pics.dmm.co.jp/digital/video/mide00419/mide00419-3.jpg')
-    print(re.from_cache)
+    re = a.download_page_request('http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=mide00419/')
     print(re.headers)
     print(re.cookies)
     print(len(re.content))
+    # re = a.download_page_request('http://pics.dmm.co.jp/digital/video/mide00419/mide00419-3.jpg')
+    # print(re.from_cache)
+    # print(re.headers)
+    # print(re.cookies)
+    # print(len(re.content))
 
     # import requests_cache
     #

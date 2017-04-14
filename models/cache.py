@@ -65,7 +65,7 @@ class DownCache(object):
                 name, ntime, expire, data, = rs
                 if expire > 0 and time() > expire:
                     cursor.execute('DELETE FROM {} WHERE name_hash=?'.format(self.table_name), (name,))
-                    utils.add_log(self.logger, 'info', 'del_expire:', name)
+                    utils.add_log(self.logger, 'info', '删除过期缓存 del_expire:', name)
 
             db.commit()
         except Exception as e:
@@ -89,7 +89,7 @@ class DownCache(object):
                 if not name or ntime is None or not data:
                     return
 
-                if (mtime == ntime and expire == 0) or (expire > 0 and now <= expire):
+                if (mtime == ntime and expire == 0) or (mtime == 0 and expire > 0 and now <= expire):
 
                     utils.add_log(self.logger, 'info', 'get_cache:', filename, mtime, expire)
                     return pickle.loads(data)
@@ -106,7 +106,7 @@ class DownCache(object):
             cursor.close()
             db.close()
 
-    def save_cache(self, filename, data, mtime, expire_time=utils.CACHE_KEEP_TIME):  # keep_secs=utils.CACHE_KEEPTIME,
+    def save_cache(self, filename, data, mtime, expire_time=utils.CACHE_KEEP_TIME,unzip=False):  # keep_secs=utils.CACHE_KEEPTIME,
         if not filename or not data or mtime is None:
             return
         db = sqlite3.connect(utils.DSM_CACHE_PATH)
@@ -118,8 +118,10 @@ class DownCache(object):
             expire = 0
 
         try:
-
-            pdata = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+            if unzip:
+                pdata = pickle.dumps(data)
+            else:
+                pdata = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
 
             sql = "REPLACE INTO {} (name_hash,add_time, expire,add_data) VALUES (?,?,?,?)".format(self.table_name)
             cursor.execute(sql, (self.__url_md5(filename), mtime, expire, pdata))
