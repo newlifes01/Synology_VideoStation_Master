@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 import re
 from bs4 import BeautifulSoup
 
-from utils import format_date_str, spider_meta_struck, create_poster, tim_img_bytes, get_spider_metastruct
+import utils
 from spiders.base_spider import BaseSpider
 
 
@@ -19,23 +19,23 @@ class DmmSpider(BaseSpider):
             return '0'
 
     def get_full_src(self, src):
-        search = re.search('(p[a-z]\.)jpg', src)
+        search = re.search(r'(p[a-z]\.)jpg', src)
         if search:
             return src.replace(search.group(1), 'pl.')
 
-        search = re.search('consumer_game', src)
+        search = re.search(r'consumer_game', src)
         if search:
             return src.replace('js-', '-')
 
-        search = re.search('js\-([0-9]+)\.jpg$', src)
+        search = re.search(r'js\-([0-9]+)\.jpg$', src)
         if search:
             return src.replace('js-', 'jp-')
 
-        search = re.search('ts\-([0-9]+)\.jpg$', src)
+        search = re.search(r'ts\-([0-9]+)\.jpg$', src)
         if search:
             return src.replace('ts-', 'tl-')
 
-        search = re.search('(\-[0-9]+\.)jpg$', src)
+        search = re.search(r'(\-[0-9]+\.)jpg$', src)
         if search:
             return src.replace(search.group(1), 'jp' + search.group(1))
 
@@ -90,7 +90,7 @@ class DmmSpider(BaseSpider):
             url_type = self.get_url_type(url)
             if url_type >= 0:
                 src_url = 'http:' + li.select_one('p.tmb a img').get('src')
-                result = get_spider_metastruct()
+                result = utils.get_spider_metastruct()
 
                 result['标题'] = li.select_one('p.tmb a img').get('alt')
                 result['电视节目标题'] = result['标题']
@@ -103,18 +103,20 @@ class DmmSpider(BaseSpider):
                     pass
 
                 result['dital_url'] = url
+                result['id'] = re.search(r'cid=(.+)/', url).group(1)
 
-                result['backdrop'] = tim_img_bytes(self.download_page_request(self.get_full_src(src_url)).content)
-                result['poster'] = create_poster(result['backdrop'])
+                result['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(src_url)).content)
+                result['poster'] = utils.create_poster(result['backdrop'])
                 result['total'] = int(re.match(r'(\d+).*', total.get_text()).group(1)) if total else 0
                 result['tip'] = sell.get_text() if sell else ''
-                self.count += 1
+
+
                 yield result
 
     def parse_url_search(self, res):
         if not res:
             return
-        result = get_spider_metastruct()
+        result = utils.get_spider_metastruct()
         try:
             json_ld = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',res.text,re.S).group(1))
 
@@ -126,8 +128,8 @@ class DmmSpider(BaseSpider):
             result['级别'] = 'R18+'
             result['评级'] = self.format_rate_str(json_ld.get('aggregateRating').get('ratingValue'))
 
-            result['backdrop'] = tim_img_bytes(self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
-            result['poster'] = create_poster(result['backdrop'])
+            result['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
+            result['poster'] = utils.create_poster(result['backdrop'])
 
         except Exception:
                 pass
@@ -170,7 +172,7 @@ class DmmSpider(BaseSpider):
             else:  # 0,1,5,6,7,9
                 year = re.search(r'配信開始日：.*?(\d{4}/\d{2}/\d{2})', html, re.S)
 
-            meta['发布日期'] = format_date_str(year.group(1))
+            meta['发布日期'] = utils.format_date_str(year.group(1))
             meta['发布日期(电视节目)'] = meta['发布日期']
             meta['发布日期(集)'] = meta['发布日期']
         except Exception:

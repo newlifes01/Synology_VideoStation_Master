@@ -99,7 +99,7 @@ class DSMAPI(QThread):
     def get_video_poster(self, stype, id, mtime):
 
         if not mtime:
-            return utils.get_res_to_bytes(':/icons/others/empty.png')
+            return #utils.get_res_to_bytes(':/icons/others/empty.png')
 
         cache_name = 'poster-{}-{}'.format(stype, id)
 

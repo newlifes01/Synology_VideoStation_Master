@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from time import sleep
 
-import requests
-from PyQt5.QtCore import pyqtSignal, QEventLoop
+from PyQt5.QtCore import pyqtSignal
 
 from spiders.base_thread import BaseThread
 from utils import get_spider_metastruct
-from verif_code import VerifCodeDialog
 
 
 class SearchSpider(BaseThread):
-    search_finish = pyqtSignal()
+    search_finish = pyqtSignal(int)
     put_meta = pyqtSignal(dict)
     # get_vercode = pyqtSignal(dict)
 
@@ -29,15 +26,20 @@ class SearchSpider(BaseThread):
         if self.stoped:
             self.spider.stop = True
             return
-
+        count = 0
         self.out_msg.emit('[{}]开始搜索……'.format(self.spider.name))
         for meta in self.spider.search(self.keyword):
             if self.stoped: break
 
             self.put_meta.emit(meta)
-            self.out_msg.emit('[{}]找到{}个……'.format(self.spider.name, self.spider.count))
+            count += 1
+            total = meta.get('total',0)
+            if total:
+                self.out_msg.emit('[{}]找到{}/{}个……'.format(self.spider.name, count,total))
+            else:
+                self.out_msg.emit('[{}]找到{}个……'.format(self.spider.name, count))
 
-        self.search_finish.emit()
+        self.search_finish.emit(count)
 
 
 class DitalSpider(BaseThread):

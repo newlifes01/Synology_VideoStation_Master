@@ -15,6 +15,7 @@ class BaseSpider:
         self.urls = set()
         self.oldurls = set()
         self.logger = logging.getLogger('spider:{}'.format(name))
+        self.stoped =False
 
     def spdider_login(self):
         pass
@@ -41,7 +42,7 @@ class BaseSpider:
         return len(self.urls) > 0
 
     def download_page_request(self, url, retry=0):
-        if not url:
+        if not url or self.stoped:
             utils.add_log(self.logger,'error','Url为空', url)
             return
 
@@ -102,7 +103,7 @@ class BaseSpider:
     def search(self,keyword):
         pass
 
-    def dital(self,url):
+    def dital(self, url, meta):
         pass
 
 

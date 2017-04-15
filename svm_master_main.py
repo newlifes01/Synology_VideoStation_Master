@@ -550,8 +550,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.search_meta_form = SearchMetadataDialog()
         meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
         if meta:
-            result = self.search_meta_form.open_dialog(meta)
-            print(result)
+            self.search_meta_form.open_dialog(meta)
+            self.search_meta_form.exec_()
+            print(self.search_meta_form.meta_return)
+
             self.btn_meta_search.setChecked(False)
 
 

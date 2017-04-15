@@ -5,9 +5,12 @@ from time import mktime, strptime
 
 import os
 import re
+from PIL import Image, ImageChops
 from PyQt5.QtCore import QFile
 
 # 日志登记
+from io import BytesIO
+
 logging.basicConfig(level=logging.DEBUG)
 # 下载最大重试次数
 RETRYMAX = 5
@@ -40,6 +43,86 @@ BACKDROP_PATH = os.path.join(CACHE_PATH, BACKDROP_FILE)
 
 if not os.path.exists(CACHE_PATH):
     os.mkdir(CACHE_PATH)
+
+
+def search_result_to_table_data(meta,stype):
+    if not meta or not stype:
+        return
+    video_meta = None
+    if stype == 'tvshow_episode':
+
+        video_meta =get_dital_episode_struck()
+
+        video_meta['poster'] = meta.get('poster')
+
+        video_meta['电视节目标题'] = meta.get('电视节目标题')
+        video_meta['发布日期(电视节目)'] = meta.get('电视节目标题')
+        video_meta['集标题'] = meta.get('电视节目标题')
+        video_meta['季'] = meta.get('电视节目标题')
+        video_meta['集'] = meta.get('电视节目标题')
+        video_meta['发布日期(集)'] = meta.get('电视节目标题')
+        video_meta['级别'] = meta.get('级别')
+        video_meta['类型'] = meta.get('类型')
+        video_meta['评级'] = meta.get('评级')
+        video_meta['演员'] = meta.get('演员')
+        video_meta['作者'] = meta.get('作者')
+        video_meta['导演'] = meta.get('导演')
+        video_meta['摘要'] = meta.get('摘要')
+
+    if stype == 'tvshow':
+
+        video_meta = get_dital_tvshow_struck()
+
+        video_meta['poster'] = meta.get('poster')
+
+        video_meta['backdrop'] = meta.get('backdrop')
+
+        video_meta['电视节目标题'] = meta.get('电视节目标题')
+        video_meta['发布日期'] = meta.get('发布日期')
+
+        video_meta['摘要'] = meta.get('摘要')
+        video_meta['季数'] = meta.get('季数')
+
+    if stype == 'movie':
+        video_meta = get_dital_movie_struck()
+        video_meta['poster'] = meta.get('poster')
+
+        video_meta['backdrop'] = meta.get('backdrop')
+
+
+
+        video_meta['标题'] = meta.get('标题')
+        video_meta['标语'] = meta.get('标语')
+
+        video_meta['发布日期'] = meta.get('发布日期')
+        video_meta['级别'] = meta.get('级别')
+        video_meta['评级'] = meta.get('评级')
+        video_meta['类型'] = meta.get('类型')
+        video_meta['演员'] = meta.get('演员')
+        video_meta['作者'] = meta.get('作者')
+        video_meta['导演'] = meta.get('导演')
+        video_meta['摘要'] = meta.get('摘要')
+
+    if stype == 'home_video':
+
+        video_meta = get_dital_homevideo_struck()
+        video_meta['poster'] = meta.get('poster')
+
+        video_meta['backdrop'] = meta.get('backdrop')
+
+        video_meta['标题'] = meta.get('标题')
+
+        video_meta['录制开始时间'] = meta.get('录制开始时间')
+
+        video_meta['级别'] = meta.get('级别')
+        video_meta['评级'] = meta.get('评级')
+        video_meta['类型'] = meta.get('类型')
+        video_meta['演员'] = meta.get('演员')
+        video_meta['作者'] = meta.get('作者')
+        video_meta['导演'] = meta.get('导演')
+        video_meta['摘要'] = meta.get('摘要')
+
+    return video_meta
 
 
 def seconds_to_struct(seconds):
@@ -363,6 +446,101 @@ def get_res_to_bytes(res_str):
     stream = QFile(res_str)
     if stream.open(QFile.ReadOnly):
         return stream.readAll()
+
+def get_spider_metastruct():
+    return {
+        '标题': '',
+        '电视节目标题': '',
+        '集标题': '',
+
+        '季数': '',
+        '季': '',
+        '集': '',
+
+        '发布日期': '',
+        '发布日期(电视节目)': '',
+        '发布日期(集)': '',
+
+
+        '级别': '',
+        '评级': '',
+        '类型': '',
+        '演员': '',
+        '作者': '',
+        '导演': '',
+
+        '标语': '',
+        '摘要': '',
+
+
+        'poster': b'',
+        'backdrop': b'',
+        'images':[],
+
+        'dital_url':'',
+        'tip':'',
+        'id':'',
+        'total':0,
+    }
+
+def trim(im):
+    try:
+        bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
+        diff = ImageChops.difference(im, bg)
+        diff = ImageChops.add(diff, diff, 2.0, -100)
+        bbox = diff.getbbox()
+        if bbox:
+            return im.crop(bbox)
+    except Exception:
+        return im
+
+def rotate_image(in_bytes):
+    try:
+        out = BytesIO()
+        stream = BytesIO(in_bytes)
+        im = Image.open(stream)
+        img2 = im.transpose(Image.ROTATE_90)
+        img2.save(out, format='JPEG')
+        return out.getvalue()
+    except Exception:
+        return in_bytes
+
+
+def tim_img_bytes(in_bytes):
+    try:
+        out = BytesIO()
+        stream = BytesIO(in_bytes)
+        im = Image.open(stream)
+        im = trim(im)
+        if not im:
+            return in_bytes
+        im.save(out, format='JPEG')
+        return out.getvalue()
+    except:
+        return in_bytes
+
+
+def create_poster(in_bytes, middle=False):
+    try:
+        out = BytesIO()
+        stream = BytesIO(in_bytes)
+        im = Image.open(stream)
+        im = trim(im)
+        if not im:
+            return None
+        if im.size[0] < im.size[1]:
+            im.save(out, format='JPEG')
+            return out.getvalue()
+        if middle:
+            pos = im.size[0] // 4
+        else:
+            pos = im.size[0] * 420 // 800
+        box = pos, 0, im.size[0], im.size[1]
+        region = im.crop(box)
+        region.save(out, format='JPEG')
+        return out.getvalue()
+    except Exception:
+        return None
 
 
 if __name__ == '__main__':

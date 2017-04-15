@@ -6,45 +6,46 @@ from PyQt5.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem
 
 import utils
 
+class BaseTblSearch(QTableWidget):
 
-class TblSeacheResult(QTableWidget):
-    put_meta = pyqtSignal(dict)
 
     def __init__(self, parent=None):
-        super(TblSeacheResult, self).__init__(parent)
+        super(BaseTblSearch, self).__init__(parent)
+
         self.item_background = True
-        self.clear_data()
+        # self.clear_data()
+
         self.setIconSize(QSize(utils.ITEM_WIDTH - 2, utils.ITEM_HEIGHT - 2))
 
         self.setStyleSheet('''
-                        QTableWidget::item{
-                            selection-background-color: #ACD6FF;
-                            selection-color :white;
-                        }
-                        QTableWidget::item:hover
-                        {
-                           background-color: #ACD6FF;
-                        }
-                       
-                        # QTableWidget::item:selected:!active {
-                        #     background: rgb(255, 222, 21);
-                        # }
-                        # QTableWidget::item:selected:active {
-                        #     background: rgb(255, 222, 122);
-                        # }
-                        # QTableWidget::item:hover {
-                        #     background: rgb(255, 222, 122);
-                        # }
-                ''')
+                           QTableWidget::item{
+                               selection-background-color: #ACD6FF;
+                               selection-color :white;
+                           }
+                           QTableWidget::item:hover
+                           {
+                              background-color: #ACD6FF;
+                           }
 
-        self.horizontalHeader().setStretchLastSection(True)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.verticalHeader().setDefaultSectionSize(utils.ITEM_HEIGHT)
-        # self.setRowCount(0)
-        # self.setColumnCount(4)
-        # self.setHorizontalHeaderLabels(('海报', '种类', '标题', '简介'))
+                           # QTableWidget::item:selected:!active {
+                           #     background: rgb(255, 222, 21);
+                           # }
+                           # QTableWidget::item:selected:active {
+                           #     background: rgb(255, 222, 122);
+                           # }
+                           # QTableWidget::item:hover {
+                           #     background: rgb(255, 222, 122);
+                           # }
+                   ''')
 
-        self.itemClicked.connect(self.item_select)
+        self.horizontalHeader().setVisible(False)
+        self.horizontalHeader().setHighlightSections(False)
+        # self.horizontalHeader().setStretchLastSection(True)
+        # self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # self.verticalHeader().setDefaultSectionSize(utils.ITEM_HEIGHT)
+
+
+
 
     # 设置单元格信息
     def cell(self, editable=True, text="", color=False, align=True):
@@ -62,11 +63,26 @@ class TblSeacheResult(QTableWidget):
 
         return item
 
-    def clear_data(self):
+    def clear_data(self, hearders=('海报', '种类', '标题', '简介')):
+        self.horizontalHeader().setVisible(True)
+        self.horizontalHeader().setHighlightSections(True)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.verticalHeader().setDefaultSectionSize(utils.ITEM_HEIGHT)
         self.clear()
         self.setRowCount(0)
-        self.setColumnCount(4)
-        self.setHorizontalHeaderLabels(('海报', '种类', '标题', '简介'))
+
+        self.setColumnCount(len(hearders))
+        self.setHorizontalHeaderLabels(hearders)
+
+
+
+class TblSeacheResult(BaseTblSearch):
+    put_meta = pyqtSignal(dict)
+
+    def __init__(self, parent=None):
+        super(TblSeacheResult, self).__init__(parent)
+        self.itemClicked.connect(self.item_select)
 
     def insert_data(self, meta,row=-1):
         if not meta:
@@ -74,6 +90,8 @@ class TblSeacheResult(QTableWidget):
 
         self.item_background = not self.item_background
         icon_data = meta['poster']
+        if not icon_data:
+            icon_data = utils.get_res_to_bytes(':/icons/others/empty.png')
 
         stype = meta.get('type')
 
@@ -86,7 +104,7 @@ class TblSeacheResult(QTableWidget):
                 return
             if icon_data:
                 pixmap = QPixmap()
-                pixmap.loadFromData(meta['poster'])
+                pixmap.loadFromData(icon_data)
 
                 if stype == 'home_video':
                     icon_width, icon_heigh = utils.HOMEVIEDO_WIDTH, utils.HOMEVIEDO_WIDTH
@@ -114,7 +132,7 @@ class TblSeacheResult(QTableWidget):
             self.insertRow(0)
             if icon_data:
                 pixmap = QPixmap()
-                pixmap.loadFromData(meta['poster'])
+                pixmap.loadFromData(icon_data)
 
                 if stype == 'home_video':
                     icon_width, icon_heigh = utils.HOMEVIEDO_WIDTH, utils.HOMEVIEDO_WIDTH
