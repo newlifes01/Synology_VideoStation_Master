@@ -132,7 +132,7 @@ class DSMAPI(QThread):
         return bytes_res
 
     # 列出指定资料库所有影片
-    def list_videos(self, meta, keyword=''):
+    def list_videos(self, meta, keyword='',only_nil=False):
         if not meta:
             return
         stype = meta.get('type')
@@ -152,7 +152,7 @@ class DSMAPI(QThread):
             'additional': '["poster_mtime","backdrop_mtime","summary"]'
         }
 
-        if keyword:
+        if keyword and not only_nil:
             param.update({'keyword': '"{}"'.format(keyword)})
 
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(sAPI), 'list', param)
@@ -190,7 +190,11 @@ class DSMAPI(QThread):
 
                 })
 
-                yield result_data
+                if only_nil:
+                    if not poster_mtime:
+                        yield result_data
+                else:
+                    yield result_data
 
     def get_video_info(self, id, stype, library_id):
         if not id or not stype:

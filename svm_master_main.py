@@ -311,7 +311,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 break
             yield current_library.get('title')
 
-            for video in self.DSM.list_videos(current_library, keyword):
+            for video in self.DSM.list_videos(current_library, keyword,self.chk_only_nil.checkState()):
                 if self.dsm_seach_stop:
                     self.dsm_seach_running = False
                     break

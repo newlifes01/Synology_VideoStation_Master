@@ -55,6 +55,8 @@ class LstEditSearchMetadata(QListWidget):
         for i in range(self.count()):
             try:
                 item = self.item(i)
+                if item.checkState() != Qt.Checked:
+                    continue
                 icon = item.icon()
                 if icon:
                     pixmap = icon.pixmap(icon.availableSizes()[0])
