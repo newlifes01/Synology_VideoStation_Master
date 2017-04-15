@@ -10,6 +10,7 @@ from PyQt5.QtCore import QFile
 
 # 日志登记
 from io import BytesIO
+from collections import OrderedDict
 
 logging.basicConfig(level=logging.DEBUG)
 # 下载最大重试次数
@@ -29,7 +30,7 @@ DSM_CACHE_PATH = os.path.join(PROJECT_PATH, 'http_cache.sqlite')
 # 爬虫缓存保留时间 秒
 SPIDER_CACHE_KEEP_TIME = 3600
 # 缓存保留时间 秒
-CACHE_KEEP_TIME = 10*60
+CACHE_KEEP_TIME = 10 * 60
 # 表格宽高
 ITEM_WIDTH, ITEM_HEIGHT = 30, 40  # 120, 180
 HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 40, 30  # 180, 100
@@ -45,13 +46,200 @@ if not os.path.exists(CACHE_PATH):
     os.mkdir(CACHE_PATH)
 
 
-def search_result_to_table_data(meta,stype):
+
+
+
+
+def fill_cn_form_en(stype, cn, en):
+
+
+    for k, v in cn.items():
+        if k == 'tag':
+            try:
+                tag = cn[k]
+                tag['type'] = stype
+                tag['API'] = get_library_API(stype)
+                tag['json_head'] = get_dsm_json_head(stype)
+                tag['id'] = en.get('id')
+                tag['library_id'] = en.get('library_id')
+                tag['mapper_id'] = en.get('mapper_id')
+                tag['poster_mtime'] = en.get('additional').get('poster_mtime')
+                tag['backdrop_mtime'] = en.get('additional').get('backdrop_mtime')
+
+            except Exception:
+                pass
+
+        if k == '文件名':
+            try:
+                cn[k] = os.path.basename(en.get('additional').get('file')[0].get('sharepath'))
+            except Exception:
+                pass
+
+        if k == '标题' or k == '电视节目标题':
+            try:
+                cn[k] = en.get('title')
+            except Exception:
+                pass
+
+        if k == '标语' or k == '集标题':
+            try:
+                cn[k] = en.get('tagline')
+            except Exception:
+                pass
+
+        if k == '发布日期' or k == '发布日期(集)':
+            try:
+                cn[k] = en.get('original_available')
+            except Exception:
+                pass
+
+        if k == '发布日期(电视节目)':
+            try:
+                cn[k] = en.get('tvshow_original_available')
+            except Exception:
+                pass
+
+        if k == '录制开始时间':
+            try:
+                cn[k] = en.get('record_date')
+            except Exception:
+                pass
+
+        if k == '季':
+            try:
+                cn[k] = str(en.get('season'))
+            except Exception:
+                pass
+        if k == '季数':
+            try:
+                cn[k] = str(en.get('additional').get('total_seasons'))
+            except Exception:
+                pass
+
+        if k == '集':
+            try:
+                cn[k] = str(en.get('episode'))
+            except Exception:
+                pass
+
+        if k == '评级':
+            try:
+                cn[k] = '{}'.format(en.get('rating'))
+            except Exception:
+                pass
+
+        if k == '类型':
+            try:
+                cn[k] = ','.join(en.get('additional').get('genre', []))
+            except Exception:
+                pass
+
+        if k == '演员':
+            try:
+                cn[k] = ','.join(en.get('additional').get('actor', []))
+            except Exception:
+                pass
+
+        if k == '作者':
+            try:
+                cn[k] = ','.join(en.get('additional').get('writer', []))
+            except Exception:
+                pass
+
+        if k == '导演':
+            try:
+                cn[k] = ','.join(en.get('additional').get('director', []))
+            except Exception:
+                pass
+
+        if k == '摘要':
+            try:
+                cn[k] = en.get('additional').get('summary')
+            except Exception:
+                pass
+
+    return OrderedDict(cn)
+
+
+def gen_metadata_struck(kind):
+    tag = {
+        'tag': {
+            'type': '',
+            'API': '',
+            'json_head': '',
+
+            'id': '',
+            'library_id': '',
+            'mapper_id': '',
+
+            'poster_mtime': '',
+            'backdrop_mtime': '',
+            'poster': b'',
+            'backdrop': b'',
+
+        }
+    }
+    struck = {
+        'movie': {
+            '文件名': '',
+            '标题': '',
+            '标语': '',
+
+            '发布日期': '',
+            '级别': '',
+            '评级': '',
+            '类型': '',
+            '演员': '',
+            '作者': '',
+            '导演': '',
+            '摘要': '',
+        },
+        'tvshow': {
+            '电视节目标题': '',
+            '发布日期': '',
+            '摘要': '',
+            '季数': '',
+        },
+        'tvshow_episode': {
+            '文件名': '',
+            '电视节目标题': '',
+            '发布日期(电视节目)': '',
+            '集标题': '',
+            '季': '',
+            '集': '',
+            '发布日期(集)': '',
+            '级别': '',
+            '评级': '',
+            '类型': '',
+            '演员': '',
+            '作者': '',
+            '导演': '',
+            '摘要': '',
+        },
+        'home_video': {
+            '文件名': '',
+            '标题': '',
+            '录制开始时间': '',
+            '级别': '',
+            '评级': '',
+            '类型': '',
+            '演员': '',
+            '作者': '',
+            '导演': '',
+            '摘要': '',
+        }
+    }
+    result = struck.get(kind)
+    result.update(tag)
+    return result
+
+
+def search_result_to_table_data(meta, stype):
     if not meta or not stype:
         return
     video_meta = None
     if stype == 'tvshow_episode':
-
-        video_meta =get_dital_episode_struck()
+        video_meta = get_dital_episode_struck()
 
         video_meta['poster'] = meta.get('poster')
 
@@ -70,7 +258,6 @@ def search_result_to_table_data(meta,stype):
         video_meta['摘要'] = meta.get('摘要')
 
     if stype == 'tvshow':
-
         video_meta = get_dital_tvshow_struck()
 
         video_meta['poster'] = meta.get('poster')
@@ -89,8 +276,6 @@ def search_result_to_table_data(meta,stype):
 
         video_meta['backdrop'] = meta.get('backdrop')
 
-
-
         video_meta['标题'] = meta.get('标题')
         video_meta['标语'] = meta.get('标语')
 
@@ -104,7 +289,6 @@ def search_result_to_table_data(meta,stype):
         video_meta['摘要'] = meta.get('摘要')
 
     if stype == 'home_video':
-
         video_meta = get_dital_homevideo_struck()
         video_meta['poster'] = meta.get('poster')
 
@@ -447,6 +631,7 @@ def get_res_to_bytes(res_str):
     if stream.open(QFile.ReadOnly):
         return stream.readAll()
 
+
 def get_spider_metastruct():
     return {
         '标题': '',
@@ -461,7 +646,6 @@ def get_spider_metastruct():
         '发布日期(电视节目)': '',
         '发布日期(集)': '',
 
-
         '级别': '',
         '评级': '',
         '类型': '',
@@ -472,16 +656,16 @@ def get_spider_metastruct():
         '标语': '',
         '摘要': '',
 
-
         'poster': b'',
         'backdrop': b'',
-        'images':[],
+        'images': [],
 
-        'dital_url':'',
-        'tip':'',
-        'id':'',
-        'total':0,
+        'dital_url': '',
+        'tip': '',
+        'id': '',
+        'total': 0,
     }
+
 
 def trim(im):
     try:
@@ -493,6 +677,7 @@ def trim(im):
             return im.crop(bbox)
     except Exception:
         return im
+
 
 def rotate_image(in_bytes):
     try:
@@ -544,9 +729,10 @@ def create_poster(in_bytes, middle=False):
 
 
 if __name__ == '__main__':
-    pass
-    print(format_time_stamp('2017-03-24 14:50:46.602983'))
-    print(format_time_stamp('Mon, 13 Mar 2017 00:16:37 GMT'))
+    struck = gen_metadata_struck('movie')
+    print(struck)
+    # print(format_time_stamp('2017-03-24 14:50:46.602983'))
+    # print(format_time_stamp('Mon, 13 Mar 2017 00:16:37 GMT'))
 
 
 

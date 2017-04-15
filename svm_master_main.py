@@ -371,37 +371,64 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 self.set_objects_enable('seached')
 
     #####选择视频
-    def add_cb_current_videoitems(self, videos, stype):
+    def add_cb_current_videoitems(self, videos,stype= ''):
         if not videos:
             return
         for video in videos:
+            if not stype:
+                stype = video.get('tag').get('type')
+            else:
+                video['tag']['type'] = stype
+            if not stype:
+                return
+            title = video.get('标题')
+            if not title:
+                title = video.get('电视节目标题')
+            if not title:
+                return
 
-            meta_cb = {
-                'type': stype,
-                'id': video.get('id'),
-                'library_id': video.get('library_id'),
-                'mapper_id': video.get('mapper_id'),
-                'title': video.get('title'),
-                'path': '',
-                'sharepath': '',
-            }
-            file_data = video.get('additional').get('file')
-            if file_data:
-                meta_cb.update({
-                    'path': video.get('additional').get('file')[0].get('path'),
-                    'sharepath': video.get('additional').get('file')[0].get('sharepath'),
-                })
-            file_name = os.path.basename(meta_cb.get('path'))
+            file_name = video.get('文件名')
+
             if not file_name:
                 if stype == 'tvshow_episode':
-                    file_name = '{}.S{}.E{}.{}'.format(video.get('title'),
-                                                       str(video.get('season')).zfill(2),
-                                                       str(video.get('episode')).zfill(2),
-                                                       video.get('tagline'))
+                    file_name = '{}.S{}.E{}.{}'.format(title,
+                                                       video.get('季').zfill(2),
+                                                       video.get('集').zfill(2),
+                                                       video.get('集标题'))
                 else:
-                    file_name = meta_cb.get('title')
+                    file_name = title
 
-            self.cb_current_video.addItem(QIcon(':/icons/ui_icons/{}.png'.format(stype)), file_name, meta_cb)
+            self.cb_current_video.addItem(QIcon(':/icons/ui_icons/{}.png'.format(stype)), file_name, video)
+        # if not videos:
+        #     return
+        # for video in videos:
+        #
+        #     meta_cb = {
+        #         'type': stype,
+        #         'id': video.get('id'),
+        #         'library_id': video.get('library_id'),
+        #         'mapper_id': video.get('mapper_id'),
+        #         'title': video.get('title'),
+        #         'path': '',
+        #         'sharepath': '',
+        #     }
+        #     file_data = video.get('additional').get('file')
+        #     if file_data:
+        #         meta_cb.update({
+        #             'path': video.get('additional').get('file')[0].get('path'),
+        #             'sharepath': video.get('additional').get('file')[0].get('sharepath'),
+        #         })
+        #     file_name = os.path.basename(meta_cb.get('path'))
+        #     if not file_name:
+        #         if stype == 'tvshow_episode':
+        #             file_name = '{}.S{}.E{}.{}'.format(video.get('title'),
+        #                                                str(video.get('season')).zfill(2),
+        #                                                str(video.get('episode')).zfill(2),
+        #                                                video.get('tagline'))
+        #         else:
+        #             file_name = meta_cb.get('title')
+        #
+        #     self.cb_current_video.addItem(QIcon(':/icons/ui_icons/{}.png'.format(stype)), file_name, meta_cb)
 
     # 鼠标选中视频
     def select_dsm_video(self, meta):
@@ -413,17 +440,26 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 self.cb_current_video_add_finish = False
                 self.cb_current_video.clear()
 
-                stype = meta.get('type')
-                sid = meta.get('id')
-                slibrary_id = meta.get('library_id')
-
-                videos = self.DSM.get_video_info(sid, stype, slibrary_id)
-                self.add_cb_current_videoitems(videos, stype)
+                # stype = meta.get('tag').get('type')
+                videos = self.DSM.get_video_info(meta)
+                self.add_cb_current_videoitems(videos)
                 app.processEvents()
-                if stype == 'tvshow':
-                    episodes = self.DSM.get_video_info(sid, 'tvshow_episode', slibrary_id)
-                    self.add_cb_current_videoitems(episodes, 'tvshow_episode')
+                if  meta.get('tag').get('type') == 'tvshow':
+                    episodes = self.DSM.get_video_info(meta,'tvshow_episode')
+                    self.add_cb_current_videoitems(episodes,'tvshow_episode')
                     app.processEvents()
+
+                # stype = meta.get('type')
+                # sid = meta.get('id')
+                # slibrary_id = meta.get('library_id')
+                #
+                # videos = self.DSM.get_video_info(sid, stype, slibrary_id)
+                # self.add_cb_current_videoitems(videos, stype)
+                # app.processEvents()
+                # if stype == 'tvshow':
+                #     episodes = self.DSM.get_video_info(sid, 'tvshow_episode', slibrary_id)
+                #     self.add_cb_current_videoitems(episodes, 'tvshow_episode')
+                #     app.processEvents()
 
             finally:
                 self.cb_current_video_add_finish = True
@@ -437,15 +473,30 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 video = self.cb_current_video.currentData(Qt.UserRole)
                 if video:
                     self.status_msg('[VideoStation]正在读取……')
-                    video_dital = self.DSM.get_video_dital_info(video.get('id'), video.get('type'))
+                    video_dital = self.DSM.get_video_dital_info(video)
                     self.table_video_meta.ref_table(video_dital)
                     self.lst_pices.clear()
-                    if video_dital.get('poster'):
-                        self.add_pic_fromData(video_dital.get('poster'))
-                    if video_dital.get('backdrop'):
-                        self.add_pic_fromData(video_dital.get('backdrop'))
+                    if video_dital.get('tag').get('poster'):
+                        self.add_pic_fromData(video_dital.get('tag').get('poster'))
+                    if video_dital.get('tag').get('backdrop'):
+                        self.add_pic_fromData(video_dital.get('tag').get('backdrop'))
         finally:
             self.status_msg('[VideoStation]读取完成')
+
+        # try:
+        #     if self.cb_current_video_add_finish:
+        #         video = self.cb_current_video.currentData(Qt.UserRole)
+        #         if video:
+        #             self.status_msg('[VideoStation]正在读取……')
+        #             video_dital = self.DSM.get_video_dital_info(video.get('id'), video.get('type'))
+        #             self.table_video_meta.ref_table(video_dital)
+        #             self.lst_pices.clear()
+        #             if video_dital.get('poster'):
+        #                 self.add_pic_fromData(video_dital.get('poster'))
+        #             if video_dital.get('backdrop'):
+        #                 self.add_pic_fromData(video_dital.get('backdrop'))
+        # finally:
+        #     self.status_msg('[VideoStation]读取完成')
 
     def refresh_dsm(self):
         self.set_objects_enable('false')

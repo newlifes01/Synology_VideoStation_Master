@@ -65,7 +65,7 @@ class TblMetadata(QTableWidget):
 
         count = 0
         for k, v in video.items():
-            if k == 'poster' or k == 'backdrop':
+            if k == 'tag':
                 continue
 
             isColor = count % 2 == 0
@@ -86,6 +86,43 @@ class TblMetadata(QTableWidget):
                 self.rating_cb.setCurrentIndex(cb_cert_idx)
 
             count += 1
+
+        # if not video:
+        #     return
+        # self.clear()
+        # self.rating_cb = self.genCombobox(utils.get_rating_lst())
+        #
+        # certificate = video.get('级别', '')
+        # cb_cert_idx = -1
+        # if certificate:
+        #     cb_cert_idx = utils.get_cert_idx(certificate)
+        #
+        # self.setRowCount(0)
+        # self.setColumnCount(2)
+        #
+        # count = 0
+        # for k, v in video.items():
+        #     if k == 'poster' or k == 'backdrop':
+        #         continue
+        #
+        #     isColor = count % 2 == 0
+        #
+        #     self.insertRow(self.rowCount())
+        #     item_k = self.cell(editable=False, var=k, color=QColor(244, 244, 244) if isColor else None)
+        #     item_k.setForeground(QBrush(QColor(0, 149, 225)))
+        #     self.setItem(self.rowCount() - 1, 0, item_k)
+        #     if k == '文件名':
+        #         item_v = self.cell(editable=False, var=v, color=QColor(244, 244, 244) if isColor else None, align=False)
+        #     else:
+        #         item_v = self.cell(var=v, color=QColor(244, 244, 244) if isColor else None)
+        #
+        #     self.setItem(self.rowCount() - 1, 1, item_v)
+        #
+        #     if k == '级别':
+        #         self.setCellWidget(self.rowCount() - 1, 1, self.rating_cb)
+        #         self.rating_cb.setCurrentIndex(cb_cert_idx)
+        #
+        #     count += 1
 
     def get_metadata(self, meta):
         if not meta:
