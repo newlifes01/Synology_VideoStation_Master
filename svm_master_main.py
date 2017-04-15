@@ -8,9 +8,9 @@ from time import sleep, time
 import os
 import requests
 from PyQt5.QtCore import Qt, QSize, QByteArray, QBuffer, QIODevice
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtGui import QPixmap, QIcon, QMovie, QPainter
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem, QAbstractItemView, QListView, \
-    QFileDialog, QMessageBox
+    QFileDialog, QMessageBox, QSplashScreen
 
 import utils
 from DSM.dsm_video_station import DSMAPI
@@ -350,10 +350,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                             continue
                         if isinstance(video, str):
                             current_library_title = video
-                            # self.status_msg(
-                            #     '[VideoStation搜索:{}]找到[{}/{}]个,耗时:{}'.format(current_library_title, count, total,
-                            #                                                  utils.seconds_to_struct(time() - start_time)))
-                            # app.processEvents()
                             continue
                         count += 1
                         self.add_dsm_search_result(video)
@@ -459,8 +455,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def save_to_dsm(self):
         self.set_objects_enable('false')
         app.processEvents()
-        sleep(0.1)
-        app.processEvents()
         try:
             meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
             meta.update({
@@ -546,22 +540,65 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     # 搜索元数据
     def search_metadata(self):
-
         self.search_meta_form = SearchMetadataDialog()
         meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
         if meta:
             self.search_meta_form.open_dialog(meta)
             self.search_meta_form.exec_()
-            print(self.search_meta_form.meta_return)
+            if self.search_meta_form:
+                self.table_video_meta.ref_table(self.search_meta_form.meta_return)
+            if self.search_meta_form.pices_return:
+                for pic_data in self.search_meta_form.pices_return:
+                    self.add_pic_fromData(pic_data)
 
             self.btn_meta_search.setChecked(False)
 
 
+class MovieSplashScreen(QSplashScreen):
+    def __init__(self, movie, parent=None):
+        movie.jumpToFrame(0)
+        pixmap = QPixmap(movie.frameRect().size())
+
+        QSplashScreen.__init__(self, pixmap)
+        self.movie = movie
+        self.movie.frameChanged.connect(self.repaint)
+
+    def showEvent(self, event):
+        self.movie.start()
+
+    def hideEvent(self, event):
+        self.movie.stop()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        pixmap = self.movie.currentPixmap()
+        self.setMask(pixmap.mask())
+        painter.drawPixmap(0, 0, pixmap)
+
+    def sizeHint(self):
+        return self.movie.scaledSize()
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
+    # movie = QMovie(":/icons/others/span.gif")
+    # splash = MovieSplashScreen(movie)
+    # splash.show()
+    # app.processEvents()
+    # start = time()
+    # while movie.state() == QMovie.Running and time() < start + 3:
+    #     app.processEvents()
+
+    splash = QSplashScreen(QPixmap(":/icons/others/span.gif"))
+    splash.show()
+    app.processEvents()
+
     main_form = MainForm()
     main_form.show()
-    app.processEvents()
+    # app.processEvents()
     main_form.form_showed()
+
+    splash.finish(main_form)
 
     sys.exit(app.exec_())
