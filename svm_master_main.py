@@ -83,10 +83,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.tab_pices.dropEvent = self.tab_pices_dropEvent
 
     def initUi(self):
-        self.tabWidget.setEnabled(False)
-
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget.setEnabled(False)
+        self.set_objects_enable('false')
 
         self.lb_dsm_status_cap = QLabel('DSM状态:')
         self.statusbar.addPermanentWidget(self.lb_dsm_status_cap)
@@ -103,10 +101,86 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.cb_current_video.currentIndexChanged.connect(self.select_single_video)
         self.cb_current_video.currentIndexChanged[str].connect(self.status_msg)
 
-        self.btn_fresh.clicked.connect(self.select_single_video)
+        self.btn_fresh.clicked.connect(self.refresh_dsm)
         self.btn_save.clicked.connect(self.save_to_dsm)
 
         self.btn_meta_search.clicked.connect(self.search_metadata)
+
+    def set_objects_enable(self, step):
+        if step == 'false':
+            self.cb_dsm_search_kind.setEnabled(False)
+            self.edt_dsm_search_keyword.setEnabled(False)
+            self.btn_dsm_search.setEnabled(False)
+
+            self.tbl_search_result_widget.setEnabled(False)
+            self.cb_current_video.setEnabled(False)
+            self.btn_meta_search.setEnabled(False)
+            self.btn_fresh.setEnabled(False)
+            self.btn_save.setEnabled(False)
+            self.btn_setting.setEnabled(False)
+
+            self.tab_meta.setEnabled(False)
+            self.tab_pices.setEnabled(False)
+
+        if step == 'true':
+            self.cb_dsm_search_kind.setEnabled(True)
+            self.edt_dsm_search_keyword.setEnabled(True)
+            self.btn_dsm_search.setEnabled(True)
+
+            self.tbl_search_result_widget.setEnabled(True)
+            self.cb_current_video.setEnabled(True)
+            self.btn_meta_search.setEnabled(True)
+            self.btn_fresh.setEnabled(True)
+            self.btn_save.setEnabled(True)
+            self.btn_setting.setEnabled(True)
+
+            self.tab_meta.setEnabled(True)
+            self.tab_pices.setEnabled(True)
+
+        if step == 'after_list_libs' or step == 'seached':
+            self.cb_dsm_search_kind.setEnabled(True)
+            self.edt_dsm_search_keyword.setEnabled(True)
+            self.btn_dsm_search.setEnabled(True)
+
+            self.tbl_search_result_widget.setEnabled(False)
+            self.cb_current_video.setEnabled(False)
+            self.btn_meta_search.setEnabled(False)
+            self.btn_fresh.setEnabled(False)
+            self.btn_save.setEnabled(False)
+
+            self.tab_meta.setEnabled(False)
+            self.tab_pices.setEnabled(False)
+
+            self.btn_setting.setEnabled(True)
+
+        if step == 'searching':
+            self.cb_dsm_search_kind.setEnabled(False)
+            self.edt_dsm_search_keyword.setEnabled(False)
+            self.btn_dsm_search.setEnabled(True)
+
+            self.tbl_search_result_widget.setEnabled(False)
+            self.cb_current_video.setEnabled(False)
+            self.btn_meta_search.setEnabled(False)
+            self.btn_fresh.setEnabled(False)
+            self.btn_save.setEnabled(False)
+
+            self.tab_meta.setEnabled(False)
+            self.tab_pices.setEnabled(False)
+
+        if step == 'seached':
+            self.cb_dsm_search_kind.setEnabled(True)
+            self.edt_dsm_search_keyword.setEnabled(True)
+            self.btn_dsm_search.setEnabled(True)
+
+            self.tbl_search_result_widget.setEnabled(True)
+            self.cb_current_video.setEnabled(False)
+            self.btn_meta_search.setEnabled(False)
+            self.btn_fresh.setEnabled(False)
+            self.btn_save.setEnabled(False)
+            self.btn_setting.setEnabled(False)
+
+            self.tab_meta.setEnabled(False)
+            self.tab_pices.setEnabled(False)
 
     # 海报列表
     def add_pic_fromData(self, data, boshowsize=True):
@@ -215,6 +289,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
         idx = min(self.cb_dsm_search_kind.count(), self.config.get('library_select_idx', 0))
         self.cb_dsm_search_kind.setCurrentIndex(idx)
+        self.set_objects_enable('after_list_libs')
 
     def library_selected(self, idx):
         if self.show_finished:
@@ -246,6 +321,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def btn_dsm_search_clicked(self, keyword):
         if self.dsm_seach_running:
             self.dsm_seach_stop = True
+            self.set_objects_enable('seached')
         else:
             if self.cb_dsm_search_kind.currentIndex() == 0:
                 current_librarys = self.cb_dsm_search_kind.currentData(Qt.UserRole)
@@ -256,8 +332,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.dsm_seach_stop = False
             self.dsm_seach_running = True
             self.tbl_search_result_widget.clear_data()
-            self.tbl_search_result_widget.setEnabled(False)
-            self.cb_dsm_search_kind.setEnabled(False)
+            self.set_objects_enable('searching')
             start_time = time()
             try:
 
@@ -267,21 +342,27 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 current_library_title = ''
 
                 for video in self.dsm_seach_videos(current_librarys, keyword):
-                    if self.dsm_seach_stop:
-                        break
-                    if isinstance(video, int):
-                        total += video
-                        continue
-                    if isinstance(video, str):
-                        current_library_title = video
-                        continue
-                    count += 1
-                    self.add_dsm_search_result(video)
+                    try:
+                        if self.dsm_seach_stop:
+                            break
+                        if isinstance(video, int):
+                            total += video
+                            continue
+                        if isinstance(video, str):
+                            current_library_title = video
+                            # self.status_msg(
+                            #     '[VideoStation搜索:{}]找到[{}/{}]个,耗时:{}'.format(current_library_title, count, total,
+                            #                                                  utils.seconds_to_struct(time() - start_time)))
+                            # app.processEvents()
+                            continue
+                        count += 1
+                        self.add_dsm_search_result(video)
+                    finally:
+                        self.status_msg(
+                            '[VideoStation搜索:{}]找到[{}/{}]个,耗时:{}'.format(current_library_title, count, total,
+                                                                         utils.seconds_to_struct(time() - start_time)))
+                        app.processEvents()
                     app.processEvents()
-
-                    self.status_msg(
-                        '[VideoStation搜索:{}]找到[{}/{}]个,耗时:{}'.format(current_library_title, count, total,
-                                                                     utils.seconds_to_struct(time() - start_time)))
                 self.status_msg('[VideoStation搜索]完成！共找到[{}/{}]个,耗时:{},双击选择影片进一步处理'.format(count, total,
                                                                                           utils.seconds_to_struct(
                                                                                               time() - start_time)))
@@ -290,9 +371,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 utils.add_log(self.logger, 'error', 'btn_dsm_search_clicked', e.args)
             finally:
                 self.dsm_seach_running = False
-                self.tbl_search_result_widget.setEnabled(True)
-                self.cb_dsm_search_kind.setEnabled(True)
                 self.btn_dsm_search.setChecked(False)
+                self.set_objects_enable('seached')
 
     #####选择视频
     def add_cb_current_videoitems(self, videos, stype):
@@ -330,7 +410,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
     # 鼠标选中视频
     def select_dsm_video(self, meta):
         if meta:
-            self.setEnabled(False)
+            self.set_objects_enable('false')
             self.repaint()
             app.processEvents()
             try:
@@ -352,9 +432,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
             finally:
                 self.cb_current_video_add_finish = True
                 self.select_single_video(0)
-                self.tabWidget.setEnabled(True)
                 self.tabWidget.setCurrentIndex(0)
-                self.setEnabled(True)
+                self.set_objects_enable('true')
 
     def select_single_video(self, idx):
         try:
@@ -362,7 +441,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 video = self.cb_current_video.currentData(Qt.UserRole)
                 if video:
                     self.status_msg('[VideoStation]正在读取……')
-                    # print(video)
                     video_dital = self.DSM.get_video_dital_info(video.get('id'), video.get('type'))
                     self.table_video_meta.ref_table(video_dital)
                     self.lst_pices.clear()
@@ -373,8 +451,13 @@ class MainForm(QMainWindow, Ui_MainWindow):
         finally:
             self.status_msg('[VideoStation]读取完成')
 
+    def refresh_dsm(self):
+        self.set_objects_enable('false')
+        self.select_single_video(0)
+        self.set_objects_enable('true')
+
     def save_to_dsm(self):
-        self.setEnabled(False)
+        self.set_objects_enable('false')
         app.processEvents()
         sleep(0.1)
         app.processEvents()
@@ -432,11 +515,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     data['backdrop'] = img_data
                 else:
                     break
-            self.tbl_search_result_widget.insert_data(data,row)
+            self.tbl_search_result_widget.insert_data(data, row)
 
             app.processEvents()
         finally:
-            self.setEnabled(True)
+            self.set_objects_enable('true')
 
     # 窗口显示后执行
     def form_showed(self):
@@ -444,7 +527,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.check_login_status()
         self.lb_dsm_status.setText('已登陆')
         self.get_dsm_librarys()
-        self.tabWidget.setEnabled(False)
         self.HttpServer = HttpServer(utils.HTTP_SERVER_PORT)
 
         self.show_finished = True

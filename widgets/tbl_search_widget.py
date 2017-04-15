@@ -40,7 +40,9 @@ class TblSeacheResult(QTableWidget):
         self.horizontalHeader().setStretchLastSection(True)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.verticalHeader().setDefaultSectionSize(utils.ITEM_HEIGHT)
-        self.setHorizontalHeaderLabels(('海报', '种类', '标题', '简介'))
+        # self.setRowCount(0)
+        # self.setColumnCount(4)
+        # self.setHorizontalHeaderLabels(('海报', '种类', '标题', '简介'))
 
         self.itemClicked.connect(self.item_select)
 
@@ -64,12 +66,12 @@ class TblSeacheResult(QTableWidget):
         self.clear()
         self.setRowCount(0)
         self.setColumnCount(4)
+        self.setHorizontalHeaderLabels(('海报', '种类', '标题', '简介'))
 
     def insert_data(self, meta,row=-1):
         if not meta:
             return
 
-        self.setHorizontalHeaderLabels(('海报', '种类', '标题', '简介'))
         self.item_background = not self.item_background
         icon_data = meta['poster']
 
@@ -106,7 +108,7 @@ class TblSeacheResult(QTableWidget):
 
         else:
             title = utils.get_screen_width(meta.get('title'), max_width=60, tail_length=2)
-            summary = meta.get('summary')
+            summary = meta.get('summary','')
             if not title:
                 return
             self.insertRow(0)
