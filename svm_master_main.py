@@ -598,7 +598,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.search_meta_form.open_dialog(meta)
             self.search_meta_form.exec_()
             if self.search_meta_form:
-                self.table_video_meta.ref_table(self.search_meta_form.meta_return)
+                self.table_video_meta.modifiy_table(self.search_meta_form.meta_return)
             if self.search_meta_form.pices_return:
                 for pic_data in self.search_meta_form.pices_return:
                     self.add_pic_fromData(pic_data)

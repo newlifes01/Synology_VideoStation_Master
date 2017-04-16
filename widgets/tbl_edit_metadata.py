@@ -54,6 +54,37 @@ class TblMetadata(QTableWidget):
 
         return item
 
+    def modifiy_table(self, video,ignore=None):
+        if not video:
+            return
+        # self.clear()
+        # self.rating_cb = self.genCombobox(utils.get_rating_lst())
+        #
+        # certificate = video.get('级别', '')
+        # cb_cert_idx = -1
+        # if certificate:
+        #     cb_cert_idx = utils.get_cert_idx(certificate)
+        #
+        # self.setRowCount(0)
+        # self.setColumnCount(2)
+
+        for row in range(0,self.rowCount()):
+            item_k = self.item(row,0)
+            item_v = self.item(row,1)
+            if item_k.text() == '级别':
+                certificate = video.get(item_k.text())
+                if certificate:
+                    cb_cert_idx = utils.get_cert_idx(certificate)
+                    self.rating_cb.setCurrentIndex(cb_cert_idx)
+
+            if item_k and item_v:
+                str = video.get(item_k.text())
+                if str:
+                    item_v.setText(str)
+
+
+
+
     def ref_table(self, video,ignore=None):
         if not video:
             return
@@ -76,6 +107,8 @@ class TblMetadata(QTableWidget):
             if ignore:
                 if k in ignore:
                     continue
+
+
 
             isColor = count % 2 == 0
 

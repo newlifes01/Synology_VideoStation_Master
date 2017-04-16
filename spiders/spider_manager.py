@@ -65,14 +65,16 @@ class DitalSpider(BaseThread):
             return
         self.out_msg.emit('[{}]开始获取元数据……'.format(self.spider.name))
         count= 0
-        for each in self.spider.dital(self.url, self.meta):
-            if each:
-                if isinstance(each,OrderedDict):
-                    self.put_meta.emit(each)
-                if isinstance(each,bytes):
-                    count += 1
-                    self.out_msg.emit('[{}]正在下载海报{}……'.format(self.spider.name,count))
-                    self.put_imagedata.emit(each)
+        ditals = self.spider.dital(self.url, self.meta)
+        if ditals:
+            for each in ditals:
+                if each:
+                    if isinstance(each,OrderedDict):
+                        self.put_meta.emit(each)
+                    if isinstance(each,bytes):
+                        count += 1
+                        self.out_msg.emit('[{}]正在下载海报{}……'.format(self.spider.name,count))
+                        self.put_imagedata.emit(each)
 
 
         # meta,imgs = self.spider.dital(self.url, self.meta)
