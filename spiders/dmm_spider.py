@@ -178,7 +178,7 @@ class DmmSpider(BaseSpider):
 
     def search(self, keyword,stype):
         if keyword.startswith('http'):
-            res = self.download_page_request(keyword, True)
+            res = self.download_page_request(keyword)
 
             yield self.parse_url_search(res,stype)
         else:
@@ -186,7 +186,7 @@ class DmmSpider(BaseSpider):
             while self.has_url():
                 url = self.get_urls()
                 if url:
-                    res = self.download_page_request(url, True)
+                    res = self.download_page_request(url)
                     if res:
                         for each in self.parse_search_html(res,stype):
                             yield each
@@ -231,7 +231,7 @@ class DmmSpider(BaseSpider):
 
         lst_genre = []
         try:
-            id_number = re.search(r'cid=(.+)/', meta.get('dital_url')).group(1)
+            id_number = re.search(r'cid=(.+)/', meta.get('tag').get('dital_url')).group(1)
             lst_genre.append(id_number)
         except Exception:
             pass
@@ -297,7 +297,7 @@ class DmmSpider(BaseSpider):
             cast_node = None
             if jst:
                 ajxurl = urljoin('http://www.dmm.co.jp/', jst.group(1))
-                cast_node_res = self.download_page_request(ajxurl, True)
+                cast_node_res = self.download_page_request(ajxurl)
                 cast_node_res.encoding = 'utf-8'
                 cast_node = cast_node_res.text
             else:
@@ -340,15 +340,23 @@ class DmmSpider(BaseSpider):
                 if tmp and len(tmp):
                     meta['作者'] = ','.join(tmp)
 
+            yield meta
+            # 缩略图
+            samples = re.findall(r'src="(https?://pics.dmm.co.jp/.+?-\d{1,2}.jpg)"', html)  #todo：无放大图的会出错
+            if samples:
+                for sample in samples:
+                    url = self.get_full_src(sample)
+                    yield self.download_page_request(url).content
+
 
         except  Exception:
             pass
 
-        return meta,[]
+        # return meta,[]
 
     def dital(self, url, meta):
 
-        res = self.download_page_request(url, True)
+        res = self.download_page_request(url)
         if res:
             return self.parse_dital(res.text, meta)
 

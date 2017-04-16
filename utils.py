@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
+from datetime import datetime
 from time import mktime, strptime
 
 import os
@@ -339,6 +340,8 @@ def format_time_stamp(timestr):
         pass
 
 
+
+
 def add_log(loger, level, *msg):
     if not loger or not len(msg):
         return
@@ -594,20 +597,37 @@ def get_screen_width(input_str, max_width=None, tail='.', tail_length=2):
 
 def format_date_str(date_str):
     try:
-        res = re.search(r'(\d{4})[/-](\d{1,2})[/-](\d{1,2})', date_str)
-        if res:
-            return '{}-{}-{}'.format(res.group(1), res.group(2).zfill(2), res.group(3).zfill(2))
+        return datetime.strptime(date_str, '%b %d, %Y').strftime('%Y-%m-%d')
+    except Exception:
+        pass
 
-        res = re.search(r'(\d{1,2})[/-](\d{1,2})[/-](\d{4})', date_str)
-        if res:
-            return '{}-{}-{}'.format(res.group(3), res.group(1).zfill(2), res.group(2).zfill(2))
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+    except Exception:
+        pass
 
-        res = re.match(r'(\d{4})[/-](\d{1,2})', date_str)
-        if res:
-            return '{}-{}-{}'.format(res.group(1), res.group(2).zfill(2), '01')
-        return ''
-    except:
-        return ''
+    try:
+        return datetime.strptime(date_str, '%Y-%m').strftime('%Y-%m-%d')
+    except Exception:
+        pass
+
+    return ''
+
+    # try:
+    #     res = re.search(r'(\d{4})[/-](\d{1,2})[/-](\d{1,2})', date_str)
+    #     if res:
+    #         return '{}-{}-{}'.format(res.group(1), res.group(2).zfill(2), res.group(3).zfill(2))
+    #
+    #     res = re.search(r'(\d{1,2})[/-](\d{1,2})[/-](\d{4})', date_str)
+    #     if res:
+    #         return '{}-{}-{}'.format(res.group(3), res.group(1).zfill(2), res.group(2).zfill(2))
+    #
+    #     res = re.match(r'(\d{4})[/-](\d{1,2})', date_str)
+    #     if res:
+    #         return '{}-{}-{}'.format(res.group(1), res.group(2).zfill(2), '01')
+    #     return ''
+    # except:
+    #     return ''
 
 
 def format_time_str(time_str):
@@ -731,6 +751,8 @@ def create_poster(in_bytes, middle=False):
 if __name__ == '__main__':
     struck = gen_metadata_struck('movie')
     print(struck)
+
+    print(format_date_str('2009-1-1'))
     # print(format_time_stamp('2017-03-24 14:50:46.602983'))
     # print(format_time_stamp('Mon, 13 Mar 2017 00:16:37 GMT'))
 

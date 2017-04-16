@@ -19,7 +19,7 @@ class DownCache(object):
         self.table_name = table_name
         self.logger = logging.getLogger('DownCache')
         self.initDB()
-        self.del_expire()
+        # self.del_expire()
 
     def initDB(self):
 
@@ -52,24 +52,30 @@ class DownCache(object):
         md5.update(file_name.encode("utf-8"))
         return md5.hexdigest()
 
+    @classmethod
     def del_expire(self):
+
         db = sqlite3.connect(utils.DSM_CACHE_PATH)
         cursor = db.cursor()
 
+        tbs = ['spider_cache','dsm_cache']
         try:
-            cursor.execute('SELECT * FROM {}'.format(self.table_name))
+            for tb_name in tbs:
+                cursor.execute('SELECT * FROM {}'.format(tb_name))
 
-            rss = cursor.fetchall()
+                rss = cursor.fetchall()
 
-            for rs in rss:
-                name, ntime, expire, data, = rs
-                if expire > 0 and time() > expire:
-                    cursor.execute('DELETE FROM {} WHERE name_hash=?'.format(self.table_name), (name,))
-                    utils.add_log(self.logger, 'info', '删除过期缓存 del_expire:', name)
+                for rs in rss:
+                    name, ntime, expire, data, = rs
+                    if expire > 0 and time() > expire:
+                        cursor.execute('DELETE FROM {} WHERE name_hash=?'.format(tb_name), (name,))
+                        utils.add_log(logging.getLogger('cache'), 'info', '删除过期缓存 del_expire:',tb_name,'-', name)
 
-            db.commit()
+
+                db.commit()
         except Exception as e:
-            utils.add_log(self.logger, 'error', 'del_expire:', e)
+
+            utils.add_log(logging.getLogger('cache'), 'error', 'del_expire:', e)
         finally:
             cursor.close()
             db.close()
@@ -135,7 +141,11 @@ class DownCache(object):
 
 
 if __name__ == '__main__':
-    timestr = '2017-01-27 03:47:18.349044'
-    print(datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S.%f'))
-    timestr2 = 'Mon, 13 Mar 2017 00:16:37 GMT'
-    print(datetime.strptime(timestr2, '%a, %d %b %Y %H:%M:%S %Z'))
+    # timestr = '2017-01-27 03:47:18.349044'
+    # print(datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S.%f'))
+    # timestr2 = 'Mon, 13 Mar 2017 00:16:37 GMT'
+    # print(datetime.strptime(timestr2, '%a, %d %b %Y %H:%M:%S %Z'))
+
+    timestr = 'Apr 29, 2016'
+
+    print(type())

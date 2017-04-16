@@ -12,6 +12,8 @@ class BaseThread(QThread):
         self.mutex = QMutex()
         self.stoped = False
 
+
+
     def thread_init(self, keyword=''):
         self.stoped = False
         with QMutexLocker(self.mutex):

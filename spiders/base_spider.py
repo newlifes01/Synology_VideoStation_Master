@@ -17,6 +17,9 @@ class BaseSpider:
         self.logger = logging.getLogger('spider:{}'.format(name))
         self.stoped =False
 
+    def add_log(self,*msg,level='info'):
+        utils.add_log(self.logger,level,msg)
+
     def spdider_login(self):
         pass
 
@@ -24,10 +27,10 @@ class BaseSpider:
         self.urls.clear()
         self.oldurls.clear()
 
-    def add_urls(self, url):
+    def add_urls(self, url,fource=False):
         if not url:
             return
-        if url not in self.oldurls and url not in self.urls:
+        if (url not in self.oldurls and url not in self.urls) or fource:
             self.urls.add(url)
 
     def get_urls(self):

@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QDialog, QMessageBox, QListWidgetItem, QApplication
 
 import utils
 from DSM.dsm_video_station import DSMAPI
+from spiders.data18_spider import Data18Spider
 from spiders.dmm_spider import DmmSpider
 from spiders.spider_manager import SearchSpider, DitalSpider
 from ui.search_metadata_window import Ui_search_meta_Dialog
@@ -29,6 +30,7 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
 
         self.spider_search_Manager = None
         self.init_spiders('dmm.co.jp', DmmSpider, ':/icons/spider_icons/dmm.ico')
+        self.init_spiders('data18.com', Data18Spider, ':/icons/spider_icons/data18.bmp')
 
         self.tbl_search_result.put_meta.connect(self.search_meta_item_select)
 
@@ -146,7 +148,7 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
             self.spider_dital_Manager.out_msg.connect(self.status_msg)
             self.spider_dital_Manager.put_meta.connect(self.add_detial)
             self.spider_dital_Manager.dital_finish.connect(self.spider_dital_finish)
-            # self.spider_dital_Manager.put_imagedata.connect(self.add_detail_images)
+            self.spider_dital_Manager.put_imagedata.connect(self.add_detail_images)
             self.spider_dital_Manager.start()
 
     def spider_dital_finish(self):
@@ -154,6 +156,9 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         # self.gb_meta_search.setEnabled(True)
         # self.gb_meta_set.setEnabled(True)
         # self.overwrite = True
+
+    def add_detail_images(self,img):
+        self.lst_pices.add_pic_fromData(img)
 
     def add_detial(self, meta):
         if not meta:

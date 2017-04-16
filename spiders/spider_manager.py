@@ -32,15 +32,16 @@ class SearchSpider(BaseThread):
         count = 0
         self.out_msg.emit('[{}]开始搜索……'.format(self.spider.name))
         for meta in self.spider.search(self.keyword,self.stype):
-            if self.stoped: break
+            if meta:
+                if self.stoped: break
 
-            self.put_meta.emit(meta)
-            count += 1
-            total = meta.get('total',0)
-            if total:
-                self.out_msg.emit('[{}]找到{}/{}个……'.format(self.spider.name, count,total))
-            else:
-                self.out_msg.emit('[{}]找到{}个……'.format(self.spider.name, count))
+                self.put_meta.emit(meta)
+                count += 1
+                total = meta.get('total',0)
+                if total:
+                    self.out_msg.emit('[{}]找到{}/{}个……'.format(self.spider.name, count,total))
+                else:
+                    self.out_msg.emit('[{}]找到{}个……'.format(self.spider.name, count))
 
         self.search_finish.emit(count)
 
@@ -63,19 +64,30 @@ class DitalSpider(BaseThread):
             self.spider.stop = True
             return
         self.out_msg.emit('[{}]开始获取元数据……'.format(self.spider.name))
-        meta,imgs = self.spider.dital(self.url, self.meta)
-        if meta:
-            self.put_meta.emit(meta)
+        count= 0
+        for each in self.spider.dital(self.url, self.meta):
+            if each:
+                if isinstance(each,OrderedDict):
+                    self.put_meta.emit(each)
+                if isinstance(each,bytes):
+                    count += 1
+                    self.out_msg.emit('[{}]正在下载海报{}……'.format(self.spider.name,count))
+                    self.put_imagedata.emit(each)
 
-        if imgs:
 
-            self.out_msg.emit('[{}]开始下载海报……'.format(self.spider.name))
-            for i,each in enumerate(self.spider.get_img_data(imgs)):
-                if self.stoped:
-                    break
-                self.out_msg.emit('[{}]正在下载海报{}……'.format(self.spider.name,i+1))
-                self.put_imagedata.emit(each)
-                # sleep(0.5)
+        # meta,imgs = self.spider.dital(self.url, self.meta)
+        # if meta:
+        #     self.put_meta.emit(meta)
+        #
+        # if imgs:
+        #
+        #     self.out_msg.emit('[{}]开始下载海报……'.format(self.spider.name))
+        #     for i,each in enumerate(self.spider.get_img_data(imgs)):
+        #         if self.stoped:
+        #             break
+        #         self.out_msg.emit('[{}]正在下载海报{}……'.format(self.spider.name,i+1))
+        #         self.put_imagedata.emit(each)
+        #         # sleep(0.5)
 
 
         self.dital_finish.emit()

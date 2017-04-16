@@ -646,7 +646,7 @@ if __name__ == '__main__':
     splash.show()
 
     app.processEvents()
-
+    DownCache.del_expire()
     main_form = MainForm()
     main_form.show()
     # app.processEvents()
