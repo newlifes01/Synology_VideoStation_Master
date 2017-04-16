@@ -3,6 +3,7 @@
 from PyQt5.QtCore import pyqtSignal, Qt, QSize
 from PyQt5.QtGui import QFont, QIcon, QPixmap, QColor
 from PyQt5.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem
+from collections import OrderedDict
 
 import utils
 
@@ -78,7 +79,7 @@ class BaseTblSearch(QTableWidget):
 
 
 class TblSeacheResult(BaseTblSearch):
-    put_meta = pyqtSignal(dict)
+    put_meta = pyqtSignal(OrderedDict)
 
     def __init__(self, parent=None):
         super(TblSeacheResult, self).__init__(parent)

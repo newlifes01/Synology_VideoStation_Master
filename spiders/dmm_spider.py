@@ -69,7 +69,7 @@ class DmmSpider(BaseSpider):
         else:
             return -1
 
-    def parse_search_html(self, res):
+    def parse_search_html(self, res,stype):
         if not res:
             return
         next_page = re.search(r'<li><a href="(http://www.dmm.co.jp/.+?page=\d*)/">次へ</a>'
@@ -89,29 +89,54 @@ class DmmSpider(BaseSpider):
             url = li.select_one('p.tmb a').get('href')
             url_type = self.get_url_type(url)
             if url_type >= 0:
-                src_url = 'http:' + li.select_one('p.tmb a img').get('src')
-                result = utils.get_spider_metastruct()
-
-                result['标题'] = li.select_one('p.tmb a img').get('alt')
-                result['电视节目标题'] = result['标题']
-                result['集标题'] = result['标题']
-
+                src_url = 'http:' + li.select_one('p.tmb a img').get('src')  #todo 爬虫搜索结果
+                result = utils.gen_metadata_struck(stype)
+                if '标题' in result:
+                    result['标题'] = li.select_one('p.tmb a img').get('alt')
+                if '电视节目标题' in result:
+                    result['电视节目标题'] = li.select_one('p.tmb a img').get('alt')
+                if '集标题' in result:
+                    result['集标题'] = li.select_one('p.tmb a img').get('alt')
                 result['级别'] = 'R18+'
                 try:
                     result['评级'] = self.format_rate_str(li.select_one('div.value p.rate').text)
                 except Exception:
                     pass
 
-                result['dital_url'] = url
-                result['id'] = re.search(r'cid=(.+)/', url).group(1)
+                result['tag']['type'] = stype
+                result['tag']['dital_url'] = url
+                result['tag']['video_id'] = re.search(r'cid=(.+)/', url).group(1)
 
-                result['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(src_url)).content)
-                result['poster'] = utils.create_poster(result['backdrop'])
-                result['total'] = int(re.match(r'(\d+).*', total.get_text()).group(1)) if total else 0
-                result['tip'] = sell.get_text() if sell else ''
-
+                result['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(src_url)).content)
+                result['tag']['poster'] = utils.create_poster(result['tag']['backdrop'])
+                result['tag']['total'] = int(re.match(r'(\d+).*', total.get_text()).group(1)) if total else 0
+                result['tag']['tip'] = sell.get_text() if sell else ''
 
                 yield result
+
+
+                # result = utils.get_spider_metastruct()
+                #
+                # result['标题'] = li.select_one('p.tmb a img').get('alt')
+                # result['电视节目标题'] = result['标题']
+                # result['集标题'] = result['标题']
+                #
+                # result['级别'] = 'R18+'
+                # try:
+                #     result['评级'] = self.format_rate_str(li.select_one('div.value p.rate').text)
+                # except Exception:
+                #     pass
+                #
+                # result['dital_url'] = url
+                # result['id'] = re.search(r'cid=(.+)/', url).group(1)
+                #
+                # result['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(src_url)).content)
+                # result['poster'] = utils.create_poster(result['backdrop'])
+                # result['total'] = int(re.match(r'(\d+).*', total.get_text()).group(1)) if total else 0
+                # result['tip'] = sell.get_text() if sell else ''
+                #
+                #
+                # yield result
 
     def parse_url_search(self, res):
         if not res:
@@ -139,7 +164,7 @@ class DmmSpider(BaseSpider):
 
         return result
 
-    def search(self, keyword):
+    def search(self, keyword,stype):
         if keyword.startswith('http'):
             res = self.download_page_request(keyword, True)
 
@@ -151,7 +176,7 @@ class DmmSpider(BaseSpider):
                 if url:
                     res = self.download_page_request(url, True)
                     if res:
-                        for each in self.parse_search_html(res):
+                        for each in self.parse_search_html(res,stype):
                             yield each
                     else:
                         print('搜索失败')
@@ -159,7 +184,7 @@ class DmmSpider(BaseSpider):
 
     def parse_dital(self, html, meta):
         if not html or not meta: return
-        url_type = self.get_url_type(meta.get('dital_url'))
+        url_type = self.get_url_type(meta.get('tag').get('dital_url'))
         if url_type < 0: return
         # 年份
         try:
@@ -172,9 +197,13 @@ class DmmSpider(BaseSpider):
             else:  # 0,1,5,6,7,9
                 year = re.search(r'配信開始日：.*?(\d{4}/\d{2}/\d{2})', html, re.S)
 
-            meta['发布日期'] = utils.format_date_str(year.group(1))
-            meta['发布日期(电视节目)'] = meta['发布日期']
-            meta['发布日期(集)'] = meta['发布日期']
+
+            if '发布日期' in meta:
+                meta['发布日期'] = utils.format_date_str(year.group(1))
+            if '发布日期(电视节目)' in meta:
+                meta['发布日期(电视节目)'] = utils.format_date_str(year.group(1))
+            if '发布日期(集)' in meta:
+                meta['发布日期(集)'] = utils.format_date_str(year.group(1))
         except Exception:
             pass
 
@@ -280,7 +309,7 @@ class DmmSpider(BaseSpider):
             else:
                 directors = re.search(r'<tr>\s*?<td.*?>監督：</td>\s*?<td.*?>(.+?)</td>\s*?</tr>', html, re.S)
             if directors:
-                meta['导演'] = ','.join(directors.group(1).split(' '))
+                meta['导演'] = ','.join(directors.group(1).strip().split(' '))
                 tmp = re.findall('<a href=".+?"\s*?>(.+?)</a>', directors.group(1))
                 if tmp and len(tmp):
                     meta['导演'] = ','.join(tmp)

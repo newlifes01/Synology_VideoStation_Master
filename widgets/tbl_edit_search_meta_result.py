@@ -14,7 +14,7 @@ class TblSearchResultEidt(TblMetadata):
 
     def get_metadata(self,meta=None):
 
-        meta = {}
+
 
         row = self.rowCount()
         for i in range(0, row):

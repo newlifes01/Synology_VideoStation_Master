@@ -32,12 +32,14 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
 
         self.tbl_search_result.put_meta.connect(self.search_meta_item_select)
 
+
         self.hs_zoom.setMaximum(200)
         self.hs_zoom.setProperty("value", 100)
 
         self.hs_zoom.valueChanged.connect(self.pic_zoom)
 
         self.btn_add.clicked.connect(self.finish_edit)
+        self.btn_cancel.clicked.connect(self.reject)
         self.meta_return = None
         self.pices_return = None
 
@@ -66,10 +68,13 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
             return
 
 
-        filename = os.path.splitext(os.path.basename(self.video.get('path')))[0]
-        title = self.video.get('title')
+        filename =os.path.splitext(self.video.get('文件名'))[0] #os.path.splitext(os.path.basename(self.video.get('path')))[0]
+
 
         if not filename:
+            title = self.video.get('标题')
+            if not title:
+                title = self.video.get('电视节目标题')
             filename = title
 
         self.edt_keyword.setText(filename)
@@ -137,7 +142,7 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
     def search_meta_item_select(self,meta):
         if meta:
             spider = self.cb_spiders.currentData(Qt.UserRole)
-            self.spider_dital_Manager = DitalSpider(spider, meta.get('dital_url'), meta=meta)
+            self.spider_dital_Manager = DitalSpider(spider, meta.get('tag').get('dital_url'), meta=meta)
             self.spider_dital_Manager.out_msg.connect(self.status_msg)
             self.spider_dital_Manager.put_meta.connect(self.add_detial)
             self.spider_dital_Manager.dital_finish.connect(self.spider_dital_finish)
@@ -151,25 +156,33 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         # self.overwrite = True
 
     def add_detial(self, meta):
+        if not meta:
+            return
         # self.tbl_metadata.set_tbl_content(meta, self.overwrite)#todo feidsm
         self.lst_pices.clear()
-        video_dital = utils.search_result_to_table_data(meta,self.video.get('type'))
-        poster = meta.get('poster')
+        # video_dital = utils.search_result_to_table_data(meta,self.video.get('type'))
+        poster = meta.get('tag').get('poster')
         if poster:
             self.lst_pices.add_pic_fromData(poster)
-        backdrop = meta.get('backdrop')
+        backdrop = meta.get('tag').get('backdrop')
         if backdrop:
             self.lst_pices.add_pic_fromData(backdrop)
 
 
-        self.tbl_metadata.ref_table(video_dital)
+        self.tbl_metadata.ref_table(meta,ignore=['文件名'])
 
     def finish_edit(self):
-        self.meta_return = self.tbl_metadata.get_metadata()
+        try:
 
-        self.pices_return = self.lst_pices.get_piclist_data_to_dict()
+            filename = self.video.get('文件名')
+            self.meta_return =  self.tbl_metadata.get_metadata(self.tbl_search_result.get_select_row_data())
+            self.meta_return['文件名'] = filename
 
-        self.accept()
+            self.pices_return = self.lst_pices.get_piclist_data_to_dict()
+
+            self.accept()
+        except Exception:
+            self.reject()
 
 
 

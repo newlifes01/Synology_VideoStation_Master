@@ -134,7 +134,39 @@ QPushButton:checked:hover {
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="6">
+        <item row="0" column="6">
+         <widget class="QPushButton" name="btn_setting">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="statusTip">
+           <string>设置</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton
+{
+	background-image:url(:/icons/ui_icons/settings.png);
+	background-repeat:no-repeat;
+	background-position: center center;
+	border:none;
+}
+QPushButton:hover
+{
+	background-image:url(:/icons/ui_icons/settings (1).png);
+}</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="7">
          <widget class="TblSeacheResult" name="tbl_search_result_widget">
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
@@ -304,38 +336,6 @@ QPushButton:hover
 QPushButton:hover
 {
 	background-image:url(:/icons/ui_icons/save (1).png);
-}</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="flat">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btn_setting">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="statusTip">
-             <string>设置</string>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton
-{
-	background-image:url(:/icons/ui_icons/settings.png);
-	background-repeat:no-repeat;
-	background-position: center center;
-	border:none;
-}
-QPushButton:hover
-{
-	background-image:url(:/icons/ui_icons/settings (1).png);
 }</string>
             </property>
             <property name="text">

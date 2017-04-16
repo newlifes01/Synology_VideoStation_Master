@@ -72,6 +72,27 @@ class Ui_MainWindow(object):
         self.btn_dsm_search.setCheckable(True)
         self.btn_dsm_search.setObjectName("btn_dsm_search")
         self.gridLayout.addWidget(self.btn_dsm_search, 0, 5, 1, 1)
+        self.btn_setting = QtWidgets.QPushButton(self.gb_dsm_search_result)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btn_setting.sizePolicy().hasHeightForWidth())
+        self.btn_setting.setSizePolicy(sizePolicy)
+        self.btn_setting.setStyleSheet("QPushButton\n"
+"{\n"
+"    background-image:url(:/icons/ui_icons/settings.png);\n"
+"    background-repeat:no-repeat;\n"
+"    background-position: center center;\n"
+"    border:none;\n"
+"}\n"
+"QPushButton:hover\n"
+"{\n"
+"    background-image:url(:/icons/ui_icons/settings (1).png);\n"
+"}")
+        self.btn_setting.setText("")
+        self.btn_setting.setFlat(False)
+        self.btn_setting.setObjectName("btn_setting")
+        self.gridLayout.addWidget(self.btn_setting, 0, 6, 1, 1)
         self.tbl_search_result_widget = TblSeacheResult(self.gb_dsm_search_result)
         self.tbl_search_result_widget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.tbl_search_result_widget.setShowGrid(False)
@@ -83,7 +104,7 @@ class Ui_MainWindow(object):
         self.tbl_search_result_widget.horizontalHeader().setHighlightSections(False)
         self.tbl_search_result_widget.verticalHeader().setVisible(False)
         self.tbl_search_result_widget.verticalHeader().setHighlightSections(False)
-        self.gridLayout.addWidget(self.tbl_search_result_widget, 1, 0, 1, 6)
+        self.gridLayout.addWidget(self.tbl_search_result_widget, 1, 0, 1, 7)
         self.groupBox = QtWidgets.QGroupBox(self.splitter)
         self.groupBox.setTitle("")
         self.groupBox.setObjectName("groupBox")
@@ -166,27 +187,6 @@ class Ui_MainWindow(object):
         self.btn_save.setFlat(False)
         self.btn_save.setObjectName("btn_save")
         self.horizontalLayout_2.addWidget(self.btn_save)
-        self.btn_setting = QtWidgets.QPushButton(self.groupBox)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_setting.sizePolicy().hasHeightForWidth())
-        self.btn_setting.setSizePolicy(sizePolicy)
-        self.btn_setting.setStyleSheet("QPushButton\n"
-"{\n"
-"    background-image:url(:/icons/ui_icons/settings.png);\n"
-"    background-repeat:no-repeat;\n"
-"    background-position: center center;\n"
-"    border:none;\n"
-"}\n"
-"QPushButton:hover\n"
-"{\n"
-"    background-image:url(:/icons/ui_icons/settings (1).png);\n"
-"}")
-        self.btn_setting.setText("")
-        self.btn_setting.setFlat(False)
-        self.btn_setting.setObjectName("btn_setting")
-        self.horizontalLayout_2.addWidget(self.btn_setting)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.tabWidget = QtWidgets.QTabWidget(self.groupBox)
         self.tabWidget.setObjectName("tabWidget")
@@ -301,12 +301,12 @@ class Ui_MainWindow(object):
         self.edt_dsm_search_keyword.setPlaceholderText(_translate("MainWindow", "输入关键字查找(留空表示显示全部视频)"))
         self.chk_only_nil.setText(_translate("MainWindow", "只查找无海报视频"))
         self.btn_dsm_search.setStatusTip(_translate("MainWindow", "查找VideoStation视频"))
+        self.btn_setting.setStatusTip(_translate("MainWindow", "设置"))
         self.tbl_search_result_widget.setSortingEnabled(True)
         self.cb_current_video.setStatusTip(_translate("MainWindow", "当前修改的视频"))
         self.btn_meta_search.setStatusTip(_translate("MainWindow", "查找当前视频元数据"))
         self.btn_fresh.setStatusTip(_translate("MainWindow", "刷新当前视频元数据"))
         self.btn_save.setStatusTip(_translate("MainWindow", "保存修改结果到VideoStation"))
-        self.btn_setting.setStatusTip(_translate("MainWindow", "设置"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_meta), _translate("MainWindow", "元数据"))
         self.btn_add_pic.setStatusTip(_translate("MainWindow", "添加图片"))
         self.btn_del_pic.setStatusTip(_translate("MainWindow", "删除选中图片"))

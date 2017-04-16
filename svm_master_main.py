@@ -644,6 +644,7 @@ if __name__ == '__main__':
 
     splash = QSplashScreen(QPixmap(":/icons/others/span.gif"))
     splash.show()
+
     app.processEvents()
 
     main_form = MainForm()

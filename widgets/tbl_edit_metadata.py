@@ -31,6 +31,11 @@ class TblMetadata(QTableWidget):
 
         widget.setCurrentIndex(0)
         widget.setFixedHeight(22)
+        widget.setStyleSheet('''
+            QComboBox::drop-down:button{
+            background-color: rgb(234,234,234);
+            }
+        ''')
         return widget
 
     # 设置单元格信息
@@ -49,7 +54,7 @@ class TblMetadata(QTableWidget):
 
         return item
 
-    def ref_table(self, video):
+    def ref_table(self, video,ignore=None):
         if not video:
             return
         self.clear()
@@ -67,6 +72,10 @@ class TblMetadata(QTableWidget):
         for k, v in video.items():
             if k == 'tag':
                 continue
+
+            if ignore:
+                if k in ignore:
+                    continue
 
             isColor = count % 2 == 0
 

@@ -231,7 +231,7 @@ def gen_metadata_struck(kind):
     }
     result = struck.get(kind)
     result.update(tag)
-    return result
+    return OrderedDict(result)
 
 
 def search_result_to_table_data(meta, stype):

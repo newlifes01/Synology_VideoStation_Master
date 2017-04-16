@@ -100,7 +100,7 @@ class BaseSpider:
     def parse_page(self,respone):
         pass
 
-    def search(self,keyword):
+    def search(self,keyword,stype):
         pass
 
     def dital(self, url, meta):

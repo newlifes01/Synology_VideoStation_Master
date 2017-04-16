@@ -3,17 +3,20 @@
 
 from PyQt5.QtCore import pyqtSignal
 
+import utils
 from spiders.base_thread import BaseThread
-from utils import get_spider_metastruct
+from collections import OrderedDict
+
 
 
 class SearchSpider(BaseThread):
     search_finish = pyqtSignal(int)
-    put_meta = pyqtSignal(dict)
+    put_meta = pyqtSignal(OrderedDict)
     # get_vercode = pyqtSignal(dict)
 
-    def __init__(self, spider, keyword):
+    def __init__(self, spider, keyword,stype='movie'):
         super().__init__()
+        self.stype = stype
         self.keyword = keyword
         self.spider = spider
 
@@ -28,7 +31,7 @@ class SearchSpider(BaseThread):
             return
         count = 0
         self.out_msg.emit('[{}]开始搜索……'.format(self.spider.name))
-        for meta in self.spider.search(self.keyword):
+        for meta in self.spider.search(self.keyword,self.stype):
             if self.stoped: break
 
             self.put_meta.emit(meta)
@@ -44,16 +47,16 @@ class SearchSpider(BaseThread):
 
 class DitalSpider(BaseThread):
     dital_finish = pyqtSignal()
-    put_meta = pyqtSignal(dict)
+    put_meta = pyqtSignal(OrderedDict)
     put_imagedata = pyqtSignal(bytes)
 
     def __init__(self, spider, url,meta=None):
         super().__init__()
         self.url = url
         self.spider = spider
-        self.meta = get_spider_metastruct()
-        if meta:
-            self.meta.update(meta)
+        self.meta = meta
+        # if meta:
+        #     self.meta.update(meta)
 
     def run(self):
         if self.stoped:
