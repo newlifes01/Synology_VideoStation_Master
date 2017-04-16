@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>spider_icons/data18.ico</file>
     <file>others/span.gif</file>
     <file>others/empty.png</file>
     <file>ui_icons/refresh-button (1).png</file>

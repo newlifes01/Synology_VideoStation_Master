@@ -114,7 +114,7 @@ class DSMAPI(QThread):
                 self.cache.save_cache(cache_name, bytes_res, utils.format_time_stamp(mtime), 0)
         return bytes_res
 
-    def get_video_backdrop(self, mapper_id, mtime):  # todo 不是所有类型都有背景图
+    def get_video_backdrop(self, mapper_id, mtime):
         if not mtime:
             return
 
@@ -293,7 +293,7 @@ class DSMAPI(QThread):
         #     for result in results:
         #         yield result
 
-    def get_video_dital_info(self, video): #todo , sid, stype
+    def get_video_dital_info(self, video):
         sid = video.get('tag').get('id')
         stype = video.get('tag').get('type')
         param = {

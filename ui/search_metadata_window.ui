@@ -55,8 +55,11 @@
         </item>
         <item>
          <widget class="QLineEdit" name="edt_keyword">
+          <property name="toolTip">
+           <string>输入搜索关键字或直接输入影片网址</string>
+          </property>
           <property name="placeholderText">
-           <string>输入搜索关键字</string>
+           <string>输入搜索关键字或网址</string>
           </property>
           <property name="clearButtonEnabled">
            <bool>true</bool>

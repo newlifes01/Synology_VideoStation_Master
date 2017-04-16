@@ -192,7 +192,8 @@ class Ui_search_meta_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         search_meta_Dialog.setWindowTitle(_translate("search_meta_Dialog", "搜索元数据"))
         self.label_2.setText(_translate("search_meta_Dialog", "关键字"))
-        self.edt_keyword.setPlaceholderText(_translate("search_meta_Dialog", "输入搜索关键字"))
+        self.edt_keyword.setToolTip(_translate("search_meta_Dialog", "输入搜索关键字或直接输入影片网址"))
+        self.edt_keyword.setPlaceholderText(_translate("search_meta_Dialog", "输入搜索关键字或网址"))
         self.btn_search.setText(_translate("search_meta_Dialog", "搜索"))
         self.label_3.setText(_translate("search_meta_Dialog", "季"))
         self.label_4.setText(_translate("search_meta_Dialog", "集"))

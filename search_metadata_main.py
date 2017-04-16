@@ -158,7 +158,7 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
     def add_detial(self, meta):
         if not meta:
             return
-        # self.tbl_metadata.set_tbl_content(meta, self.overwrite)#todo feidsm
+        # self.tbl_metadata.set_tbl_content(meta, self.overwrite)#
         self.lst_pices.clear()
         # video_dital = utils.search_result_to_table_data(meta,self.video.get('type'))
         poster = meta.get('tag').get('poster')

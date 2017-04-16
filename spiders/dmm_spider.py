@@ -89,7 +89,7 @@ class DmmSpider(BaseSpider):
             url = li.select_one('p.tmb a').get('href')
             url_type = self.get_url_type(url)
             if url_type >= 0:
-                src_url = 'http:' + li.select_one('p.tmb a img').get('src')  #todo 爬虫搜索结果
+                src_url = 'http:' + li.select_one('p.tmb a img').get('src')
                 result = utils.gen_metadata_struck(stype)
                 if '标题' in result:
                     result['标题'] = li.select_one('p.tmb a img').get('alt')
@@ -138,23 +138,35 @@ class DmmSpider(BaseSpider):
                 #
                 # yield result
 
-    def parse_url_search(self, res):
+    def parse_url_search(self, res ,stype='movie'):
         if not res:
             return
-        result = utils.get_spider_metastruct()
+        result = utils.gen_metadata_struck(stype)
         try:
             json_ld = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',res.text,re.S).group(1))
 
+            if '标题' in result:
+                result['标题'] = json_ld.get('name')
+            if '电视节目标题' in result:
+                result['电视节目标题'] = json_ld.get('name')
+            if '集标题' in result:
+                result['集标题'] = json_ld.get('name')
 
-            result['标题'] = json_ld.get('name')
-            result['电视节目标题'] = result['标题']
-            result['集标题'] = result['标题']
+
 
             result['级别'] = 'R18+'
             result['评级'] = self.format_rate_str(json_ld.get('aggregateRating').get('ratingValue'))
 
-            result['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
-            result['poster'] = utils.create_poster(result['backdrop'])
+            result['tag']['type'] = stype
+            result['tag']['dital_url'] = res.url
+            result['tag']['video_id'] = re.search(r'cid=(.+)/', res.url).group(1)
+
+            result['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
+            result['tag']['poster'] = utils.create_poster(result['tag']['backdrop'])
+            result['tag']['total'] = 0
+            result['tag']['tip'] = ''
+
+
 
         except Exception:
                 pass
@@ -168,7 +180,7 @@ class DmmSpider(BaseSpider):
         if keyword.startswith('http'):
             res = self.download_page_request(keyword, True)
 
-            yield self.parse_url_search(res)
+            yield self.parse_url_search(res,stype)
         else:
             self.add_urls('http://www.dmm.co.jp/search/=/searchstr={}/limit=120/sort=date/'.format(keyword))
             while self.has_url():
