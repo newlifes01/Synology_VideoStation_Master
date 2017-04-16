@@ -152,7 +152,7 @@ class DSMAPI(QThread):
             'additional': '["poster_mtime","backdrop_mtime","summary"]'
         }
 
-        if keyword and not only_nil:
+        if keyword:
             param.update({'keyword': '"{}"'.format(keyword)})
 
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(sAPI), 'list', param)
@@ -611,16 +611,16 @@ class DSMAPI(QThread):
     def set_video_info(self, meta):
         if not meta:
             return
-        stype = meta.get('type')
+        stype = meta.get('tag').get('type')
         if not stype:
             return
         param = None
 
         if stype == 'home_video':
             param = {
-                'library_id': '{}'.format(meta.get('library_id')),
+                'library_id': '{}'.format(meta.get('tag').get('library_id')),
                 'target': '"video"',
-                'id': '{}'.format(meta.get('id')),
+                'id': '{}'.format(meta.get('tag').get('id')),
                 'title': '"{}"'.format(meta.get('标题', '')),
 
                 'record_date_date': '"{}"'.format(utils.format_date_str(meta.get('录制开始时间', ''))),
@@ -639,9 +639,9 @@ class DSMAPI(QThread):
 
         if stype == 'tvshow':
             param = {
-                'library_id': '{}'.format(meta.get('library_id')),
+                'library_id': '{}'.format(meta.get('tag').get('library_id')),
                 'target': '"video"',
-                'id': '{}'.format(meta.get('id')),
+                'id': '{}'.format(meta.get('tag').get('id')),
                 'title': '"{}"'.format(meta.get('电视节目标题', '')),
                 'original_available': '"{}"'.format(utils.format_date_str(meta.get('发布日期', ''))),
                 'metadata_locked': 'true',
@@ -652,9 +652,9 @@ class DSMAPI(QThread):
 
         if stype == 'tvshow_episode':
             param = {
-                'library_id': '{}'.format(meta.get('library_id')),
+                'library_id': '{}'.format(meta.get('tag').get('library_id')),
                 'target': '"video"',
-                'id': '{}'.format(meta.get('id')),
+                'id': '{}'.format(meta.get('tag').get('id')),
                 'title': '"{}"'.format(meta.get('电视节目标题', '')),
                 'tvshow_original_available': '"{}"'.format(utils.format_date_str(meta.get('发布日期(电视节目)', ''))),
                 'tagline': '"{}"'.format(meta.get('集标题', '')),
@@ -674,9 +674,9 @@ class DSMAPI(QThread):
             }
         if stype == 'movie':
             param = {
-                'library_id': '{}'.format(meta.get('library_id')),
+                'library_id': '{}'.format(meta.get('tag').get('library_id')),
                 'target': '"video"',
-                'id': '{}'.format(meta.get('id')),
+                'id': '{}'.format(meta.get('tag').get('id')),
                 'title': '"{}"'.format(meta.get('标题', '')),
                 'tagline': '"{}"'.format(meta.get('标语', '')),
                 'original_available': '"{}"'.format(utils.format_date_str(meta.get('发布日期', ''))),

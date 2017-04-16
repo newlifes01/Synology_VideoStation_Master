@@ -46,13 +46,7 @@ if not os.path.exists(CACHE_PATH):
     os.mkdir(CACHE_PATH)
 
 
-
-
-
-
 def fill_cn_form_en(stype, cn, en):
-
-
     for k, v in cn.items():
         if k == 'tag':
             try:
@@ -119,6 +113,12 @@ def fill_cn_form_en(stype, cn, en):
         if k == '集':
             try:
                 cn[k] = str(en.get('episode'))
+            except Exception:
+                pass
+
+        if k == '级别':
+            try:
+                cn[k] = str(en.get('certificate'))
             except Exception:
                 pass
 

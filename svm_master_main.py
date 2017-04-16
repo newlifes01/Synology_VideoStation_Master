@@ -508,33 +508,34 @@ class MainForm(QMainWindow, Ui_MainWindow):
         app.processEvents()
         try:
             meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
-            meta.update({
-                'poster': b'',
-                'backdrop': b'',
-            })
+            meta['tag']['poster']=b''
+            meta['tag']['backdrop'] = b''
             for i, img_data in enumerate(self.get_piclist_data_to_dict()):
                 app.processEvents()
                 if not img_data:
                     break
                 if i == 0:
-                    meta['poster'] = img_data
+                    meta['tag']['poster'] = img_data
                 elif i == 1:
-                    meta['backdrop'] = img_data
+                    meta['tag']['backdrop'] = img_data
                 else:
                     break
-            if meta.get('poster'):
-                self.DSM.set_poster(meta.get('type'), meta.get('id'), meta.get('poster'))
+
+            tag = meta.get('tag')
+
+            if tag.get('poster'):
+                self.DSM.set_poster(tag.get('type'), tag.get('id'), tag.get('poster'))
                 self.status_msg('[VideoStation]写入封面海报……')
                 app.processEvents()
             else:
-                self.DSM.del_poster(meta.get('type'), meta.get('id'))
+                self.DSM.del_poster(tag.get('type'), tag.get('id'))
 
-            if meta.get('backdrop'):
-                self.DSM.set_backdrop(meta.get('type'), meta.get('id'), meta.get('backdrop'))
+            if tag.get('backdrop'):
+                self.DSM.set_backdrop(tag.get('type'), tag.get('id'), tag.get('backdrop'))
                 self.status_msg('[VideoStation]写入背景海报……')
                 app.processEvents()
             else:
-                self.DSM.del_backdrop(meta.get('type'), meta.get('id'), meta.get('mapper_id'))
+                self.DSM.del_backdrop(tag.get('type'), tag.get('id'), tag.get('mapper_id'))
 
             self.status_msg('[VideoStation]写入元数据……')
             app.processEvents()
@@ -545,22 +546,22 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.select_single_video(0)
             # 回写搜索结果
             row = self.tbl_search_result_widget.currentRow()
-            data = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
-            data.update({
-                'poster': b'',
-                'backdrop': b'',
-            })
-            for i, img_data in enumerate(self.get_piclist_data_to_dict()):
-                app.processEvents()
-                if not img_data:
-                    break
-                if i == 0:
-                    data['poster'] = img_data
-                elif i == 1:
-                    data['backdrop'] = img_data
-                else:
-                    break
-            self.tbl_search_result_widget.insert_data(data, row)
+            # data = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
+            # data.update({
+            #     'poster': b'',
+            #     'backdrop': b'',
+            # })
+            # for i, img_data in enumerate(self.get_piclist_data_to_dict()):
+            #     app.processEvents()
+            #     if not img_data:
+            #         break
+            #     if i == 0:
+            #         data['tag']['poster'] = img_data
+            #     elif i == 1:
+            #         data['tag']['backdrop'] = img_data
+            #     else:
+            #         break
+            self.tbl_search_result_widget.insert_data(meta, row)
 
             app.processEvents()
         finally:

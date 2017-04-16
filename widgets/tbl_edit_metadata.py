@@ -125,15 +125,15 @@ class TblMetadata(QTableWidget):
         #     count += 1
 
     def get_metadata(self, meta):
-        if not meta:
-            return
-        stype = meta.get('type')
-        library_id = meta.get('library_id')
-        sid = meta.get('id')
-        mapper_id = meta.get('mapper_id')
-
-        if not stype or library_id is None or sid is None or mapper_id is None:
-            return
+        # if not meta:
+        #     return
+        # stype = meta.get('type')
+        # library_id = meta.get('library_id')
+        # sid = meta.get('id')
+        # mapper_id = meta.get('mapper_id')
+        #
+        # if not stype or library_id is None or sid is None or mapper_id is None:
+        #     return
 
         row = self.rowCount()
         for i in range(0, row):

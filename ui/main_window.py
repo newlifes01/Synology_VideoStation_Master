@@ -299,7 +299,7 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "关键字"))
         self.edt_dsm_search_keyword.setStatusTip(_translate("MainWindow", "输入关键字查找(留空表示显示当前资料库全部视频)"))
         self.edt_dsm_search_keyword.setPlaceholderText(_translate("MainWindow", "输入关键字查找(留空表示显示全部视频)"))
-        self.chk_only_nil.setText(_translate("MainWindow", "只查找无元数据视频"))
+        self.chk_only_nil.setText(_translate("MainWindow", "只查找无海报视频"))
         self.btn_dsm_search.setStatusTip(_translate("MainWindow", "查找VideoStation视频"))
         self.tbl_search_result_widget.setSortingEnabled(True)
         self.cb_current_video.setStatusTip(_translate("MainWindow", "当前修改的视频"))

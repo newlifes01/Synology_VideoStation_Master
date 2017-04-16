@@ -92,7 +92,7 @@
         <item row="0" column="4">
          <widget class="QCheckBox" name="chk_only_nil">
           <property name="text">
-           <string>只查找无元数据视频</string>
+           <string>只查找无海报视频</string>
           </property>
          </widget>
         </item>
