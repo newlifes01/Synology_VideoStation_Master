@@ -3,6 +3,8 @@
 # author: syaofox@gmail.com
 import re
 from bs4 import BeautifulSoup
+from pyquery import PyQuery as pq
+from collections import OrderedDict
 
 import utils
 from spiders.base_spider import BaseSpider
@@ -76,64 +78,27 @@ class Data18Spider(BaseSpider):
                 result['tag']['tip'] = utils.format_date_str(meta[0].strip())
             yield result
 
-    def parse_url_search(self, res, stype='movie'):
-        if not res:
-            return
-        result = utils.gen_metadata_struck(stype)
-        pattern = re.compile(r'<div style="float: left;.*?(\d{4}-\d{2}-\d{2}.*?)'
-                             r'<a href="(http://.*?)">.*?'
-                             r'<img src="(http://.*?)" style=".*?'
-                             r'title="(.*?)".*?')
-        metas = re.findall(pattern, res.text, re.S)
-        try:
-            for meta in metas:
-                if '标题' in result:
-                    result['标题'] = meta[3]
-                if '电视节目标题' in result:
-                    result['电视节目标题'] = meta[3]
-                if '集标题' in result:
-                    result['集标题'] = meta[3]
-        except Exception as e:
-            pass
-        # try:
-        #     json_ld = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',res.text,re.S).group(1))
-        #
-        #     if '标题' in result:
-        #         result['标题'] = json_ld.get('name')
-        #     if '电视节目标题' in result:
-        #         result['电视节目标题'] = json_ld.get('name')
-        #     if '集标题' in result:
-        #         result['集标题'] = json_ld.get('name')
-        #
-        #
-        #
-        #     result['级别'] = 'R18+'
-        #     result['评级'] = self.format_rate_str(json_ld.get('aggregateRating').get('ratingValue'))
-        #
-        #     result['tag']['type'] = stype
-        #     result['tag']['dital_url'] = res.url
-        #     result['tag']['video_id'] = re.search(r'cid=(.+)/', res.url).group(1)
-        #
-        #     result['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
-        #     result['tag']['poster'] = utils.create_poster(result['tag']['backdrop'])
-        #     result['tag']['total'] = 0
-        #     result['tag']['tip'] = ''
-        #
-        #
-        #
-        # except Exception:
-        #         pass
-        #
-        #
-        # result['dital_url'] = res.url
-
-        return result
-
     def search(self, keyword, stype):
         if keyword.startswith('http'):
             res = self.download_page_request(keyword)
+            meta = utils.gen_metadata_struck(stype)
+            search_type = re.search(r'http://www\.data18\.com/(.*)/\d+', keyword).group(1)
 
-            yield self.parse_url_search(res, stype)
+            findeds = self.parse_dital(res.text, meta, search=True, types=search_type)
+
+            for finded in findeds:
+                if isinstance(finded, OrderedDict):
+                    finded['tag']['type'] = stype
+                    finded['tag']['dital_url'] = keyword
+                    # result['tag']['video_id'] = re.search(r'cid=(.+)/', res.url).group(1)
+
+                    # result['tag']['backdrop'] = utils.tim_img_bytes(
+                    #     self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
+                    # result['tag']['poster'] = utils.create_poster(result['tag']['backdrop'])
+                    # result['tag']['total'] = 0
+                    # result['tag']['tip'] = ''
+
+                    yield finded
         else:
             self.add_urls('http://www.data18.com/search/?k={}'.format(keyword))
             while self.has_url():
@@ -148,164 +113,342 @@ class Data18Spider(BaseSpider):
                         # sleep(0.1)
 
     def dital(self, url, meta):
-
-        res = self.download_page_request(url)
-        if res:
-            return self.parse_dital(res.text, meta)
-
-    def parse_dital(self, html, meta):  #todo ﻿http://www.data18.com/movies/154497 无法抓取 ﻿http://www.data18.com/movies/154574
-        if not html or not meta: return
-        soup = BeautifulSoup(html, "lxml")
-
-        div_main = soup.select_one('#centered > div.p8 > div:nth-of-type(7) > div')
-        is_backdrop = re.search('(Click to Enlarge Front & Back Cover)', div_main.text, re.S) is not None
         try:
-            post_url = div_main.select_one('div:nth-of-type(1) > a').get('href')
-            if is_backdrop:
-                meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
-                meta['tag']['poster'] = utils.create_poster(meta['tag']['backdrop'])
-            else:
-                meta['tag']['poster'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
-                backdrop_url = div_main.select_one('div:nth-of-type(1) > p > a').get('href')
-                meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(backdrop_url).content)
-                meta['tag']['backdrop'] = utils.merge_image(meta['tag']['poster'], meta['tag']['backdrop'])
+            stype = re.search(r'http://www\.data18\.com/(.*)/\d+', url).group(1)
+            res = self.download_page_request(url)
+            if res:
+                return self.parse_dital(res.text, meta, types=stype, url=url)
         except Exception:
             pass
 
-        meta['级别'] = 'R18+'
+    # def parse_url_search(self, res, stype='movie'):
+    #     meta = utils.gen_metadata_struck(stype)
+    #     finded =self.parse_dital(res.text,meta)
+    #     yield finded
 
+    def parse_thumbel_page(self, father_url):
         try:
-            year = div_main.select_one('div.gen12 > p:nth-of-type(1)').text
-            year = re.search(r'Release date: (.*?\d{4})', year).group(1)
-            if '发布日期' in meta:
-                meta['发布日期'] = utils.format_date_str(year)
-            if '发布日期(电视节目)' in meta:
-                meta['发布日期(电视节目)'] = utils.format_date_str(year)
-            if '发布日期(集)' in meta:
-                meta['发布日期(集)'] = utils.format_date_str(year)
+
+            pa = re.search('(http://.*/)(\d+)', father_url)
+            count = int(pa.group(2))
+            http = pa.group(1)
+
+            samples = ['{}{:0>2d}'.format(http, x) for x in range(1, count + 1)]
+            if samples:
+                for url in samples:
+                    res = self.download_page_request(url, referer=url)
+                    if res:
+                        try:
+                            soup = BeautifulSoup(res.text, 'lxml')
+                            img_url = soup.select_one('#post_view > a > img').get('src')
+                            img_data = self.download_page_request(img_url, res.url)
+                            if img_data:
+                                yield img_data.content
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+
+    def parse_dital(self, html, meta, types='movie',
+                    search=False,
+                    url=''):  # todo ﻿http://www.data18.com/movies/154497 无法抓取 ﻿http://www.data18.com/movies/154574
+        if not html or not meta: return
+        relock = re.search(r'<a href="(.*?)">Click here to continue\.\.\.</a>', html)
+        if relock:
+            res = self.RequestSession.get((relock.group(1)), timeout=utils.DOWN_TIME_OUT)
+            self.add_log('parse_search_html 重置:', relock.group(1))
+            if res == 200:
+                html = res.text
+            else:
+                return
+                # self.add_urls(relock.group(1), True)
+                # return self.dital(url, meta)
+
+        soup = BeautifulSoup(html, "lxml")
+
+        # div_main = soup.select_one('#centered > div.p8 > div:nth-of-type(7) > div')
+        #
+        # is_backdrop = re.search('(Click to Enlarge Front & Back Cover)', div_main.text, re.S) is not None
+        # try:
+        #     post_url = div_main.select_one('div:nth-of-type(1) > a').get('href')
+        #     if is_backdrop:
+        #         meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
+        #         meta['tag']['poster'] = utils.create_poster(meta['tag']['backdrop'])
+        #     else:
+        #         meta['tag']['poster'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
+        #         backdrop_url = div_main.select_one('div:nth-of-type(1) > p > a').get('href')
+        #         meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(backdrop_url).content)
+        #         meta['tag']['backdrop'] = utils.merge_image(meta['tag']['poster'], meta['tag']['backdrop'])
+        # except Exception:
+        #     pass
+        #
+        # meta['级别'] = 'R18+'
+        #
+        # try:
+        #     title  = soup.select_one('#centered > div.p8 > div:nth-of-type(1) > h1').text
+        #     if '标题' in meta:
+        #         meta['标题'] = title
+        #     if '电视节目标题' in meta:
+        #         meta['电视节目标题'] = title
+        #     if '集标题' in meta:
+        #         meta['集标题'] = title
+        # except Exception:
+        #     pass
+        #
+        #
+        # info_txt = soup.select_one('#centered > div.p8 > div:nth-of-type(7) > div').get_text()
+        # infos = re.search(
+        #     r'Release date:(?P<date>.*?)\s*?(?:(Studio)|(Site)):(?P<writer>.*?)\s*?\|\s*?Director:\s*?(?P<director>.*?)\s*?'
+        #     r'(?:Movie Length.*?)?'
+        #     r'(?P<gener>Categories:.*?)?'
+        #     r'Description:\s*?(?P<des>.*)', info_txt, re.S)
+        #
+        # # print('date', infos.group('date').strip())
+        # print('writer', infos.group('writer').strip())
+        # print('director', infos.group('director').strip())
+        # print('gener', infos.group('gener'))
+        # # print('des', infos.group('des').strip())
+        #
+        # try:
+        #     year = infos.group('date').strip()
+        #
+        #     if '发布日期' in meta:
+        #         meta['发布日期'] = utils.format_date_str(year)
+        #     if '发布日期(电视节目)' in meta:
+        #         meta['发布日期(电视节目)'] = utils.format_date_str(year)
+        #     if '发布日期(集)' in meta:
+        #         meta['发布日期(集)'] = utils.format_date_str(year)
+        # except Exception:
+        #     pass
+        #
+        # try:
+        #     meta['摘要'] = infos.group('des').strip()
+        #     meta['标语'] = meta['摘要'][:30]
+        # except Exception:
+        #     pass
+        #
+        # try:
+        #     g_str = re.search('<b>Categories:</b>(.*?)<b>Description:', str(div_main), re.S).group(1)
+        #     geres = []
+        #     geres_a = re.findall(r'<a href=".*?">(.*?)</a>', g_str, re.S)
+        #     if geres_a:
+        #         geres.extend(geres_a)
+        #     geres_b = re.findall(r'<span class="gensmall">(.*?)</span>', g_str, re.S)
+        #     if geres_b:
+        #         geres.extend(geres_b)
+        #     geres = [a for a in filter(lambda x: x.find(':') < 0, geres)]
+        #     meta['类型'] = ','.join(geres)
+        # except Exception:
+        #     pass
+        #
+        # yield meta
+
+        if types == 'movies':
+            try:
+                title = soup.select_one('#centered > div.p8 > div:nth-of-type(1) > h1').text
+                if '标题' in meta:
+                    meta['标题'] = title
+                if '电视节目标题' in meta:
+                    meta['电视节目标题'] = title
+                if '集标题' in meta:
+                    meta['集标题'] = title
+            except Exception:
+                pass
+
+            div_main = soup.select_one('#centered > div.p8 > div:nth-of-type(7) > div')
+
+            is_backdrop = re.search('(Click to Enlarge Front & Back Cover)', div_main.text, re.S) is not None
+            try:
+                post_url = div_main.select_one('div:nth-of-type(1) > a').get('href')
+                if is_backdrop:
+                    meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
+                    meta['tag']['poster'] = utils.create_poster(meta['tag']['backdrop'])
+                else:
+                    meta['tag']['poster'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
+                    backdrop_url = div_main.select_one('div:nth-of-type(1) > p > a').get('href')
+                    meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(backdrop_url).content)
+                    meta['tag']['backdrop'] = utils.merge_image(meta['tag']['poster'], meta['tag']['backdrop'])
+            except Exception:
+                pass
+
+            meta['级别'] = 'R18+'
+
+            try:
+                year = div_main.select_one('div.gen12 > p:nth-of-type(1)').text
+                year = re.search(r'Release date: (.*?\d{4})', year)
+                if not year:
+                    year = div_main.select_one('div.gen12 > p:nth-of-type(2)').text
+                    year = re.search(r'Release date: (.*?\d{4})', year)
+
+                year = year.group(1)
+                if '发布日期' in meta:
+                    meta['发布日期'] = utils.format_date_str(year)
+                if '发布日期(电视节目)' in meta:
+                    meta['发布日期(电视节目)'] = utils.format_date_str(year)
+                if '发布日期(集)' in meta:
+                    meta['发布日期(集)'] = utils.format_date_str(year)
+
+
+            except Exception:
+                pass
+
             try:
                 meta['摘要'] = div_main.select_one('div.gen12 > p.gen12').text.strip().strip('Description:')
                 meta['标语'] = meta['摘要'][:30]
             except Exception:
                 pass
 
-        except Exception:
-            pass
+            try:
+                g_str = re.search('<b>Categories:</b>(.*?)<b>Description:', str(div_main), re.S).group(1)
+                geres = []
+                geres_a = re.findall(r'<a href=".*?">(.*?)</a>', g_str, re.S)
+                if geres_a:
+                    geres.extend(geres_a)
+                geres_b = re.findall(r'<span class="gensmall">(.*?)</span>', g_str, re.S)
+                if geres_b:
+                    geres.extend(geres_b)
+                geres = [a for a in filter(lambda x: x.find(':') < 0, geres)]
+                meta['类型'] = ','.join(geres)
+            except Exception:
+                pass
 
-        try:
-            g_str = re.search('<b>Categories:</b>(.*?)<b>Description:', str(div_main), re.S).group(1)
-            geres = []
-            geres_a = re.findall(r'<a href=".*?">(.*?)</a>', g_str, re.S)
-            if geres_a:
-                geres.extend(geres_a)
-            geres_b = re.findall(r'<span class="gensmall">(.*?)</span>', g_str, re.S)
-            if geres_b:
-                geres.extend(geres_b)
-            geres = [a for a in filter(lambda x: x.find(':') < 0, geres)]
-            meta['类型'] = ','.join(geres)
-        except Exception:
-            pass
+            try:
+                actor_div = soup.select('#centered > div.p8 > div:nth-of-type(10) > div > div > div')
+                actors = [actor.text.strip() for actor in actor_div]
+                actor_more = soup.select('#centered > div.p8 > div:nth-of-type(10) > div > p:nth-of-type(2) > a')
+                if actor_more:
+                    actors.extend([actor.text.strip() for actor in actor_more])
+                meta['演员'] = ','.join(actors)
+            except Exception:
+                pass
 
-        try:
-            actor_div = soup.select('#centered > div.p8 > div:nth-of-type(10) > div > div > div')
-            actors = [actor.text.strip() for actor in actor_div]
-            actor_more = soup.select('#centered > div.p8 > div:nth-of-type(10) > div > p:nth-of-type(2) > a')
-            if actor_more:
-                actors.extend([actor.text.strip() for actor in actor_more])
-            meta['演员'] = ','.join(actors)
-        except Exception:
-            pass
+            try:
+                w_d = div_main.select_one('div.gen12 > p:nth-of-type(2)')
+                writers = re.search(r'<b>(?:Site|Studio):</b> (.*?) \| <b>Director:</b>(.*?)</p>', str(w_d), re.S)
+                if not writers:
+                    w_d = div_main.select_one('div.gen12 > p:nth-of-type(3)')
+                    writers = re.search(r'<b>(?:Site|Studio):</b> (.*?) \| <b>Director:</b>(.*?)</p>', str(w_d), re.S)
 
-        try:
-            w_d = div_main.select_one('div.gen12 > p:nth-of-type(2)')
-            writers = re.search(r'<b>(?:Site|Studio):</b> (.*?) \| <b>Director:</b>(.*?)</p>', str(w_d), re.S)
-            if writers:
-                if writers.group(1):
-                    writer = writers.group(1)
-                    writer_a = re.search(r'<a.*?>(.*)</a>', writer)
-                    if writer_a:
-                        writer = writer_a.group(1)
-                    meta['作者'] = ','.join([writer.strip()])
+                if writers:
+                    if writers.group(1):
+                        writer = writers.group(1)
+                        writer_a = re.search(r'<a.*?>(.*)</a>', writer)
+                        if writer_a:
+                            writer = writer_a.group(1)
+                        meta['作者'] = ','.join([writer.strip()])
 
-                if writers.group(2):
-                    director = writers.group(2)
-                    director_a = re.search(r'<a.*?>(.*)</a>', director)
-                    if director_a:
-                        director = director_a.group(1)
-                    meta['导演'] = ','.join([director.strip()])
+                    if writers.group(2):
+                        director = writers.group(2)
+                        director_a = re.search(r'<a.*?>(.*)</a>', director)
+                        if director_a:
+                            director = director_a.group(1)
+                        meta['导演'] = ','.join([director.strip()])
 
-        except Exception:
-            pass
+            except Exception:
+                pass
 
-        yield meta
+            yield meta
 
-        # pa = re.search(r'<meta name="keywords".*?content="(.*?)".*'
-        #                r'<a href="(.*?)" class="grouped_elements" rel="covers".*?'
-        #                r'Click Cover to Enlarge - <a href="(.*?)".*?'
-        #                r'<p>Production Year.*?Release date: (.*?\d{4}).*?</p>.*?'
-        #                r'<b>Site:</b> <a href=".*?">(.*?)</a> \| '
-        #                r'<b>Director:</b> (.*?)</p>.*?'
-        #                r'<b>Categories:</b>(.*?)</p>.*?'
-        #                r'<b>Description:</b><br />(.*?)</p></div>.*?'
-        #                r'<div class="contenedor"(.*?)</p><.*?/div>.*?</div>', html, re.S)
-        #
-        # if not pa.groups():
-        #     pa = re.search(r'<meta name="keywords".*?content="(.*?)".*'
-        #                    r'<a href="(.*?)" class="grouped_elements" rel="covers".*?'
-        #                    r'Click to Enlarge Front & Back Cover.*?'
-        #                    r'<p>Production Year.*?Release date: (.*?\d{4}).*?</p>.*?'
-        #                    r'<b>Site:</b> <a href=".*?">(.*?)</a> \| '
-        #                    r'<b>Director:</b> (.*?)</p>.*?'
-        #                    r'<b>Categories:</b>(.*?)</p>.*?'
-        #                    r'<b>Description:</b><br />(.*?)</p></div>.*?'
-        #                    r'<div class="contenedor"(.*?)</p><.*?/div>.*?</div>', html, re.S)
-        #
-        # geres = []
-        # geres_a = re.findall(r'<a href=".*?">(.*?)</a>', pa.group(7), re.S)
-        # if geres_a:
-        #     geres.extend(geres_a)
-        # geres_b = re.findall(r'<span class="gensmall">(.*?)</span>', pa.group(7), re.S)
-        # if geres_b:
-        #     geres.extend(geres_b)
-        #
-        # if '标题' in meta:
-        #     meta['标题'] = pa.group(1)
-        # if '电视节目标题' in meta:
-        #     meta['电视节目标题'] = pa.group(1)
-        # if '集标题' in meta:
-        #     meta['集标题'] = pa.group(1)
-        #
-        # if '发布日期' in meta:
-        #     meta['发布日期'] = utils.format_date_str(pa.group(4))
-        # if '发布日期(电视节目)' in meta:
-        #     meta['发布日期(电视节目)'] = utils.format_date_str(pa.group(4))
-        # if '发布日期(集)' in meta:
-        #     meta['发布日期(集)'] = utils.format_date_str(pa.group(4))
-        #
-        # meta['级别'] = 'R18+'
-        #
-        # meta['摘要'] = pa.group(8).strip()
-        # meta['标语'] = meta['摘要'][:30]
-        #
-        # geres = [a for a in filter(lambda x: x.find(':') < 0, geres)]
-        # meta['类型'] = ','.join(geres)
-        #
-        # actors = re.findall(r'<a href=".*?" class="gensmall">(.*?)</a>', pa.group(9), re.S)
-        # meta['演员'] = ','.join(actors)
-        #
-        # meta['导演'] = ','.join([pa.group(6)])
-        #
-        # meta['作者'] = ','.join([pa.group(5)])
-        #
-        # meta['tag']['poster'] = utils.tim_img_bytes(self.download_page_request(pa.group(2)).content)
-        # meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(pa.group(3)).content)
-        #
-        #
-        # yield meta
+            # # 缩略图
+            if not search:
+                try:
+                    soup = BeautifulSoup(html, 'lxml')
+                    samples = soup.select('#centered > div.p8 > div:nth-of-type(15) > a')
+                    sample = samples[-1].get('href')
+                    for im in self.parse_thumbel_page(sample):
+                        yield im
+                except Exception:
+                    pass
+        elif types == 'content':
+            doc = pq(html)
+            try:
+                title = doc('#centered > div.p8 > div:nth-child(1) > h1').text()
+                if '标题' in meta:
+                    meta['标题'] = title
+                if '电视节目标题' in meta:
+                    meta['电视节目标题'] = title
+                if '集标题' in meta:
+                    meta['集标题'] = title
+            except Exception:
+                pass
 
-        # # 缩略图
-        # samples = re.findall(r'src="(https?://pics.dmm.co.jp/.+?-\d{1,2}.jpg)"', html)
-        # if samples:
-        #     for sample in samples:
-        #         url = self.get_full_src(sample)
-        #         yield self.download_page_request(url).content
+            try:
+                post_url = doc('#moviewrap > img').attr('src')
+
+                meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
+                meta['tag']['poster'] = utils.create_poster(meta['tag']['backdrop'], middle=True)
+
+            except Exception:
+                pass
+
+            meta['级别'] = 'R18+'
+
+            try:
+
+                year = doc('#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > p:nth-child(2) > span > a')
+                year = year.text()
+                # year = re.search(r'Release date: (.*?\d{4})', year)
+                # if not year:
+                #     year = div_main.select_one('div.gen12 > p:nth-of-type(2)').text
+                #     year = re.search(r'Release date: (.*?\d{4})', year)
+
+                # year = year.text
+                if '发布日期' in meta:
+                    meta['发布日期'] = utils.format_date_str(year)
+                if '发布日期(电视节目)' in meta:
+                    meta['发布日期(电视节目)'] = utils.format_date_str(year)
+                if '发布日期(集)' in meta:
+                    meta['发布日期(集)'] = utils.format_date_str(year)
+
+
+            except Exception:
+                pass
+
+            try:
+                meta['摘要'] = doc(
+                    '#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > div.gen12 > p').text().strip('Story:')
+                meta['标语'] = meta['摘要'][:30]
+            except Exception:
+                pass
+            #
+            try:
+                div_gener = doc(
+                    '#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > div:nth-child(5) > div').find(
+                    'a').items()
+                meta['类型'] = ','.join([x.text().strip() for x in div_gener])
+            except Exception:
+                pass
+            #
+            try:
+                actors_p = doc('#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > p:nth-child(4)').find(
+                    'a.bold').items()
+
+                meta['演员'] = ','.join([x.text().strip() for x in actors_p])
+            except Exception:
+                pass
+            #
+            try:
+                d_w_p = doc('#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > p:nth-child(3) > a').text()
+                meta['作者'] = ','.join([d_w_p])
+                meta['导演'] = ','.join([d_w_p])
+
+            except Exception:
+                pass
+            #
+            yield meta
+            #
+            # # 缩略图
+
+            if not search:
+                try:
+                    count = doc('#centered > div.p8 > div:nth-child(13) > div > p > b').text().strip('images').strip()
+                    father = doc('#centered > div.p8 > div:nth-child(13) > div > div').find('a').attr('href')
+                    pa = re.search('(http://.*/)(\d+)', father)
+
+                    http = pa.group(1)
+                    father_url = '{}{:0>2d}'.format(http, int(count))
+
+                    for im in self.parse_thumbel_page(father_url):
+                        yield im
+                except Exception:
+                    pass

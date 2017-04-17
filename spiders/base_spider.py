@@ -44,7 +44,7 @@ class BaseSpider:
     def has_url(self):
         return len(self.urls) > 0
 
-    def download_page_request(self, url, retry=0):
+    def download_page_request(self, url, retry=0,referer=''):
         if not url or self.stoped:
             utils.add_log(self.logger,'error','Url为空', url)
             return
@@ -68,7 +68,9 @@ class BaseSpider:
             res = self.RequestSession.get(url, timeout=utils.DOWN_TIME_OUT)
             sleep(utils.SPIDER_DOWNLOAD_SLEEP_TIME)
             if res.status_code == 200:
-                self.RequestSession.headers.update({'referer': res.url, 'Referer': res.url})
+                if referer == '':
+                    referer = res.url
+                self.RequestSession.headers.update({'referer': referer, 'Referer': referer})
                 modify_time = utils.format_time_stamp(res.headers.get('Last-Modified'))
                 if not modify_time:
                     modify_time = utils.format_time_stamp(res.headers.get('last-modified'))
