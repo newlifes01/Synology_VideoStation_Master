@@ -31,7 +31,7 @@ CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
 DSM_CACHE_PATH = os.path.join(PROJECT_PATH, 'http_cache.sqlite')
 
 # 爬虫缓存保留时间 秒
-SPIDER_CACHE_KEEP_TIME = 3600
+SPIDER_CACHE_KEEP_TIME = 3600 * 24
 # 缓存保留时间 秒
 CACHE_KEEP_TIME = 10 * 60
 # 表格宽高
@@ -499,7 +499,7 @@ def get_cert_txt(idx):
 def gen_liststr(list_str):
     if not list_str:
         return '[""]'
-    list_str = re.sub(r'([,，\s]+)', ',', list_str.strip())
+    list_str = re.sub(r'([,，]+)', ',', list_str.strip())
     list = list_str.split(',')
 
     if list and len(list):

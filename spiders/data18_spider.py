@@ -418,12 +418,30 @@ class Data18Spider(BaseSpider):
                 meta['类型'] = ','.join([x.text().strip() for x in div_gener])
             except Exception:
                 pass
+
+            if not meta['类型']:
+
+                try:
+                    div_gener = doc(
+                        '#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > div:nth-child(6) > div').find(
+                        'a').items()
+                    meta['类型'] = ','.join([x.text().strip() for x in div_gener])
+                except Exception:
+                    pass
             #
             try:
                 actors_p = doc('#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > p:nth-child(4)').find(
                     'a.bold').items()
 
                 meta['演员'] = ','.join([x.text().strip() for x in actors_p])
+            except Exception:
+                pass
+            try:
+                if not meta['演员'] :
+                    actors_p = doc('#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > p:nth-child(5)').find(
+                        'a.bold').items()
+
+                    meta['演员'] = ','.join([x.text().strip() for x in actors_p])
             except Exception:
                 pass
             #

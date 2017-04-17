@@ -49,38 +49,44 @@ class BaseSpider:
             utils.add_log(self.logger,'error','Url为空', url)
             return
 
-        head = self.RequestSession.head(url, timeout=utils.DOWN_TIME_OUT)
-        try:
-            if head.status_code == 200:
-                modify_time = utils.format_time_stamp(head.headers.get('Last-Modified'))
-                if not modify_time:
-                    modify_time = utils.format_time_stamp(head.headers.get('last-modified'))
-                if modify_time:
-                    res = self.cache.get_cache(url,modify_time)
-                else:
-                    res = self.cache.get_cache(url)
-                if res:
-                    return res
-        except Exception:
-            pass
+        # head = self.RequestSession.head(url, timeout=utils.DOWN_TIME_OUT)
+        # try:
+        #     if head.status_code == 200:
+        #         modify_time = utils.format_time_stamp(head.headers.get('Last-Modified'))
+        #         if not modify_time:
+        #             modify_time = utils.format_time_stamp(head.headers.get('last-modified'))
+        #         if modify_time:
+        #             res = self.cache.get_cache(url,modify_time)
+        #         else:
+        #             res = self.cache.get_cache(url)
+        #         if res:
+        #             return res
+        # except Exception:
+        #     pass
+
+
 
         try:
+            res = self.cache.get_cache(url)
+            if res:
+                return res
+
             res = self.RequestSession.get(url, timeout=utils.DOWN_TIME_OUT)
             sleep(utils.SPIDER_DOWNLOAD_SLEEP_TIME)
             if res.status_code == 200:
                 if referer == '':
                     referer = res.url
                 self.RequestSession.headers.update({'referer': referer, 'Referer': referer})
-                modify_time = utils.format_time_stamp(res.headers.get('Last-Modified'))
-                if not modify_time:
-                    modify_time = utils.format_time_stamp(res.headers.get('last-modified'))
-
-                if modify_time:
-                    utils.add_log(self.logger, 'info', 'save_cache modify_time:', url,modify_time)
-                    self.cache.save_cache(url,res,modify_time,0)
-                else:
-                    utils.add_log(self.logger, 'info', 'save_cache expire:', url, )
-                    self.cache.save_cache(url, res, time())
+                # modify_time = utils.format_time_stamp(res.headers.get('Last-Modified'))
+                # if not modify_time:
+                #     modify_time = utils.format_time_stamp(res.headers.get('last-modified'))
+                #
+                # if modify_time:
+                #     utils.add_log(self.logger, 'info', 'save_cache modify_time:', url,modify_time)
+                #     self.cache.save_cache(url,res,modify_time,0)
+                # else:
+                utils.add_log(self.logger, 'info', 'save_cache expire:', url, )
+                self.cache.save_cache(url, res, time())
                 return res
             else:
                 if retry >= utils.RETRYMAX:
