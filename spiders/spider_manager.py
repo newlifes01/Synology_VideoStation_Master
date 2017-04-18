@@ -68,6 +68,7 @@ class DitalSpider(BaseThread):
         ditals = self.spider.dital(self.url, self.meta)
         if ditals:
             for each in ditals:
+                if self.stoped: break
                 if each:
                     if isinstance(each,OrderedDict):
                         self.put_meta.emit(each)

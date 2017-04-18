@@ -283,7 +283,7 @@ QPushButton:checked:hover {
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btn_fresh">
+           <widget class="QPushButton" name="btn_clear_table">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>

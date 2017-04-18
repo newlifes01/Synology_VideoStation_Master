@@ -101,7 +101,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.cb_current_video.currentIndexChanged.connect(self.select_single_video)
         self.cb_current_video.currentIndexChanged[str].connect(self.status_msg)
 
-        self.btn_fresh.clicked.connect(self.refresh_dsm)
+        self.btn_clear_table.clicked.connect(self.table_video_meta.clear_table)
         self.btn_save.clicked.connect(self.save_to_dsm)
 
         self.btn_meta_search.clicked.connect(self.search_metadata)
@@ -115,7 +115,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.tbl_search_result_widget.setEnabled(False)
             self.cb_current_video.setEnabled(False)
             self.btn_meta_search.setEnabled(False)
-            self.btn_fresh.setEnabled(False)
+            self.btn_clear_table.setEnabled(False)
             self.btn_save.setEnabled(False)
             self.btn_setting.setEnabled(False)
 
@@ -130,7 +130,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.tbl_search_result_widget.setEnabled(True)
             self.cb_current_video.setEnabled(True)
             self.btn_meta_search.setEnabled(True)
-            self.btn_fresh.setEnabled(True)
+            self.btn_clear_table.setEnabled(True)
             self.btn_save.setEnabled(True)
             self.btn_setting.setEnabled(True)
 
@@ -145,7 +145,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.tbl_search_result_widget.setEnabled(False)
             self.cb_current_video.setEnabled(False)
             self.btn_meta_search.setEnabled(False)
-            self.btn_fresh.setEnabled(False)
+            self.btn_clear_table.setEnabled(False)
             self.btn_save.setEnabled(False)
 
             self.tab_meta.setEnabled(False)
@@ -161,7 +161,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.tbl_search_result_widget.setEnabled(False)
             self.cb_current_video.setEnabled(False)
             self.btn_meta_search.setEnabled(False)
-            self.btn_fresh.setEnabled(False)
+            self.btn_clear_table.setEnabled(False)
             self.btn_save.setEnabled(False)
 
             self.tab_meta.setEnabled(False)
@@ -175,7 +175,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.tbl_search_result_widget.setEnabled(True)
             self.cb_current_video.setEnabled(False)
             self.btn_meta_search.setEnabled(False)
-            self.btn_fresh.setEnabled(False)
+            self.btn_clear_table.setEnabled(False)
             self.btn_save.setEnabled(False)
             self.btn_setting.setEnabled(False)
 

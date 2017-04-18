@@ -31,12 +31,17 @@ class TblMetadata(QTableWidget):
 
         widget.setCurrentIndex(0)
         widget.setFixedHeight(22)
-        widget.setStyleSheet('''
-            QComboBox::drop-down:button{
-            background-color: rgb(234,234,234);
-            }
-        ''')
+        # widget.setStyleSheet('''
+        #     QComboBox::drop-down:button{
+        #     background-color: rgb(234,234,234);
+        #     }
+        # ''')
         return widget
+
+    def clear_table(self):
+        self.clear()
+        self.setRowCount(0)
+        self.setColumnCount(2)
 
     # 设置单元格信息
     def cell(self, editable=True, var="", color=None, align=True):
@@ -186,6 +191,8 @@ class TblMetadata(QTableWidget):
             if key == '级别':
                 value = utils.get_cert_txt(self.rating_cb.currentIndex())
 
-            meta[key] = value
+            meta[key] = value.replace('"',r'\"')
 
         return meta
+
+

@@ -689,7 +689,6 @@ class DSMAPI(QThread):
                 'metadata_locked': 'true',
                 'summary': '"{}"'.format(meta.get('摘要', '')),
                 'extra': '"null"',
-                'tvshow_extra': '"null"',
             }
         if not param:
             return

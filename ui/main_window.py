@@ -145,13 +145,13 @@ class Ui_MainWindow(object):
         self.btn_meta_search.setFlat(False)
         self.btn_meta_search.setObjectName("btn_meta_search")
         self.horizontalLayout_2.addWidget(self.btn_meta_search)
-        self.btn_fresh = QtWidgets.QPushButton(self.groupBox)
+        self.btn_clear_table = QtWidgets.QPushButton(self.groupBox)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_fresh.sizePolicy().hasHeightForWidth())
-        self.btn_fresh.setSizePolicy(sizePolicy)
-        self.btn_fresh.setStyleSheet("QPushButton\n"
+        sizePolicy.setHeightForWidth(self.btn_clear_table.sizePolicy().hasHeightForWidth())
+        self.btn_clear_table.setSizePolicy(sizePolicy)
+        self.btn_clear_table.setStyleSheet("QPushButton\n"
 "{\n"
 "    background-image:url(:/icons/ui_icons/refresh-button.png);\n"
 "    background-repeat:no-repeat;\n"
@@ -162,10 +162,10 @@ class Ui_MainWindow(object):
 "{\n"
 "    background-image:url(:/icons/ui_icons/refresh-button (1).png);\n"
 "}")
-        self.btn_fresh.setText("")
-        self.btn_fresh.setFlat(False)
-        self.btn_fresh.setObjectName("btn_fresh")
-        self.horizontalLayout_2.addWidget(self.btn_fresh)
+        self.btn_clear_table.setText("")
+        self.btn_clear_table.setFlat(False)
+        self.btn_clear_table.setObjectName("btn_clear_table")
+        self.horizontalLayout_2.addWidget(self.btn_clear_table)
         self.btn_save = QtWidgets.QPushButton(self.groupBox)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -305,7 +305,7 @@ class Ui_MainWindow(object):
         self.tbl_search_result_widget.setSortingEnabled(True)
         self.cb_current_video.setStatusTip(_translate("MainWindow", "当前修改的视频"))
         self.btn_meta_search.setStatusTip(_translate("MainWindow", "查找当前视频元数据"))
-        self.btn_fresh.setStatusTip(_translate("MainWindow", "刷新当前视频元数据"))
+        self.btn_clear_table.setStatusTip(_translate("MainWindow", "刷新当前视频元数据"))
         self.btn_save.setStatusTip(_translate("MainWindow", "保存修改结果到VideoStation"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_meta), _translate("MainWindow", "元数据"))
         self.btn_add_pic.setStatusTip(_translate("MainWindow", "添加图片"))
