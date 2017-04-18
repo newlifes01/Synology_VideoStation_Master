@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 # 下载最大重试次数
 RETRYMAX = 5
 # 下载超时时间
-DOWN_TIME_OUT = 5
+DOWN_TIME_OUT = 15
 # 爬虫下载间隔
 SPIDER_DOWNLOAD_SLEEP_TIME = 0.1
 
@@ -593,6 +593,12 @@ def get_screen_width(input_str, max_width=None, tail='.', tail_length=2):
 
 
 def format_date_str(date_str):
+    try:
+        return datetime.strptime(date_str, '%m/%d/%Y').strftime('%Y-%m-%d')
+    except Exception:
+        pass
+
+
     try:
         return datetime.strptime(date_str, '%Y/%m/%d').strftime('%Y-%m-%d')
     except Exception:

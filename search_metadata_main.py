@@ -5,6 +5,7 @@ from PyQt5.QtCore import QRegExp, Qt, QSize
 from PyQt5.QtGui import QRegExpValidator, QIcon
 from PyQt5.QtWidgets import QDialog, QMessageBox
 
+from spiders.aventertainments_spider import AventertainmentsSpider
 from spiders.data18_spider import Data18Spider
 from spiders.dmm_spider import DmmSpider
 from spiders.spider_manager import SearchSpider, DitalSpider
@@ -29,6 +30,7 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         self.spider_dital_Manager = None
         self.init_spiders('dmm.co.jp', DmmSpider, ':/icons/spider_icons/dmm.ico')
         self.init_spiders('data18.com', Data18Spider, ':/icons/spider_icons/data18.bmp')
+        self.init_spiders('aventertainments.com', AventertainmentsSpider, ':/icons/spider_icons/aventer.ico')
 
         self.btn_dital.clicked.connect(self.search_meta_item_select)
 
@@ -45,6 +47,16 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
 
         self.btn_select_all.clicked.connect(lambda: self.lst_pices.choose_pic(1))
         self.btn_unselect_all.clicked.connect(lambda: self.lst_pices.choose_pic(2))
+
+        self.edt_keyword.textChanged.connect(self.auto_change_spdier)
+
+    def auto_change_spdier(self,txt):
+        if txt:
+            for i in range(self.cb_spiders.count()):
+                cb_txt = self.cb_spiders.itemText(i)
+                if txt.find(cb_txt) >= 0:
+                    self.cb_spiders.setCurrentIndex(i)
+                    break
 
     def init_spiders(self, name, class_seacher=None, icon=""):
 

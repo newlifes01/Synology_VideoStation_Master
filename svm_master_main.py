@@ -476,7 +476,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.status_msg('[VideoStation]写入元数据……')
             app.processEvents()
 
-            meta_write_result,is_del = self.DSM.set_video_info(meta)
+            meta_write_result, is_del = self.DSM.set_video_info(meta)
 
             if not meta_write_result:
                 QMessageBox.warning(self, '错误', '写入元数据失败！', QMessageBox.Ok)

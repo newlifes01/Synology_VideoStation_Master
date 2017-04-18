@@ -30,9 +30,14 @@ class SearchSpider(BaseThread):
             if meta:
                 if self.stoped: break
 
-                self.put_meta.emit(meta)
-                count += 1
-                total = meta.get('total', 0)
+
+
+                if isinstance(meta,int):
+                    total = meta
+                else:
+                    count += 1
+                    self.put_meta.emit(meta)
+                    total = meta.get('total', 0)
                 if total:
                     self.out_msg.emit('[{}]找到{}/{}个……'.format(self.spider.name, count, total))
                 else:
