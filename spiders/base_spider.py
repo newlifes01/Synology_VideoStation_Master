@@ -86,7 +86,11 @@ class BaseSpider:
                 #     self.cache.save_cache(url,res,modify_time,0)
                 # else:
                 utils.add_log(self.logger, 'info', 'save_cache expire:', url, )
-                self.cache.save_cache(url, res, time())
+                if utils.IMG_CACHE_KEEP_INFINITE and utils.IsValidImage(res.content):
+                    self.cache.save_cache(url, res, expire_time=0,mtime=0)
+                    self.add_log('永久缓存',url)
+                else:
+                    self.cache.save_cache(url, res, time())
                 return res
             else:
                 if retry >= utils.RETRYMAX:

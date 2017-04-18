@@ -26,6 +26,29 @@ class LstEditSearchMetadata(QListWidget):
                         }
                 ''')
 
+        # self.itemClicked.connect(self.choose_pic)
+        self.itemSelectionChanged.connect(lambda :self.choose_pic(0))
+
+
+    def choose_pic(self,mode=0):
+        for i in range(self.count()):
+            item = self.item(i)
+            if item:
+                if mode == 0:
+                    if item.isSelected():
+                        item.setCheckState(Qt.Checked)
+                    else:
+                        item.setCheckState(Qt.Unchecked)
+                if mode == 1:
+                    item.setCheckState(Qt.Checked)
+                if mode == 2:
+                    item.setCheckState(Qt.Unchecked)
+
+
+
+
+
+
     def add_pic_fromData(self, data, boshowsize=True):
         if not data:
             return

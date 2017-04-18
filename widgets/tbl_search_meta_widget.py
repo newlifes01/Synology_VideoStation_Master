@@ -11,7 +11,7 @@ from widgets.tbl_search_widget import BaseTblSearch
 
 
 class TblSeacheMetaResult(BaseTblSearch):
-    put_meta = pyqtSignal(OrderedDict)
+    # put_meta = pyqtSignal(OrderedDict)
 
     def __init__(self, parent=None):
         super(TblSeacheMetaResult, self).__init__(parent)
@@ -60,12 +60,13 @@ class TblSeacheMetaResult(BaseTblSearch):
         item = self.cell(text=meta.get('tag').get('dital_url'), color=self.item_background)
         self.setItem(0, 4, item)
 
-    def item_select(self, item):
+    def item_select(self):
         row = self.currentRow()
         item = self.item(row, 0)
         if item:
             data = item.data(Qt.UserRole)
-            self.put_meta.emit(data)
+            return data
+            # self.put_meta.emit(data)
 
     def get_select_row_data(self):
         row = self.currentRow()

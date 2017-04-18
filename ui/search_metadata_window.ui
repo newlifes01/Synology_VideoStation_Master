@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>搜索元数据</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,2,3,0">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -213,9 +213,33 @@
     </widget>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>158</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_dital">
+       <property name="text">
+        <string>分析</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QTabWidget" name="tabwidget_metas">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_metadata">
       <attribute name="title">
@@ -251,7 +275,7 @@
        <string>海报</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0" colspan="2">
+       <item row="0" column="0" colspan="4">
         <widget class="LstEditSearchMetadata" name="lst_pices">
          <property name="font">
           <font>
@@ -261,6 +285,9 @@
          </property>
          <property name="toolTip">
           <string/>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
          </property>
          <property name="iconSize">
           <size>
@@ -308,6 +335,26 @@
         </widget>
        </item>
        <item row="1" column="1">
+        <widget class="QPushButton" name="btn_select_all">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>全选</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="btn_unselect_all">
+         <property name="text">
+          <string>反选</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -380,6 +427,21 @@
    <header>widgets.lst_edit_search_metadata</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>edt_keyword</tabstop>
+  <tabstop>btn_search</tabstop>
+  <tabstop>edt_seasion</tabstop>
+  <tabstop>edt_episode</tabstop>
+  <tabstop>cb_spiders</tabstop>
+  <tabstop>tbl_search_result</tabstop>
+  <tabstop>btn_dital</tabstop>
+  <tabstop>tabwidget_metas</tabstop>
+  <tabstop>tbl_metadata</tabstop>
+  <tabstop>lst_pices</tabstop>
+  <tabstop>hs_zoom</tabstop>
+  <tabstop>btn_cancel</tabstop>
+  <tabstop>btn_add</tabstop>
+ </tabstops>
  <resources>
   <include location="res/interface.qrc"/>
  </resources>

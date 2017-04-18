@@ -30,10 +30,11 @@ CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
 # 缓存文件路径
 DSM_CACHE_PATH = os.path.join(PROJECT_PATH, 'http_cache.sqlite')
 
-# 爬虫缓存保留时间 秒
-SPIDER_CACHE_KEEP_TIME = 3600 * 24
+
 # 缓存保留时间 秒
-CACHE_KEEP_TIME = 10 * 60
+CACHE_KEEP_TIME = 3600 * 24
+# 图片是否永久缓存
+IMG_CACHE_KEEP_INFINITE = True
 # 表格宽高
 ITEM_WIDTH, ITEM_HEIGHT = 30, 40  # 120, 180
 HOMEVIEDO_WIDTH, HOMEVIDEO_HEIGHT = 40, 30  # 180, 100
@@ -757,6 +758,34 @@ def create_poster(in_bytes, middle=False):
         return out.getvalue()
     except Exception:
         return None
+
+
+# 判断文件是否为有效（完整）的图片
+# 输入参数为文件路径
+def IsValidImage(indata):
+    bValid = True
+    buf = indata
+    if isinstance(indata,bytes):
+        buf = BytesIO(indata)
+
+    try:
+        Image.open(buf).verify()
+    except:
+        bValid = False
+
+    return bValid
+
+#
+# # 判断文件是否为有效（完整）的图片
+# # 输入参数为bytes，如网络请求返回的二进制数据
+# def IsValidImage4Bytes(buf):
+#     bValid = True
+#     try:
+#         Image.open(BytesIO(buf)).verify()
+#     except:
+#         bValid = False
+#
+#     return bValid
 
 def merge_image(poster,bakdrop):
     try:
