@@ -3,6 +3,7 @@
 import logging
 from datetime import datetime
 from time import mktime, strptime
+from urllib.parse import urlencode, quote
 
 import os
 import re
@@ -176,6 +177,7 @@ def gen_metadata_struck(kind):
             'backdrop_mtime': '',
             'poster': b'',
             'backdrop': b'',
+            'xy':()
 
         }
     }
@@ -786,12 +788,5 @@ def merge_image(poster, bakdrop):
 
 
 if __name__ == '__main__':
-    x = '"{}"'.format(
-        'From the visionary Writer/Director Joone, come the long awaited and highly anticipated sequel to Digital Playground\'s "Pirates". Superstar Jesse Jane returns as the irresistible Jules - the seductive pirate hunter who leads an all-star cast that includes the world\'s hottest, most beautiful girls. Digital Playground contract stars Shay Jordan, Katsuni, Stoya, Gabriella Fox and Riley Steele heat up the screen with their most intense performances ever. International sensations BellaDonna, Sasha Grey, Jenna Haze, Shyla Stylez, Brianna Love, Shawna Lenee and many more complete this unforgettable journey. Ready with swords drawn high, Evan Stone, Tommy Gunn, and Stephen St. Croix reprise their gro...'.replace(
-            '"', r'\"'))
-
-    print(x)
-
-
-
-    # image_merge(images=['/Users/syaofox/Downloads/shermie98.jpg', '/Users/syaofox/Downloads/7269a4c5jw1en93mk6k6fj21kw23ualz_cover.jpg', 'xxxx.jpg'])
+    str = quote('金髪天国',encoding='euc-jp')
+    print(str)

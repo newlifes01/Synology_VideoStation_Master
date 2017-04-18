@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # author: syaofox@gmail.com
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtGui import QPixmap, QIcon, QBrush
 
 import utils
 from widgets.tbl_search_widget import BaseTblSearch
@@ -26,14 +26,18 @@ class TblSeacheMetaResult(BaseTblSearch):
             pixmap = QPixmap()
             pixmap.loadFromData(icon_data)
 
+            i_width, i_heigh = utils.ITEM_WIDTH, utils.ITEM_HEIGHT
+            if meta['tag']['xy']:
+                i_width, i_heigh = meta['tag']['xy']
+
             icon = QIcon(
-                pixmap.scaled(utils.ITEM_WIDTH, utils.ITEM_HEIGHT, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+                pixmap.scaled(i_width, i_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
             item = self.cell(color=self.item_background)
-
             item.setIcon(icon)
-            item.setSizeHint(QSize(utils.ITEM_WIDTH + 5, utils.ITEM_HEIGHT))
+            item.setSizeHint(QSize(i_width + 5, i_heigh))
+            # pixmap = pixmap.scaled(i_width, i_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+            # self.setImage(0, 0, pixmap)
             self.setItem(0, 0, item)
-
             item.setData(Qt.UserRole, meta)
 
         item = self.cell(text=meta.get('tag').get('video_id'), color=self.item_background)

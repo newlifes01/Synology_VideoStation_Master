@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from PyQt5.QtCore import pyqtSignal, Qt, QSize
-from PyQt5.QtGui import QFont, QIcon, QPixmap, QColor
-from PyQt5.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem
+from PyQt5.QtGui import QFont, QIcon, QPixmap, QColor, QPainter
+from PyQt5.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem, QWidget
 from collections import OrderedDict
 
 import utils
 
+class ImageWidget(QWidget):
+    def __init__(self, image_data, parent):
+        super(ImageWidget, self).__init__(parent)
+        self.picture = image_data
+
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.drawPixmap(0, 0, self.picture)
 
 class BaseTblSearch(QTableWidget):
     def __init__(self, parent=None):
@@ -37,6 +46,13 @@ class BaseTblSearch(QTableWidget):
 
         self.horizontalHeader().setVisible(False)
         self.horizontalHeader().setHighlightSections(False)
+
+
+    def setImage(self, row, col, image_data):
+        image = ImageWidget(image_data, self)
+        self.setCellWidget(row, col, image)
+
+
 
     # 设置单元格信息
     def cell(self, editable=True, text="", color=False, align=True):

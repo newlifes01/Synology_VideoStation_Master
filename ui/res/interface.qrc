@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>spider_icons/kin8tengoku.ico</file>
     <file>others/span.gif</file>
     <file>others/empty.png</file>
     <file>ui_icons/refresh-button (1).png</file>

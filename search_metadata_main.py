@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QDialog, QMessageBox
 from spiders.aventertainments_spider import AventertainmentsSpider
 from spiders.data18_spider import Data18Spider
 from spiders.dmm_spider import DmmSpider
+from spiders.kin8tengoku_spider import Kin8tengokuSpider
 from spiders.spider_manager import SearchSpider, DitalSpider
 from ui.search_metadata_window import Ui_search_meta_Dialog
 
@@ -31,6 +32,7 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         self.init_spiders('dmm.co.jp', DmmSpider, ':/icons/spider_icons/dmm.ico')
         self.init_spiders('data18.com', Data18Spider, ':/icons/spider_icons/data18.bmp')
         self.init_spiders('aventertainments.com', AventertainmentsSpider, ':/icons/spider_icons/aventer.ico')
+        self.init_spiders('kin8tengoku.com', Kin8tengokuSpider, ':/icons/spider_icons/kin8tengoku.ico')
 
         self.btn_dital.clicked.connect(self.search_meta_item_select)
 
