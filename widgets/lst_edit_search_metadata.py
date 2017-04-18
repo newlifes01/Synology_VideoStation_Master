@@ -2,16 +2,14 @@
 # -*- coding: utf-8 -*-
 # author: syaofox@gmail.com
 import os
-from PyQt5.QtCore import QByteArray, QBuffer, QIODevice, QSize, Qt
+from PyQt5.QtCore import QByteArray, QBuffer, QIODevice, Qt
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem
 
 
 class LstEditSearchMetadata(QListWidget):
-
     def __init__(self, parent=None):
         super(LstEditSearchMetadata, self).__init__(parent)
-        # self.setIconSize(QSize(200,200))
         self.setSpacing(5)
 
         self.setStyleSheet('''
@@ -26,11 +24,9 @@ class LstEditSearchMetadata(QListWidget):
                         }
                 ''')
 
-        # self.itemClicked.connect(self.choose_pic)
-        self.itemSelectionChanged.connect(lambda :self.choose_pic(0))
+        self.itemSelectionChanged.connect(lambda: self.choose_pic(0))
 
-
-    def choose_pic(self,mode=0):
+    def choose_pic(self, mode=0):
         for i in range(self.count()):
             item = self.item(i)
             if item:
@@ -43,11 +39,6 @@ class LstEditSearchMetadata(QListWidget):
                     item.setCheckState(Qt.Checked)
                 if mode == 2:
                     item.setCheckState(Qt.Unchecked)
-
-
-
-
-
 
     def add_pic_fromData(self, data, boshowsize=True):
         if not data:

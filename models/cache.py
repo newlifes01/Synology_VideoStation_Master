@@ -6,7 +6,6 @@ import logging
 # -*- coding: utf-8 -*-
 import pickle
 import sqlite3
-from datetime import datetime
 from time import time
 
 import hashlib
@@ -19,9 +18,10 @@ class DownCache(object):
         self.table_name = table_name
         self.logger = logging.getLogger('DownCache')
         self.initDB()
-        # self.del_expire()
-    def add_log(self,*msg,level='info'):
-        utils.add_log(self.logger,level,msg)
+
+    def add_log(self, *msg, level='info'):
+        utils.add_log(self.logger, level, msg)
+
     def initDB(self):
 
         db = sqlite3.connect(utils.DSM_CACHE_PATH)
@@ -59,7 +59,7 @@ class DownCache(object):
         db = sqlite3.connect(utils.DSM_CACHE_PATH)
         cursor = db.cursor()
 
-        tbs = ['spider_cache','dsm_cache']
+        tbs = ['spider_cache', 'dsm_cache']
         try:
             for tb_name in tbs:
                 cursor.execute('SELECT * FROM {}'.format(tb_name))
@@ -70,8 +70,7 @@ class DownCache(object):
                     name, ntime, expire, data, = rs
                     if expire > 0 and time() > expire:
                         cursor.execute('DELETE FROM {} WHERE name_hash=?'.format(tb_name), (name,))
-                        utils.add_log(logging.getLogger('cache'), 'info', '删除过期缓存 del_expire:',tb_name,'-', name)
-
+                        utils.add_log(logging.getLogger('cache'), 'info', '删除过期缓存 del_expire:', tb_name, '-', name)
 
                 db.commit()
         except Exception as e:
@@ -96,7 +95,7 @@ class DownCache(object):
                 if not name or ntime is None or not data:
                     return
 
-                if (mtime >0 and mtime == ntime) or (mtime ==0 and expire == 0) or (expire > 0 and now <= expire):
+                if (mtime > 0 and mtime == ntime) or (mtime == 0 and expire == 0) or (expire > 0 and now <= expire):
                     utils.add_log(self.logger, 'info', 'get_cache:', filename, mtime, expire)
                     return pickle.loads(data)
 
@@ -105,26 +104,13 @@ class DownCache(object):
                                (self.__url_md5(filename),))
                 return None
 
-
-
-                # if (mtime == ntime and expire == 0) or (mtime == 0 and expire > 0 and now <= expire):
-                #
-                #     utils.add_log(self.logger, 'info', 'get_cache:', filename, mtime, expire)
-                #     return pickle.loads(data)
-                #
-                # else:
-                #     utils.add_log(self.logger, 'info', '删除过期缓存:', filename, mtime, expire)
-                #     cursor.execute('DELETE FROM {} WHERE name_hash=?'.format(self.table_name),
-                #                    (self.__url_md5(filename),))
-                #     return None
-
         except Exception as e:
             utils.add_log(self.logger, 'error', 'get_cache:', e)
         finally:
             cursor.close()
             db.close()
 
-    def save_cache(self, filename, data, mtime, expire_time=utils.CACHE_KEEP_TIME,unzip=False):  # keep_secs=utils.CACHE_KEEPTIME,
+    def save_cache(self, filename, data, mtime, expire_time=utils.CACHE_KEEP_TIME, unzip=False):
         if not filename or not data or mtime is None:
             return
         db = sqlite3.connect(utils.DSM_CACHE_PATH)
@@ -159,5 +145,3 @@ if __name__ == '__main__':
     # print(datetime.strptime(timestr2, '%a, %d %b %Y %H:%M:%S %Z'))
 
     timestr = 'Apr 29, 2016'
-
-

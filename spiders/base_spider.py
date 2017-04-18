@@ -5,20 +5,21 @@ from requests import RequestException
 import utils
 from models.cache import DownCache
 
+
 class BaseSpider:
     def __init__(self, name):
         self.name = name
         self.cache = DownCache(table_name='spider_cache')
-        self.RequestSession = requests.session() #CachedSession(cache_name=os.path.join(utils.CACHE_PATH,'spider_cache'),include_get_headers=True,expire_after=utils.SPIDER_CACHE_KEEP_TIME)
+        self.RequestSession = requests.session()  # CachedSession(cache_name=os.path.join(utils.CACHE_PATH,'spider_cache'),include_get_headers=True,expire_after=utils.SPIDER_CACHE_KEEP_TIME)
         self.RequestSession.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'})
         self.urls = set()
         self.oldurls = set()
         self.logger = logging.getLogger('spider:{}'.format(name))
-        self.stoped =False
+        self.stoped = False
 
-    def add_log(self,*msg,level='info'):
-        utils.add_log(self.logger,level,msg)
+    def add_log(self, *msg, level='info'):
+        utils.add_log(self.logger, level, msg)
 
     def spdider_login(self):
         pass
@@ -27,7 +28,7 @@ class BaseSpider:
         self.urls.clear()
         self.oldurls.clear()
 
-    def add_urls(self, url,fource=False):
+    def add_urls(self, url, fource=False):
         if not url:
             return
         if (url not in self.oldurls and url not in self.urls) or fource:
@@ -44,27 +45,10 @@ class BaseSpider:
     def has_url(self):
         return len(self.urls) > 0
 
-    def download_page_request(self, url, retry=0,referer=''):
+    def download_page_request(self, url, retry=0, referer=''):
         if not url or self.stoped:
-            utils.add_log(self.logger,'error','Url为空', url)
+            utils.add_log(self.logger, 'error', 'Url为空', url)
             return
-
-        # head = self.RequestSession.head(url, timeout=utils.DOWN_TIME_OUT)
-        # try:
-        #     if head.status_code == 200:
-        #         modify_time = utils.format_time_stamp(head.headers.get('Last-Modified'))
-        #         if not modify_time:
-        #             modify_time = utils.format_time_stamp(head.headers.get('last-modified'))
-        #         if modify_time:
-        #             res = self.cache.get_cache(url,modify_time)
-        #         else:
-        #             res = self.cache.get_cache(url)
-        #         if res:
-        #             return res
-        # except Exception:
-        #     pass
-
-
 
         try:
             res = self.cache.get_cache(url)
@@ -77,18 +61,10 @@ class BaseSpider:
                 if referer == '':
                     referer = res.url
                 self.RequestSession.headers.update({'referer': referer, 'Referer': referer})
-                # modify_time = utils.format_time_stamp(res.headers.get('Last-Modified'))
-                # if not modify_time:
-                #     modify_time = utils.format_time_stamp(res.headers.get('last-modified'))
-                #
-                # if modify_time:
-                #     utils.add_log(self.logger, 'info', 'save_cache modify_time:', url,modify_time)
-                #     self.cache.save_cache(url,res,modify_time,0)
-                # else:
                 utils.add_log(self.logger, 'info', 'save_cache expire:', url, )
                 if utils.IMG_CACHE_KEEP_INFINITE and utils.IsValidImage(res.content):
-                    self.cache.save_cache(url, res, expire_time=0,mtime=0)
-                    self.add_log('永久缓存',url)
+                    self.cache.save_cache(url, res, expire_time=0, mtime=0)
+                    self.add_log('永久缓存', url)
                 else:
                     self.cache.save_cache(url, res, time())
                 return res
@@ -101,7 +77,7 @@ class BaseSpider:
 
                     utils.add_log(self.logger, 'info', 'Url下载出错{}，重试{}'.format(url, retry))
                     sleep(5)
-                    return self.download_page_request(url,  retry)
+                    return self.download_page_request(url, retry)
         except RequestException:
             if retry >= utils.RETRYMAX:
                 utils.add_log(self.logger, 'info', 'Url下载出错，重试达到最大数', url)
@@ -112,10 +88,10 @@ class BaseSpider:
                 sleep(5)
                 return self.download_page_request(url, retry)
 
-    def parse_page(self,respone):
+    def parse_page(self, respone):
         pass
 
-    def search(self,keyword,stype):
+    def search(self, keyword, stype):
         pass
 
     def dital(self, url, meta):
@@ -124,35 +100,7 @@ class BaseSpider:
 
 if __name__ == '__main__':
     a = BaseSpider('test')
-    # re = a.download_page_request('http://pics.dmm.co.jp/digital/video/mide00419/mide00419-9.jpg')
-    # print(re.headers)
-    # print(re.cookies)
-    # print(len(re.content))
     re = a.download_page_request('https://img3.doubanio.com/view/movie_poster_cover/lpst/public/p2454282762.webp')
     print(re.headers)
     print(re.cookies)
     print(len(re.content))
-    # re = a.download_page_request('http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=mide00419/')
-    # print(re.headers)
-    # print(re.cookies)
-    # print(len(re.content))
-    # re = a.download_page_request('http://pics.dmm.co.jp/digital/video/mide00419/mide00419-3.jpg')
-    # print(re.from_cache)
-    # print(re.headers)
-    # print(re.cookies)
-    # print(len(re.content))
-
-    # import requests_cache
-    #
-    # requests_cache.install_cache(os.path.join(utils.CACHE_PATH,'spider_cache'),expire_after=600000)
-    # ss = CachedSession(os.path.join(utils.CACHE_PATH, 'spider_cache'), expire_after=600000)
-    #
-    # # ss = requests.session()
-    # ss.headers.update({
-    #     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-    # })
-    #
-    # re = ss.get('http://www.win-rar.com/fileadmin/winrar-versions/winrar-x64-531.exe', verify=False)
-    # print(re.headers)
-    # print(re.cookies)
-    # print(len(re.content))

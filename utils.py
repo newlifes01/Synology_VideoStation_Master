@@ -6,16 +6,13 @@ from time import mktime, strptime
 
 import os
 import re
-import requests
 from PIL import Image, ImageChops
 from PyQt5.QtCore import QFile
-
-# 日志登记
-from bs4 import BeautifulSoup
-from io import BytesIO
 from collections import OrderedDict
+# 日志登记
+from io import BytesIO
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 # 下载最大重试次数
 RETRYMAX = 5
 # 下载超时时间
@@ -29,7 +26,6 @@ PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 CACHE_PATH = os.path.join(PROJECT_PATH, '.cache')
 # 缓存文件路径
 DSM_CACHE_PATH = os.path.join(PROJECT_PATH, 'http_cache.sqlite')
-
 
 # 缓存保留时间 秒
 CACHE_KEEP_TIME = 3600 * 24
@@ -341,8 +337,6 @@ def format_time_stamp(timestr):
         return mktime(strptime(timestr, '%a, %d %b %Y %H:%M:%S %Z'))
     except Exception:
         pass
-
-
 
 
 def add_log(loger, level, *msg):
@@ -760,12 +754,10 @@ def create_poster(in_bytes, middle=False):
         return None
 
 
-# 判断文件是否为有效（完整）的图片
-# 输入参数为文件路径
 def IsValidImage(indata):
     bValid = True
     buf = indata
-    if isinstance(indata,bytes):
+    if isinstance(indata, bytes):
         buf = BytesIO(indata)
 
     try:
@@ -775,22 +767,10 @@ def IsValidImage(indata):
 
     return bValid
 
-#
-# # 判断文件是否为有效（完整）的图片
-# # 输入参数为bytes，如网络请求返回的二进制数据
-# def IsValidImage4Bytes(buf):
-#     bValid = True
-#     try:
-#         Image.open(BytesIO(buf)).verify()
-#     except:
-#         bValid = False
-#
-#     return bValid
 
-def merge_image(poster,bakdrop):
+def merge_image(poster, bakdrop):
     try:
         out = BytesIO()
-
 
         stream = BytesIO(poster)
         im_poster = Image.open(stream)
@@ -798,8 +778,7 @@ def merge_image(poster,bakdrop):
         stream = BytesIO(bakdrop)
         im_bakdrop = Image.open(stream)
 
-
-        im_bakdrop = im_bakdrop.resize(im_poster.size,Image.ANTIALIAS)
+        im_bakdrop = im_bakdrop.resize(im_poster.size, Image.ANTIALIAS)
 
         new_im = Image.new('RGB', (im_poster.size[0] * 2, im_poster.size[1]))
 
@@ -813,10 +792,11 @@ def merge_image(poster,bakdrop):
 
 
 if __name__ == '__main__':
-    x= '"{}"'.format('From the visionary Writer/Director Joone, come the long awaited and highly anticipated sequel to Digital Playground\'s "Pirates". Superstar Jesse Jane returns as the irresistible Jules - the seductive pirate hunter who leads an all-star cast that includes the world\'s hottest, most beautiful girls. Digital Playground contract stars Shay Jordan, Katsuni, Stoya, Gabriella Fox and Riley Steele heat up the screen with their most intense performances ever. International sensations BellaDonna, Sasha Grey, Jenna Haze, Shyla Stylez, Brianna Love, Shawna Lenee and many more complete this unforgettable journey. Ready with swords drawn high, Evan Stone, Tommy Gunn, and Stephen St. Croix reprise their gro...'.replace('"', r'\"'))
+    x = '"{}"'.format(
+        'From the visionary Writer/Director Joone, come the long awaited and highly anticipated sequel to Digital Playground\'s "Pirates". Superstar Jesse Jane returns as the irresistible Jules - the seductive pirate hunter who leads an all-star cast that includes the world\'s hottest, most beautiful girls. Digital Playground contract stars Shay Jordan, Katsuni, Stoya, Gabriella Fox and Riley Steele heat up the screen with their most intense performances ever. International sensations BellaDonna, Sasha Grey, Jenna Haze, Shyla Stylez, Brianna Love, Shawna Lenee and many more complete this unforgettable journey. Ready with swords drawn high, Evan Stone, Tommy Gunn, and Stephen St. Croix reprise their gro...'.replace(
+            '"', r'\"'))
 
-
-    print( x)
+    print(x)
 
 
 

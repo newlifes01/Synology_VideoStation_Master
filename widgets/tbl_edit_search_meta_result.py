@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # author: syaofox@gmail.com
-from PyQt5.QtWidgets import QTableWidget
 
 import utils
 from widgets.tbl_edit_metadata import TblMetadata
 
 
 class TblSearchResultEidt(TblMetadata):
-
     def __init__(self, parent=None):
         super(TblSearchResultEidt, self).__init__(parent)
 
-    def get_metadata(self,meta=None):
-
-
+    def get_metadata(self, meta=None):
 
         row = self.rowCount()
         for i in range(0, row):

@@ -4,15 +4,12 @@ from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QMutexLocker
 
 
 class BaseThread(QThread):
-
-    out_msg = pyqtSignal(str)  # 显示信息
+    out_msg = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
         self.mutex = QMutex()
         self.stoped = False
-
-
 
     def thread_init(self, keyword=''):
         self.stoped = False

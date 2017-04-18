@@ -31,11 +31,6 @@ class TblMetadata(QTableWidget):
 
         widget.setCurrentIndex(0)
         widget.setFixedHeight(22)
-        # widget.setStyleSheet('''
-        #     QComboBox::drop-down:button{
-        #     background-color: rgb(234,234,234);
-        #     }
-        # ''')
         return widget
 
     def clear_table(self):
@@ -59,23 +54,13 @@ class TblMetadata(QTableWidget):
 
         return item
 
-    def modifiy_table(self, video,ignore=None):
+    def modifiy_table(self, video, ignore=None):
         if not video:
             return
-        # self.clear()
-        # self.rating_cb = self.genCombobox(utils.get_rating_lst())
-        #
-        # certificate = video.get('级别', '')
-        # cb_cert_idx = -1
-        # if certificate:
-        #     cb_cert_idx = utils.get_cert_idx(certificate)
-        #
-        # self.setRowCount(0)
-        # self.setColumnCount(2)
 
-        for row in range(0,self.rowCount()):
-            item_k = self.item(row,0)
-            item_v = self.item(row,1)
+        for row in range(0, self.rowCount()):
+            item_k = self.item(row, 0)
+            item_v = self.item(row, 1)
             if item_k.text() == '级别':
                 certificate = video.get(item_k.text())
                 if certificate:
@@ -87,10 +72,7 @@ class TblMetadata(QTableWidget):
                 if str:
                     item_v.setText(str)
 
-
-
-
-    def ref_table(self, video,ignore=None):
+    def ref_table(self, video, ignore=None):
         if not video:
             return
         self.clear()
@@ -113,8 +95,6 @@ class TblMetadata(QTableWidget):
                 if k in ignore:
                     continue
 
-
-
             isColor = count % 2 == 0
 
             self.insertRow(self.rowCount())
@@ -134,54 +114,7 @@ class TblMetadata(QTableWidget):
 
             count += 1
 
-        # if not video:
-        #     return
-        # self.clear()
-        # self.rating_cb = self.genCombobox(utils.get_rating_lst())
-        #
-        # certificate = video.get('级别', '')
-        # cb_cert_idx = -1
-        # if certificate:
-        #     cb_cert_idx = utils.get_cert_idx(certificate)
-        #
-        # self.setRowCount(0)
-        # self.setColumnCount(2)
-        #
-        # count = 0
-        # for k, v in video.items():
-        #     if k == 'poster' or k == 'backdrop':
-        #         continue
-        #
-        #     isColor = count % 2 == 0
-        #
-        #     self.insertRow(self.rowCount())
-        #     item_k = self.cell(editable=False, var=k, color=QColor(244, 244, 244) if isColor else None)
-        #     item_k.setForeground(QBrush(QColor(0, 149, 225)))
-        #     self.setItem(self.rowCount() - 1, 0, item_k)
-        #     if k == '文件名':
-        #         item_v = self.cell(editable=False, var=v, color=QColor(244, 244, 244) if isColor else None, align=False)
-        #     else:
-        #         item_v = self.cell(var=v, color=QColor(244, 244, 244) if isColor else None)
-        #
-        #     self.setItem(self.rowCount() - 1, 1, item_v)
-        #
-        #     if k == '级别':
-        #         self.setCellWidget(self.rowCount() - 1, 1, self.rating_cb)
-        #         self.rating_cb.setCurrentIndex(cb_cert_idx)
-        #
-        #     count += 1
-
     def get_metadata(self, meta):
-        # if not meta:
-        #     return
-        # stype = meta.get('type')
-        # library_id = meta.get('library_id')
-        # sid = meta.get('id')
-        # mapper_id = meta.get('mapper_id')
-        #
-        # if not stype or library_id is None or sid is None or mapper_id is None:
-        #     return
-
         row = self.rowCount()
         for i in range(0, row):
             key = self.item(i, 0).text()
@@ -191,8 +124,6 @@ class TblMetadata(QTableWidget):
             if key == '级别':
                 value = utils.get_cert_txt(self.rating_cb.currentIndex())
 
-            meta[key] = value.replace('"',r'\"')
+            meta[key] = value.replace('"', r'\"')
 
         return meta
-
-

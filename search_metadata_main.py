@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
-import sys
 from PyQt5.QtCore import QRegExp, Qt, QSize
-from PyQt5.QtGui import QRegExpValidator, QIcon, QPixmap
-from PyQt5.QtWidgets import QDialog, QMessageBox, QListWidgetItem, QApplication
+from PyQt5.QtGui import QRegExpValidator, QIcon
+from PyQt5.QtWidgets import QDialog, QMessageBox
 
-import utils
-from DSM.dsm_video_station import DSMAPI
 from spiders.data18_spider import Data18Spider
 from spiders.dmm_spider import DmmSpider
 from spiders.spider_manager import SearchSpider, DitalSpider
@@ -33,7 +30,6 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         self.init_spiders('dmm.co.jp', DmmSpider, ':/icons/spider_icons/dmm.ico')
         self.init_spiders('data18.com', Data18Spider, ':/icons/spider_icons/data18.bmp')
 
-        # self.tbl_search_result.put_meta.connect(self.search_meta_item_select)
         self.btn_dital.clicked.connect(self.search_meta_item_select)
 
         self.hs_zoom.setMaximum(200)
@@ -45,9 +41,9 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         self.btn_cancel.clicked.connect(self.reject)
         self.meta_return = None
         self.pices_return = None
-        self.spider_idx =-1
+        self.spider_idx = -1
 
-        self.btn_select_all.clicked.connect(lambda :self.lst_pices.choose_pic(1))
+        self.btn_select_all.clicked.connect(lambda: self.lst_pices.choose_pic(1))
         self.btn_unselect_all.clicked.connect(lambda: self.lst_pices.choose_pic(2))
 
     def init_spiders(self, name, class_seacher=None, icon=""):
@@ -66,7 +62,6 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         self.spider_idx = self.cb_spiders.currentIndex()
 
         super().closeEvent(event)
-
 
     def set_objects_enable(self, step):
         if step == 'false':
@@ -126,8 +121,7 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
 
         self.app.processEvents()
 
-
-    def open_dialog(self, video,app,spider_idx):
+    def open_dialog(self, video, app, spider_idx):
         if not video:
             return
         else:
@@ -137,7 +131,7 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
             self.app = app
             self.ref_search_info(spider_idx)
 
-    def ref_search_info(self,spider_idx):
+    def ref_search_info(self, spider_idx):
         if not self.video:
             return
 
@@ -183,7 +177,6 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         self.tbl_search_result.insert_data(meta)
 
     def spider_search_finish(self, count):
-        # self.tbl_search_result.setEnabled(True)
         self.set_objects_enable('searched')
         self.btn_search.setText('搜索元数据')
         self.status_msg('完成搜索,共找到{}个结果'.format(count))
@@ -194,13 +187,11 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
             # 停止搜索
             if self.spider_search_Manager and self.spider_search_Manager.isRunning():
                 self.btn_search.setText('搜索元数据')
-                # self.tbl_search_result.setEnabled(True)
                 self.set_objects_enable('searched')
                 self.spider_search_Manager.stop_thread()
             else:
                 self.btn_search.setText('停止')
                 self.set_objects_enable('searching')
-
 
                 self.tbl_search_result.clear_data(hearders=('海报', '番号', '标题', '信息', '地址'))
                 spider = self.cb_spiders.currentData(Qt.UserRole)
@@ -213,15 +204,12 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
                 self.spider_search_Manager.login()  # 登陆
                 self.spider_search_Manager.start()
 
-                # self.tbl_search_result.setEnabled(False)
-
     def search_meta_item_select(self):
         meta = self.tbl_search_result.item_select()
         if meta:
             if self.spider_dital_Manager and self.spider_dital_Manager.isRunning():
                 self.btn_dital.setText('分析')
                 self.set_objects_enable('ditaled')
-                # self.tbl_metadata.setEnabled(True)
                 self.spider_dital_Manager.stop_thread()
             else:
                 spider = self.cb_spiders.currentData(Qt.UserRole)
@@ -233,13 +221,11 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
                 self.spider_dital_Manager.start()
                 self.btn_dital.setText('停止')
                 self.set_objects_enable('ditaling')
-                # self.tbl_metadata.setEnabled(False)
 
     def spider_dital_finish(self):
         self.status_msg('元数据抓取完成')
         self.btn_dital.setText('分析')
         self.set_objects_enable('ditaled')
-        # self.tbl_metadata.setEnabled(True)
         self.tbl_metadata.setFocus()
 
     def add_detail_images(self, img):
@@ -264,8 +250,6 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
             self.meta_return = self.tbl_metadata.get_metadata(self.tbl_search_result.get_select_row_data())
             self.meta_return['文件名'] = filename
             self.pices_return = self.lst_pices.get_piclist_data_to_dict()
-
-
             self.accept()
         except Exception:
             self.reject()

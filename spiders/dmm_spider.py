@@ -69,7 +69,7 @@ class DmmSpider(BaseSpider):
         else:
             return -1
 
-    def parse_search_html(self, res,stype):
+    def parse_search_html(self, res, stype):
         if not res:
             return
         next_page = re.search(r'<li><a href="(http://www.dmm.co.jp/.+?page=\d*)/">次へ</a>'
@@ -107,43 +107,21 @@ class DmmSpider(BaseSpider):
                 result['tag']['dital_url'] = url
                 result['tag']['video_id'] = re.search(r'cid=(.+)/', url).group(1)
 
-                result['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(src_url)).content)
+                result['tag']['backdrop'] = utils.tim_img_bytes(
+                    self.download_page_request(self.get_full_src(src_url)).content)
                 result['tag']['poster'] = utils.create_poster(result['tag']['backdrop'])
                 result['tag']['total'] = int(re.match(r'(\d+).*', total.get_text()).group(1)) if total else 0
                 result['tag']['tip'] = sell.get_text() if sell else ''
 
                 yield result
 
-
-                # result = utils.get_spider_metastruct()
-                #
-                # result['标题'] = li.select_one('p.tmb a img').get('alt')
-                # result['电视节目标题'] = result['标题']
-                # result['集标题'] = result['标题']
-                #
-                # result['级别'] = 'R18+'
-                # try:
-                #     result['评级'] = self.format_rate_str(li.select_one('div.value p.rate').text)
-                # except Exception:
-                #     pass
-                #
-                # result['dital_url'] = url
-                # result['id'] = re.search(r'cid=(.+)/', url).group(1)
-                #
-                # result['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(src_url)).content)
-                # result['poster'] = utils.create_poster(result['backdrop'])
-                # result['total'] = int(re.match(r'(\d+).*', total.get_text()).group(1)) if total else 0
-                # result['tip'] = sell.get_text() if sell else ''
-                #
-                #
-                # yield result
-
-    def parse_url_search(self, res ,stype='movie'):
+    def parse_url_search(self, res, stype='movie'):
         if not res:
             return
         result = utils.gen_metadata_struck(stype)
         try:
-            json_ld = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',res.text,re.S).group(1))
+            json_ld = json.loads(
+                re.search(r'<script type="application/ld\+json">(.*?)</script>', res.text, re.S).group(1))
 
             if '标题' in result:
                 result['标题'] = json_ld.get('name')
@@ -152,8 +130,6 @@ class DmmSpider(BaseSpider):
             if '集标题' in result:
                 result['集标题'] = json_ld.get('name')
 
-
-
             result['级别'] = 'R18+'
             result['评级'] = self.format_rate_str(json_ld.get('aggregateRating').get('ratingValue'))
 
@@ -161,7 +137,8 @@ class DmmSpider(BaseSpider):
             result['tag']['dital_url'] = res.url
             result['tag']['video_id'] = re.search(r'cid=(.+)/', res.url).group(1)
 
-            result['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
+            result['tag']['backdrop'] = utils.tim_img_bytes(
+                self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
             result['tag']['poster'] = utils.create_poster(result['tag']['backdrop'])
             result['tag']['total'] = 0
             result['tag']['tip'] = ''
@@ -169,18 +146,17 @@ class DmmSpider(BaseSpider):
 
 
         except Exception:
-                pass
-
+            pass
 
         result['dital_url'] = res.url
 
         return result
 
-    def search(self, keyword,stype):
+    def search(self, keyword, stype):
         if keyword.startswith('http'):
             res = self.download_page_request(keyword)
 
-            yield self.parse_url_search(res,stype)
+            yield self.parse_url_search(res, stype)
         else:
             self.add_urls('http://www.dmm.co.jp/search/=/searchstr={}/limit=120/sort=date/'.format(keyword))
             while self.has_url():
@@ -188,7 +164,7 @@ class DmmSpider(BaseSpider):
                 if url:
                     res = self.download_page_request(url)
                     if res:
-                        for each in self.parse_search_html(res,stype):
+                        for each in self.parse_search_html(res, stype):
                             yield each
                     else:
                         print('搜索失败')
@@ -208,7 +184,6 @@ class DmmSpider(BaseSpider):
                 year = re.search(r'貸出開始日：.*?(\d{4}/\d{2}/\d{2})', html, re.S)
             else:  # 0,1,5,6,7,9
                 year = re.search(r'配信開始日：.*?(\d{4}/\d{2}/\d{2})', html, re.S)
-
 
             if '发布日期' in meta:
                 meta['发布日期'] = utils.format_date_str(year.group(1))
@@ -243,11 +218,9 @@ class DmmSpider(BaseSpider):
             else:
                 gen = re.search(r'<tr>\s*?<td.*?>レーベル：</td>\s*?<td.*?>(.+?)</td>\s*?</tr>', html, re.S)
             if gen:
-                # lst_genre.append(gen.group(1))
                 tmp = re.search('<a href=".+?">(.+?)</a>', gen.group(1))
                 if tmp:
                     lst_genre.append(tmp.group(1))
-                    # print(lst_genre)
         except Exception:
             pass
 
@@ -259,7 +232,6 @@ class DmmSpider(BaseSpider):
                 album = re.search(r'<tr>\s*?<td.*?>シリーズ：</td>\s*?<td.*?>(.+?)</td>\s*?</tr>', html, re.S)
 
             if album:
-                # lst_genre.append(album.group(1))
                 tmp = re.search('<a href=".+?">(.+?)</a>', album.group(1))
                 if tmp:
                     lst_genre.append(tmp.group(1))
@@ -342,7 +314,7 @@ class DmmSpider(BaseSpider):
 
             yield meta
             # 缩略图
-            samples = re.findall(r'src="(https?://pics.dmm.co.jp/.+?-\d{1,2}.jpg)"', html)  #todo：无放大图的会出错
+            samples = re.findall(r'src="(https?://pics.dmm.co.jp/.+?-\d{1,2}.jpg)"', html)  # todo：无放大图的会出错
             if samples:
                 for sample in samples:
                     url = self.get_full_src(sample)
@@ -351,8 +323,6 @@ class DmmSpider(BaseSpider):
 
         except  Exception:
             pass
-
-        # return meta,[]
 
     def dital(self, url, meta):
 

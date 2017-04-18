@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import imghdr
 import logging
 import sys
-from time import sleep, time
+from time import time
 
 import os
 import requests
 from PyQt5.QtCore import Qt, QSize, QByteArray, QBuffer, QIODevice
-from PyQt5.QtGui import QPixmap, QIcon, QMovie, QPainter
+from PyQt5.QtGui import QPixmap, QIcon, QPainter
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem, QAbstractItemView, QListView, \
     QFileDialog, QMessageBox, QSplashScreen
 
@@ -395,36 +394,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     file_name = title
 
             self.cb_current_video.addItem(QIcon(':/icons/ui_icons/{}.png'.format(stype)), file_name, video)
-            # if not videos:
-            #     return
-            # for video in videos:
-            #
-            #     meta_cb = {
-            #         'type': stype,
-            #         'id': video.get('id'),
-            #         'library_id': video.get('library_id'),
-            #         'mapper_id': video.get('mapper_id'),
-            #         'title': video.get('title'),
-            #         'path': '',
-            #         'sharepath': '',
-            #     }
-            #     file_data = video.get('additional').get('file')
-            #     if file_data:
-            #         meta_cb.update({
-            #             'path': video.get('additional').get('file')[0].get('path'),
-            #             'sharepath': video.get('additional').get('file')[0].get('sharepath'),
-            #         })
-            #     file_name = os.path.basename(meta_cb.get('path'))
-            #     if not file_name:
-            #         if stype == 'tvshow_episode':
-            #             file_name = '{}.S{}.E{}.{}'.format(video.get('title'),
-            #                                                str(video.get('season')).zfill(2),
-            #                                                str(video.get('episode')).zfill(2),
-            #                                                video.get('tagline'))
-            #         else:
-            #             file_name = meta_cb.get('title')
-            #
-            #     self.cb_current_video.addItem(QIcon(':/icons/ui_icons/{}.png'.format(stype)), file_name, meta_cb)
 
     # 鼠标选中视频
     def select_dsm_video(self, meta):
@@ -436,7 +405,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 self.cb_current_video_add_finish = False
                 self.cb_current_video.clear()
 
-                # stype = meta.get('tag').get('type')
                 videos = self.DSM.get_video_info(meta)
                 self.add_cb_current_videoitems(videos)
                 app.processEvents()
@@ -444,19 +412,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     episodes = self.DSM.get_video_info(meta, 'tvshow_episode')
                     self.add_cb_current_videoitems(episodes, 'tvshow_episode')
                     app.processEvents()
-
-                    # stype = meta.get('type')
-                    # sid = meta.get('id')
-                    # slibrary_id = meta.get('library_id')
-                    #
-                    # videos = self.DSM.get_video_info(sid, stype, slibrary_id)
-                    # self.add_cb_current_videoitems(videos, stype)
-                    # app.processEvents()
-                    # if stype == 'tvshow':
-                    #     episodes = self.DSM.get_video_info(sid, 'tvshow_episode', slibrary_id)
-                    #     self.add_cb_current_videoitems(episodes, 'tvshow_episode')
-                    #     app.processEvents()
-
             finally:
                 self.cb_current_video_add_finish = True
                 self.select_single_video(0)
@@ -478,21 +433,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
                         self.add_pic_fromData(video_dital.get('tag').get('backdrop'))
         finally:
             self.status_msg('[VideoStation]读取完成')
-
-            # try:
-            #     if self.cb_current_video_add_finish:
-            #         video = self.cb_current_video.currentData(Qt.UserRole)
-            #         if video:
-            #             self.status_msg('[VideoStation]正在读取……')
-            #             video_dital = self.DSM.get_video_dital_info(video.get('id'), video.get('type'))
-            #             self.table_video_meta.ref_table(video_dital)
-            #             self.lst_pices.clear()
-            #             if video_dital.get('poster'):
-            #                 self.add_pic_fromData(video_dital.get('poster'))
-            #             if video_dital.get('backdrop'):
-            #                 self.add_pic_fromData(video_dital.get('backdrop'))
-            # finally:
-            #     self.status_msg('[VideoStation]读取完成')
 
     def refresh_dsm(self):
         self.set_objects_enable('false')
@@ -542,21 +482,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.select_single_video(0)
             # 回写搜索结果
             row = self.tbl_search_result_widget.currentRow()
-            # data = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
-            # data.update({
-            #     'poster': b'',
-            #     'backdrop': b'',
-            # })
-            # for i, img_data in enumerate(self.get_piclist_data_to_dict()):
-            #     app.processEvents()
-            #     if not img_data:
-            #         break
-            #     if i == 0:
-            #         data['tag']['poster'] = img_data
-            #     elif i == 1:
-            #         data['tag']['backdrop'] = img_data
-            #     else:
-            #         break
             self.tbl_search_result_widget.insert_data(meta, row)
 
             app.processEvents()
@@ -581,11 +506,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
             return
 
         self.config['dsm_search_keyword'] = self.edt_dsm_search_keyword.text()
-
         self.db_config.save_cache('main_config', self.config, 0, 0)
-
         utils.add_log(self.logger, 'info', '保存配置文件：', 'closeEvent', self.config)
-
         super().closeEvent(event)
 
     # 搜索元数据
@@ -653,7 +575,5 @@ if __name__ == '__main__':
     main_form.show()
     # app.processEvents()
     main_form.form_showed()
-
     splash.finish(main_form)
-
     sys.exit(app.exec_())

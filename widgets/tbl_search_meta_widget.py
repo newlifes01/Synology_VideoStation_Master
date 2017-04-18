@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # author: syaofox@gmail.com
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QHeaderView
-from collections import OrderedDict
 
 import utils
 from widgets.tbl_search_widget import BaseTblSearch
 
 
 class TblSeacheMetaResult(BaseTblSearch):
-    # put_meta = pyqtSignal(OrderedDict)
-
     def __init__(self, parent=None):
         super(TblSeacheMetaResult, self).__init__(parent)
         self.itemClicked.connect(self.item_select)
@@ -66,7 +62,6 @@ class TblSeacheMetaResult(BaseTblSearch):
         if item:
             data = item.data(Qt.UserRole)
             return data
-            # self.put_meta.emit(data)
 
     def get_select_row_data(self):
         row = self.currentRow()

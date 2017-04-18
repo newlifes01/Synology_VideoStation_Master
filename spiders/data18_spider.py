@@ -67,10 +67,8 @@ class Data18Spider(BaseSpider):
             result['tag']['dital_url'] = meta[1].strip()
             result['tag']['video_id'] = re.search(r'/(\d+)', meta[1]).group(1)
 
-            # result['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(self.get_full_src(src_url)).content)
             result['tag']['poster'] = utils.tim_img_bytes(self.download_page_request(meta[2]).content)
             result['tag']['total'] = 0
-            # result['tag']['tip'] = utils.format_date_str(meta[0].strip())
             str = re.match(r'\s*(\w{3}).*?( \d{2}, \d{4})', meta[0], re.IGNORECASE)
             if str:
                 result['tag']['tip'] = utils.format_date_str(str.group(1) + str.group(2))
@@ -90,13 +88,6 @@ class Data18Spider(BaseSpider):
                 if isinstance(finded, OrderedDict):
                     finded['tag']['type'] = stype
                     finded['tag']['dital_url'] = keyword
-                    # result['tag']['video_id'] = re.search(r'cid=(.+)/', res.url).group(1)
-
-                    # result['tag']['backdrop'] = utils.tim_img_bytes(
-                    #     self.download_page_request(self.get_full_src(json_ld.get('image'))).content)
-                    # result['tag']['poster'] = utils.create_poster(result['tag']['backdrop'])
-                    # result['tag']['total'] = 0
-                    # result['tag']['tip'] = ''
 
                     yield finded
         else:
@@ -109,8 +100,7 @@ class Data18Spider(BaseSpider):
                         for each in self.parse_search_html(res, stype):
                             yield each
                     else:
-                        print('搜索失败')
-                        # sleep(0.1)
+                        self.add_log('搜索失败')
 
     def dital(self, url, meta):
         try:
@@ -120,11 +110,6 @@ class Data18Spider(BaseSpider):
                 return self.parse_dital(res.text, meta, types=stype, url=url)
         except Exception:
             pass
-
-    # def parse_url_search(self, res, stype='movie'):
-    #     meta = utils.gen_metadata_struck(stype)
-    #     finded =self.parse_dital(res.text,meta)
-    #     yield finded
 
     def parse_thumbel_page(self, father_url):
         try:
@@ -151,7 +136,7 @@ class Data18Spider(BaseSpider):
 
     def parse_dital(self, html, meta, types='movie',
                     search=False,
-                    url=''):  # todo ﻿http://www.data18.com/movies/154497 无法抓取 ﻿http://www.data18.com/movies/154574
+                    url=''):
         if not html or not meta: return
         relock = re.search(r'<a href="(.*?)">Click here to continue\.\.\.</a>', html)
         if relock:
@@ -161,87 +146,8 @@ class Data18Spider(BaseSpider):
                 html = res.text
             else:
                 return
-                # self.add_urls(relock.group(1), True)
-                # return self.dital(url, meta)
 
         soup = BeautifulSoup(html, "lxml")
-
-        # div_main = soup.select_one('#centered > div.p8 > div:nth-of-type(7) > div')
-        #
-        # is_backdrop = re.search('(Click to Enlarge Front & Back Cover)', div_main.text, re.S) is not None
-        # try:
-        #     post_url = div_main.select_one('div:nth-of-type(1) > a').get('href')
-        #     if is_backdrop:
-        #         meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
-        #         meta['tag']['poster'] = utils.create_poster(meta['tag']['backdrop'])
-        #     else:
-        #         meta['tag']['poster'] = utils.tim_img_bytes(self.download_page_request(post_url).content)
-        #         backdrop_url = div_main.select_one('div:nth-of-type(1) > p > a').get('href')
-        #         meta['tag']['backdrop'] = utils.tim_img_bytes(self.download_page_request(backdrop_url).content)
-        #         meta['tag']['backdrop'] = utils.merge_image(meta['tag']['poster'], meta['tag']['backdrop'])
-        # except Exception:
-        #     pass
-        #
-        # meta['级别'] = 'R18+'
-        #
-        # try:
-        #     title  = soup.select_one('#centered > div.p8 > div:nth-of-type(1) > h1').text
-        #     if '标题' in meta:
-        #         meta['标题'] = title
-        #     if '电视节目标题' in meta:
-        #         meta['电视节目标题'] = title
-        #     if '集标题' in meta:
-        #         meta['集标题'] = title
-        # except Exception:
-        #     pass
-        #
-        #
-        # info_txt = soup.select_one('#centered > div.p8 > div:nth-of-type(7) > div').get_text()
-        # infos = re.search(
-        #     r'Release date:(?P<date>.*?)\s*?(?:(Studio)|(Site)):(?P<writer>.*?)\s*?\|\s*?Director:\s*?(?P<director>.*?)\s*?'
-        #     r'(?:Movie Length.*?)?'
-        #     r'(?P<gener>Categories:.*?)?'
-        #     r'Description:\s*?(?P<des>.*)', info_txt, re.S)
-        #
-        # # print('date', infos.group('date').strip())
-        # print('writer', infos.group('writer').strip())
-        # print('director', infos.group('director').strip())
-        # print('gener', infos.group('gener'))
-        # # print('des', infos.group('des').strip())
-        #
-        # try:
-        #     year = infos.group('date').strip()
-        #
-        #     if '发布日期' in meta:
-        #         meta['发布日期'] = utils.format_date_str(year)
-        #     if '发布日期(电视节目)' in meta:
-        #         meta['发布日期(电视节目)'] = utils.format_date_str(year)
-        #     if '发布日期(集)' in meta:
-        #         meta['发布日期(集)'] = utils.format_date_str(year)
-        # except Exception:
-        #     pass
-        #
-        # try:
-        #     meta['摘要'] = infos.group('des').strip()
-        #     meta['标语'] = meta['摘要'][:30]
-        # except Exception:
-        #     pass
-        #
-        # try:
-        #     g_str = re.search('<b>Categories:</b>(.*?)<b>Description:', str(div_main), re.S).group(1)
-        #     geres = []
-        #     geres_a = re.findall(r'<a href=".*?">(.*?)</a>', g_str, re.S)
-        #     if geres_a:
-        #         geres.extend(geres_a)
-        #     geres_b = re.findall(r'<span class="gensmall">(.*?)</span>', g_str, re.S)
-        #     if geres_b:
-        #         geres.extend(geres_b)
-        #     geres = [a for a in filter(lambda x: x.find(':') < 0, geres)]
-        #     meta['类型'] = ','.join(geres)
-        # except Exception:
-        #     pass
-        #
-        # yield meta
 
         if types == 'movies':
             try:
@@ -349,7 +255,7 @@ class Data18Spider(BaseSpider):
 
             yield meta
 
-            # # 缩略图
+            # 缩略图
             if not search:
                 try:
                     soup = BeautifulSoup(html, 'lxml')
@@ -387,12 +293,7 @@ class Data18Spider(BaseSpider):
 
                 year = doc('#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > p:nth-child(2) > span > a')
                 year = year.text()
-                # year = re.search(r'Release date: (.*?\d{4})', year)
-                # if not year:
-                #     year = div_main.select_one('div.gen12 > p:nth-of-type(2)').text
-                #     year = re.search(r'Release date: (.*?\d{4})', year)
 
-                # year = year.text
                 if '发布日期' in meta:
                     meta['发布日期'] = utils.format_date_str(year)
                 if '发布日期(电视节目)' in meta:
@@ -437,7 +338,7 @@ class Data18Spider(BaseSpider):
             except Exception:
                 pass
             try:
-                if not meta['演员'] :
+                if not meta['演员']:
                     actors_p = doc('#centered > div.p8 > div:nth-child(7) > div:nth-child(3) > p:nth-child(5)').find(
                         'a.bold').items()
 
@@ -452,11 +353,10 @@ class Data18Spider(BaseSpider):
 
             except Exception:
                 pass
-            #
-            yield meta
-            #
-            # # 缩略图
 
+            yield meta
+
+            # 缩略图
             if not search:
                 try:
                     count = doc('#centered > div.p8 > div:nth-child(13) > div > p > b').text().strip('images').strip()

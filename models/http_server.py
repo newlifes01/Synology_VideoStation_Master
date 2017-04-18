@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import threading
-
 import os
-
 import utils
 import logging
 
@@ -16,6 +14,7 @@ try:
     from SocketServer import TCPServer as HTTPServer
 except ImportError:
     from http.server import HTTPServer
+
 
 class HttpServer:
     def __init__(self, port):
@@ -38,7 +37,7 @@ class HttpServer:
         os.chdir(web_dir)
 
         self.httpd = HTTPServer(("", port), SimpleHTTPRequestHandler)
-        utils.add_log(self.logger,'info',"serving at port {0}".format(port))
+        utils.add_log(self.logger, 'info', "serving at port {0}".format(port))
         self.httpd.serve_forever()
 
         os.chdir(old_path)
