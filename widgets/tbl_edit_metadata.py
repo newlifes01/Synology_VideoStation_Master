@@ -124,6 +124,6 @@ class TblMetadata(QTableWidget):
             if key == '级别':
                 value = utils.get_cert_txt(self.rating_cb.currentIndex())
 
-            meta[key] = value.replace('"', r'\"')
+            meta[key] = value.replace('"', r'\"') #todo 出错
 
         return meta

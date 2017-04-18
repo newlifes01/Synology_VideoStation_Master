@@ -5,7 +5,7 @@ from time import sleep
 from urllib.parse import urljoin
 
 import re
-from bs4 import BeautifulSoup
+from pyquery import PyQuery as pq
 
 import utils
 from spiders.base_spider import BaseSpider
@@ -78,28 +78,32 @@ class DmmSpider(BaseSpider):
             url = next_page.group(1)
             self.add_urls(url)
 
-        soup = BeautifulSoup(res.text, 'lxml')
-        total = soup.select_one('div.list-boxcaptside.list-boxpagenation > p')
-        li_nodes = soup.select("#list li")
+        # soup = BeautifulSoup(res.text, 'lxml')
+        # total = soup.select_one('div.list-boxcaptside.list-boxpagenation > p')
+        # li_nodes = soup.select("#list li")
+
+        doc = pq(res.text)
+        li_nodes = doc.find('#list > li').items()
+        total = doc.find('div.list-boxcaptside.list-boxpagenation > p')
 
         for li in li_nodes:
             if self.stoped:
                 break
-            sell = li.select_one('p.sublink a')
-            url = li.select_one('p.tmb a').get('href')
+            sell = li.find('p.sublink a')
+            url = li.find('p.tmb a').attr('href')
             url_type = self.get_url_type(url)
             if url_type >= 0:
-                src_url = 'http:' + li.select_one('p.tmb a img').get('src')
+                src_url = 'http:' + li.find('p.tmb a img').attr('src')
                 result = utils.gen_metadata_struck(stype)
                 if '标题' in result:
-                    result['标题'] = li.select_one('p.tmb a img').get('alt')
+                    result['标题'] = li.find('p.tmb a img').attr('alt')
                 if '电视节目标题' in result:
-                    result['电视节目标题'] = li.select_one('p.tmb a img').get('alt')
+                    result['电视节目标题'] = li.find('p.tmb a img').attr('alt')
                 if '集标题' in result:
-                    result['集标题'] = li.select_one('p.tmb a img').get('alt')
+                    result['集标题'] = li.find('p.tmb a img').attr('alt')
                 result['级别'] = 'R18+'
                 try:
-                    result['评级'] = self.format_rate_str(li.select_one('div.value p.rate').text)
+                    result['评级'] = self.format_rate_str(li.find('div.value p.rate').text())
                 except Exception:
                     pass
 
@@ -110,8 +114,8 @@ class DmmSpider(BaseSpider):
                 result['tag']['backdrop'] = utils.tim_img_bytes(
                     self.download_page_request(self.get_full_src(src_url)).content)
                 result['tag']['poster'] = utils.create_poster(result['tag']['backdrop'])
-                result['tag']['total'] = int(re.match(r'(\d+).*', total.get_text()).group(1)) if total else 0
-                result['tag']['tip'] = sell.get_text() if sell else ''
+                result['tag']['total'] = int(re.match(r'(\d+).*', total.text()).group(1)) if total else 0
+                result['tag']['tip'] = sell.text() if sell else ''
 
                 yield result
 
@@ -313,15 +317,22 @@ class DmmSpider(BaseSpider):
                     meta['作者'] = ','.join(tmp)
 
             yield meta
+
+        except Exception:
+            pass
+
+        try:
             # 缩略图
-            samples = re.findall(r'src="(https?://pics.dmm.co.jp/.+?-\d{1,2}.jpg)"', html)  # todo：无放大图的会出错
-            if samples:
-                for sample in samples:
-                    url = self.get_full_src(sample)
+            samples = pq(html).find('#sample-image-block a')
+            for sample in samples.items():
+                if sample.attr('id'):
+                    url = sample.find('img').attr('src')
+                    url = self.get_full_src(url)
+                else:
+                    url = sample.find('img').attr('src')
+                if url:
                     yield self.download_page_request(url).content
-
-
-        except  Exception:
+        except Exception:
             pass
 
     def dital(self, url, meta):

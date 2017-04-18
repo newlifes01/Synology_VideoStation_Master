@@ -8,6 +8,7 @@ import requests
 from PyQt5.QtCore import QThread
 
 import utils
+from dsm_merge_main import DSMMerge
 from models.cache import DownCache
 
 
@@ -19,6 +20,9 @@ class DSMAPI(QThread):
         self.session = session
         self.cache = DownCache(table_name='dsm_cache')
         self.set_cookie_form_cache()
+
+    def add_log(self, *msg, level='info'):
+        utils.add_log(self.logger, level, msg)
 
     def __load_cookie(self):
         login_data = self.cache.get_cache('cookie')
@@ -56,7 +60,7 @@ class DSMAPI(QThread):
                 else:
                     return res.json()
         except Exception as e:
-            utils.add_log(self.logger, 'error', 'post_request', e)
+            self.add_log('post_request', e,level='error')
             return None
 
     def set_cookie_form_cache(self):
@@ -66,7 +70,7 @@ class DSMAPI(QThread):
         else:
             self.ip = ip
             requests.utils.add_dict_to_cookiejar(self.session.cookies, cookies)
-            utils.add_log(self.logger, 'info', '设置登陆信息', ip, cookies)
+            self.add_log('设置登陆信息', ip, cookies)
 
     def check_login_status(self):
         if not self.ip:
@@ -78,7 +82,7 @@ class DSMAPI(QThread):
             if json_res and json_res.get('success'):
                 self.__save_cookie()
 
-                utils.add_log(self.logger, 'info', '保存登陆信息')
+                self.add_log('保存登陆信息')
                 return True
         return False
 
@@ -292,7 +296,7 @@ class DSMAPI(QThread):
             os.remove(utils.POSTER_PATH)
 
         if image_data:
-            utils.add_log(self.logger, 'info', '创建临时封面:', utils.POSTER_PATH)
+            self.add_log('创建临时封面:', utils.POSTER_PATH)
             with open(utils.POSTER_PATH, 'wb') as f:
                 f.write(image_data)
 
@@ -308,7 +312,7 @@ class DSMAPI(QThread):
             }
             json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Poster', 'set', param)
             if os.path.isfile(utils.POSTER_PATH):
-                utils.add_log(self.logger, 'info', '删除临时封面:', utils.POSTER_PATH)
+                self.add_log('删除临时封面:', utils.POSTER_PATH)
                 os.remove(utils.POSTER_PATH)
             return json_res and json_res.get('success')
 
@@ -321,7 +325,7 @@ class DSMAPI(QThread):
             os.remove(utils.BACKDROP_PATH)
 
         if image_data:
-            utils.add_log(self.logger, 'info', '创建临时背景:', utils.BACKDROP_PATH)
+            self.add_log('创建临时背景:', utils.BACKDROP_PATH)
             with open(utils.BACKDROP_PATH, 'wb') as f:
                 f.write(image_data)
 
@@ -338,11 +342,11 @@ class DSMAPI(QThread):
             }
             json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.Backdrop', 'add', data)
             if os.path.isfile(utils.BACKDROP_PATH):
-                utils.add_log(self.logger, 'info', '删除临时背景:', utils.BACKDROP_PATH)
+                self.add_log('删除临时背景:', utils.BACKDROP_PATH)
                 os.remove(utils.BACKDROP_PATH)
             return json_res.get('success')
 
-    def set_video_info(self, meta):
+    def set_video_info(self, meta,merge_meth=''):
         if not meta:
             return
         stype = meta.get('tag').get('type')
@@ -426,9 +430,26 @@ class DSMAPI(QThread):
             }
         if not param:
             return
+        if merge_meth:
+            param['overwrite'] = merge_meth
         json_res = self.post_request('entry.cgi', 'SYNO.VideoStation2.{}'.format(utils.get_library_API(stype)), 'edit',
                                      param)
-        return json_res.get('success')
+        if json_res:
+            if json_res.get('error'):
+                if json_res.get('error').get('code') == 600:
+                    meth = ''
+                    dsm_merge = DSMMerge()
+                    if dsm_merge.exec_():
+                        meth = dsm_merge.meth
+
+                        if meth:
+                            self.add_log('存在相同视频,处理方式：',meth)
+                            return self.set_video_info(meta,meth),True
+
+                    self.add_log('存在相同视频,处理方式：', '放弃')
+                    return True,False
+
+        return json_res.get('success'),False
 
 
 if __name__ == '__main__':

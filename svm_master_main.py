@@ -136,7 +136,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.tab_meta.setEnabled(True)
             self.tab_pices.setEnabled(True)
 
-        if step == 'after_list_libs' or step == 'seached':
+        if step == 'after_list_libs' or step == 'searched':
             self.cb_dsm_search_kind.setEnabled(True)
             self.edt_dsm_search_keyword.setEnabled(True)
             self.btn_dsm_search.setEnabled(True)
@@ -166,7 +166,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.tab_meta.setEnabled(False)
             self.tab_pices.setEnabled(False)
 
-        if step == 'seached':
+        if step == 'searched':
             self.cb_dsm_search_kind.setEnabled(True)
             self.edt_dsm_search_keyword.setEnabled(True)
             self.btn_dsm_search.setEnabled(True)
@@ -316,7 +316,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def btn_dsm_search_clicked(self, keyword):
         if self.dsm_seach_running:
             self.dsm_seach_stop = True
-            self.set_objects_enable('seached')
+            self.set_objects_enable('searched')
         else:
             if self.cb_dsm_search_kind.currentIndex() == 0:
                 current_librarys = self.cb_dsm_search_kind.currentData(Qt.UserRole)
@@ -363,7 +363,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             finally:
                 self.dsm_seach_running = False
                 self.btn_dsm_search.setChecked(False)
-                self.set_objects_enable('seached')
+                self.set_objects_enable('searched')
 
     #####选择视频
     def add_cb_current_videoitems(self, videos, stype=''):
@@ -475,14 +475,23 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
             self.status_msg('[VideoStation]写入元数据……')
             app.processEvents()
-            if not self.DSM.set_video_info(meta):
+
+            meta_write_result,is_del = self.DSM.set_video_info(meta)
+
+            if not meta_write_result:
                 QMessageBox.warning(self, '错误', '写入元数据失败！', QMessageBox.Ok)
                 return
-
-            self.select_single_video(0)
-            # 回写搜索结果
-            row = self.tbl_search_result_widget.currentRow()
-            self.tbl_search_result_widget.insert_data(meta, row)
+            if not is_del:
+                self.select_single_video(0)
+                # 回写搜索结果
+                row = self.tbl_search_result_widget.currentRow()
+                self.tbl_search_result_widget.insert_data(meta, row)
+            else:
+                self.cb_current_video.clear()
+                self.table_video_meta.clear_table()
+                row = self.tbl_search_result_widget.currentRow()
+                self.tbl_search_result_widget.removeRow(row)
+                self.set_objects_enable('searched')
 
             app.processEvents()
         finally:

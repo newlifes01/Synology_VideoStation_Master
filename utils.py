@@ -594,6 +594,10 @@ def get_screen_width(input_str, max_width=None, tail='.', tail_length=2):
 
 def format_date_str(date_str):
     try:
+        return datetime.strptime(date_str, '%Y/%m/%d').strftime('%Y-%m-%d')
+    except Exception:
+        pass
+    try:
         return datetime.strptime(date_str, '%B %d, %Y').strftime('%Y-%m-%d')
     except Exception:
         pass
@@ -618,22 +622,6 @@ def format_date_str(date_str):
         pass
 
     return ''
-
-    # try:
-    #     res = re.search(r'(\d{4})[/-](\d{1,2})[/-](\d{1,2})', date_str)
-    #     if res:
-    #         return '{}-{}-{}'.format(res.group(1), res.group(2).zfill(2), res.group(3).zfill(2))
-    #
-    #     res = re.search(r'(\d{1,2})[/-](\d{1,2})[/-](\d{4})', date_str)
-    #     if res:
-    #         return '{}-{}-{}'.format(res.group(3), res.group(1).zfill(2), res.group(2).zfill(2))
-    #
-    #     res = re.match(r'(\d{4})[/-](\d{1,2})', date_str)
-    #     if res:
-    #         return '{}-{}-{}'.format(res.group(1), res.group(2).zfill(2), '01')
-    #     return ''
-    # except:
-    #     return ''
 
 
 def format_time_str(time_str):
