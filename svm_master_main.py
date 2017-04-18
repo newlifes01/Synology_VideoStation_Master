@@ -505,7 +505,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def save_to_dsm(self):
         self.set_objects_enable('false')
-        app.processEvents() #todo 摘要截断 ﻿Pirates II: Stagnetti's Revenge
+        app.processEvents()
         try:
             meta = self.table_video_meta.get_metadata(self.cb_current_video.currentData(Qt.UserRole))
             meta['tag']['poster']=b''
