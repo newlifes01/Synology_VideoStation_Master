@@ -1,5 +1,7 @@
 import logging
 from time import sleep, time
+
+import OpenSSL
 import requests
 from requests import RequestException
 import utils
@@ -45,28 +47,35 @@ class BaseSpider:
     def has_url(self):
         return len(self.urls) > 0
 
-    def download_page_request(self, url, retry=0, referer=''):
+    def download_page_request(self, url, retry=0, referer='',meth='GET',data=''):
         if not url or self.stoped:
             utils.add_log(self.logger, 'error', 'Url为空', url)
             return
 
         try:
-            res = self.cache.get_cache(url)
-            if res:
-                return res
+            if meth != 'POST':
+                res = self.cache.get_cache(url)
+                if res:
+                    return res
 
-            res = self.RequestSession.get(url, timeout=utils.DOWN_TIME_OUT)
+            if meth == 'GET':
+                res = self.RequestSession.get(url, timeout=utils.DOWN_TIME_OUT)
+            elif meth == 'POST' and data:
+                res = self.RequestSession.post(url, timeout=utils.DOWN_TIME_OUT,data=data)
+            else:
+                return None
             sleep(utils.SPIDER_DOWNLOAD_SLEEP_TIME)
             if res.status_code == 200:
                 if referer == '':
                     referer = res.url
                 self.RequestSession.headers.update({'referer': referer, 'Referer': referer})
-                utils.add_log(self.logger, 'info', 'save_cache expire:', url, )
-                if utils.IMG_CACHE_KEEP_INFINITE and utils.IsValidImage(res.content):
-                    self.cache.save_cache(url, res, expire_time=0, mtime=0)
-                    self.add_log('永久缓存', url)
-                else:
-                    self.cache.save_cache(url, res, time())
+                if meth != 'POST':
+                    utils.add_log(self.logger, 'info', 'save_cache expire:', url, )
+                    if utils.IMG_CACHE_KEEP_INFINITE and utils.IsValidImage(res.content):
+                        self.cache.save_cache(url, res, expire_time=0, mtime=0)
+                        self.add_log('永久缓存', url)
+                    else:
+                        self.cache.save_cache(url, res, time())
                 return res
             else:
                 if retry >= utils.RETRYMAX:
@@ -78,7 +87,7 @@ class BaseSpider:
                     utils.add_log(self.logger, 'info', 'Url下载出错{}，重试{}'.format(url, retry))
                     sleep(5)
                     return self.download_page_request(url, retry)
-        except RequestException:
+        except (RequestException,OpenSSL.SSL.Error):
             if retry >= utils.RETRYMAX:
                 utils.add_log(self.logger, 'info', 'Url下载出错，重试达到最大数', url)
                 return None

@@ -28,6 +28,7 @@ class SearchSpider(BaseThread):
             self.spider.stop = True
             return
         count = 0
+        total = 0
         self.out_msg.emit('[{}]开始搜索……'.format(self.spider.name))
         for meta in self.spider.search(self.keyword, self.stype):
             if meta:
@@ -36,11 +37,13 @@ class SearchSpider(BaseThread):
 
 
                 if isinstance(meta,int):
-                    total = meta
+                    if not total:
+                        total = meta
                 else:
+
                     count += 1
                     self.put_meta.emit(meta)
-                    total = meta.get('total', 0)
+
                 if total:
                     self.out_msg.emit('[{}]找到{}/{}个……'.format(self.spider.name, count, total))
                 else:

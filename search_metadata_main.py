@@ -6,10 +6,13 @@ from PyQt5.QtGui import QRegExpValidator, QIcon
 from PyQt5.QtWidgets import QDialog, QMessageBox
 
 from spiders.aventertainments_spider import AventertainmentsSpider
+from spiders.caribbeancom_spiders import CaribbeancomSpider
 from spiders.data18_spider import Data18Spider
 from spiders.dmm_spider import DmmSpider
+from spiders.dvdkanojyo_spiders import DvdkanojyoSpider
 from spiders.kin8tengoku_spider import Kin8tengokuSpider
 from spiders.spider_manager import SearchSpider, DitalSpider
+from spiders.themoviedb_spider import ThemoviedbSpider
 from ui.search_metadata_window import Ui_search_meta_Dialog
 
 
@@ -33,6 +36,9 @@ class SearchMetadataDialog(QDialog, Ui_search_meta_Dialog):
         self.init_spiders('data18.com', Data18Spider, ':/icons/spider_icons/data18.bmp')
         self.init_spiders('aventertainments.com', AventertainmentsSpider, ':/icons/spider_icons/aventer.ico')
         self.init_spiders('kin8tengoku.com', Kin8tengokuSpider, ':/icons/spider_icons/kin8tengoku.ico')
+        self.init_spiders('caribbeancom.com', CaribbeancomSpider, ':/icons/spider_icons/caribbean.ico')
+        self.init_spiders('dvdkanojyo.com', DvdkanojyoSpider, ':/icons/spider_icons/dvdkanojyo.ico')
+        self.init_spiders('themoviedb.org', ThemoviedbSpider, ':/icons/spider_icons/themoviedb.ico')
 
         self.btn_dital.clicked.connect(self.search_meta_item_select)
 

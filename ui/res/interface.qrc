@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>spider_icons/themoviedb.ico</file>
+    <file>spider_icons/dvdkanojyo.ico</file>
     <file>spider_icons/kin8tengoku.ico</file>
     <file>others/span.gif</file>
     <file>others/empty.png</file>

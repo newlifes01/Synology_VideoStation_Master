@@ -20,7 +20,7 @@ RETRYMAX = 5
 # 下载超时时间
 DOWN_TIME_OUT = 15
 # 爬虫下载间隔
-SPIDER_DOWNLOAD_SLEEP_TIME = 0.1
+SPIDER_DOWNLOAD_SLEEP_TIME = 0.5
 
 # 项目根目录
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -63,6 +63,7 @@ def fill_cn_form_en(stype, cn, en):
                 tag['mapper_id'] = en.get('mapper_id')
                 tag['poster_mtime'] = en.get('additional').get('poster_mtime')
                 tag['backdrop_mtime'] = en.get('additional').get('backdrop_mtime')
+
 
             except Exception:
                 pass
@@ -180,7 +181,13 @@ def gen_metadata_struck(kind):
             'backdrop_mtime': '',
             'poster': b'',
             'backdrop': b'',
-            'xy':()
+            'xy': (),
+
+            'thumbnail_url':'',
+            'poster_url':'',
+            'backdrop_url':'',
+            'tmdb_id':0,
+            'img_urls':[]
 
         }
     }
