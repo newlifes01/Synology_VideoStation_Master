@@ -114,6 +114,16 @@ class TblMetadata(QTableWidget):
 
             count += 1
 
+    def get_title(self):
+        item = self.item(1, 1)
+        if item:
+            return item.text()
+        # item = self.findItems('title',Qt.MatchExactly)
+        # if item:
+        #     new_item = self.item(item.row(), item.column()+1)
+        #     if new_item:
+        #         return new_item.text()
+
     def get_metadata(self, meta):
         row = self.rowCount()
         for i in range(0, row):

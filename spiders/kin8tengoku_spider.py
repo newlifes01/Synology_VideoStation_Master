@@ -10,6 +10,7 @@ from spiders.base_spider import BaseSpider
 
 
 class Kin8tengokuSpider(BaseSpider):
+
     def parse_url_search(self, res, stype='movie'):
         if not res:
             return
@@ -18,8 +19,9 @@ class Kin8tengokuSpider(BaseSpider):
         try:
 
             doc = pq(res.text)
+            # print(doc)
 
-            title = doc('#mini-tabet > h2').text()
+            title = doc('head > title').text()
 
             if '标题' in result:
                 result['标题'] = title
@@ -32,10 +34,10 @@ class Kin8tengokuSpider(BaseSpider):
 
             result['tag']['type'] = stype
             result['tag']['dital_url'] = res.url
-            result['tag']['video_id'] = doc('#mini-tabet > div').text().strip('商品番号: ')
-            result['tag']['tip'] = doc('#titlebox > ul:nth-child(4) > li:nth-child(1) > a').text()
+            result['tag']['video_id'] = re.search(r'/(\d+)/index',result['tag']['dital_url']).group(1)
+            result['tag']['tip'] = doc('#detail_box > table >tr:nth-child(1)  a').text()
 
-            poster_url = doc('#titlebox > div.list-cover > img').attr('src')
+            poster_url = re.search(r"var imgurl = '(http://.*?jpg)';",res.text,re.S).group(1)
             if poster_url:
                 result['tag']['poster'] = self.download_page_request(poster_url).content
 
@@ -80,7 +82,7 @@ class Kin8tengokuSpider(BaseSpider):
             poster_url = div('div.movielistphoto1 > a > img').attr('src')
             if poster_url:
                 result['tag']['poster'] = self.download_page_request(poster_url).content
-                result['tag']['xy'] = (80,40)
+                result['tag']['xy'] = (40,30)
             yield result
 
     def search(self, keyword, stype):
@@ -102,7 +104,75 @@ class Kin8tengokuSpider(BaseSpider):
                         print('搜索失败')
 
 
+    def parse_dital(self, html, meta):
+        if not html or not meta: return
+        doc = pq(html)
+
+        try:
+            date = doc('#detail_box > table > tr:nth-child(7) > td.movie_table_td2').text()
+            if '发布日期' in meta:
+                meta['发布日期'] = date
+            if '发布日期(电视节目)' in meta:
+                meta['发布日期(电视节目)'] = date
+            if '发布日期(集)' in meta:
+                meta['发布日期(集)'] = date
+        except AttributeError:
+            pass
+
+        try:
+            des = doc('#comment').text()
+
+            meta['摘要'] = des.strip()
+            meta['标语'] = meta['摘要'][:30]
+        except AttributeError:
+            pass
+
+        try:
+
+            genres = doc('#detail_box > table > tr:nth-child(5) > td.movie_table_td2 > div').items()
+            meta['类型'] = ','.join([genre.text().strip() for genre in genres])
+        except AttributeError:
+            pass
+
+        try:
+            actors = doc('#detail_box > table >tr:nth-child(1) a').items()
+            meta['演员'] = ','.join([actor.text().strip() for actor in actors])
+        except AttributeError:
+            pass
+
+        # try:
+        #     producers = doc('#titlebox > ul:nth-child(4) > li:nth-child(2) > a').items()
+        #     meta['作者'] = ','.join([producer.text().strip() for producer in producers])
+        # except AttributeError:
+        #     pass
+
+        try:
+            poster_data = self.download_page_request(re.search(r"var imgurl = '(http://.*?jpg)';",html,re.S).group(1)).content
+            meta['tag']['backdrop'] = utils.tim_img_bytes(poster_data)
+            meta['tag']['poster'] = utils.create_poster(meta['tag']['backdrop'])
+        except AttributeError:
+            pass
+        yield meta
+
+        # try:
+        #     # 缩略图
+        #     sample_url = doc(
+        #         '#TabbedPanels1 > div > div.TabbedPanelsContent.TabbedPanelsContentVisible > a > img').attr('src')
+        #     yield self.download_page_request(sample_url).content
+        #
+        # except Exception:
+        #     pass
+
+    def dital(self, url, meta):
+        res = self.download_page_request(url)
+        if res:
+            return self.parse_dital(res.text, meta)
+
+
 if __name__ == '__main__':
     test = Kin8tengokuSpider('kin8')
-    for each in test.search('初の日本刀','movie'):
+    # for each in test.search('http://www.kin8tengoku.com/moviepages/0959/index.html','movie'):
+    #     print(each)
+
+    for each in test.dital('http://www.kin8tengoku.com/moviepages/0959/index.html',utils.gen_metadata_struck('movie')):
         print(each)

@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from urllib.parse import urljoin
 
+import os
 from PyQt5.QtCore import pyqtSignal
 
+import utils
 from spiders.base_thread import BaseThread
 from collections import OrderedDict
 
@@ -57,10 +60,14 @@ class DitalSpider(BaseThread):
         self.spider = spider
         self.meta = meta
 
+
+
+
     def run(self):
         if self.stoped:
             self.spider.stop = True
             return
+
         self.out_msg.emit('[{}]开始获取元数据……'.format(self.spider.name))
         count = 0
         ditals = self.spider.dital(self.url, self.meta)

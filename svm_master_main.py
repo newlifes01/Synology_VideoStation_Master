@@ -46,6 +46,9 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.dsm_seach_stop = False
         self.dsm_seach_running = False
 
+    def add_log(self, *msg, level='info'):
+        utils.add_log(self.logger, level, msg)
+
     def load_config(self):
 
         self.config = {}
@@ -54,7 +57,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
         if loadconfig:
             self.config.update(loadconfig)
-        utils.add_log(self.logger, 'info', '读取配置文件：', self.config)
+        self.add_log('读取配置文件：', self.config)
 
     def set_config(self):
         if self.config:
@@ -257,13 +260,14 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def status_msg(self, msg):
         self.statusbar.showMessage(msg)
+        app.processEvents()
 
     # 检测是否登陆dsm 并登陆
     def check_login_status(self):
         if not self.DSM.check_login_status():
             self.login_form = LoginDialog(self.DSM)
             if not self.login_form.exec_():
-                utils.add_log(self.logger, 'info', '登陆失败')
+                self.add_log('登陆失败')
                 sys.exit(0)
             else:
                 return True
@@ -296,7 +300,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             try:
                 self.tbl_search_result_widget.insert_data(dsm_finded)
             except Exception as e:
-                utils.add_log(self.logger, 'error', 'add_dsm_search_result', e)
+                self.add_log('add_dsm_search_result', e, level='error')
 
     def dsm_seach_videos(self, current_librarys, keyword):
 
@@ -359,7 +363,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                                                                                               time() - start_time)))
 
             except Exception as e:
-                utils.add_log(self.logger, 'error', 'btn_dsm_search_clicked', e.args)
+                self.add_log('btn_dsm_search_clicked', e.args, level='error')
             finally:
                 self.dsm_seach_running = False
                 self.btn_dsm_search.setChecked(False)
@@ -439,6 +443,20 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.select_single_video(0)
         self.set_objects_enable('true')
 
+    def save_images_to_disk(self, img_idx, data):
+        if not img_idx or not data:
+            return
+        subdir = self.table_video_meta.get_title()
+        if subdir:
+            subdir = os.path.join(utils.SAMPLES_SAVE_PACH, subdir)
+            if not os.path.exists(subdir):
+                os.makedirs(subdir)
+            filename = os.path.join(subdir, 'img_{:0>3d}.jpg'.format(img_idx))
+            with open(filename, 'wb') as f:
+                f.write(data)
+            self.status_msg('保存海报到本地:{}'.format(filename))
+            self.add_log('保存海报到本地:{}'.format(filename))
+
     def save_to_dsm(self):
         self.set_objects_enable('false')
         app.processEvents()
@@ -447,15 +465,18 @@ class MainForm(QMainWindow, Ui_MainWindow):
             meta['tag']['poster'] = b''
             meta['tag']['backdrop'] = b''
             for i, img_data in enumerate(self.get_piclist_data_to_dict()):
-                app.processEvents()
+
                 if not img_data:
                     break
+                if utils.SAMPLES_SAVE_PACH:
+                    self.save_images_to_disk(i + 1, img_data)
                 if i == 0:
                     meta['tag']['poster'] = img_data
                 elif i == 1:
                     meta['tag']['backdrop'] = img_data
                 else:
-                    break
+                    if not utils.SAMPLES_SAVE_PACH:
+                        break
 
             tag = meta.get('tag')
 
@@ -499,7 +520,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     # 窗口显示后执行
     def form_showed(self):
-        utils.add_log(self.logger, 'info', '检测是否登陆dsm')
+        self.add_log('检测是否登陆dsm')
         self.check_login_status()
         self.lb_dsm_status.setText('已登陆')
         self.get_dsm_librarys()
@@ -516,7 +537,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
         self.config['dsm_search_keyword'] = self.edt_dsm_search_keyword.text()
         self.db_config.save_cache('main_config', self.config, 0, 0)
-        utils.add_log(self.logger, 'info', '保存配置文件：', 'closeEvent', self.config)
+        self.add_log('保存配置文件：', 'closeEvent', self.config)
         super().closeEvent(event)
 
     # 搜索元数据

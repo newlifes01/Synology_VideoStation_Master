@@ -30,18 +30,24 @@ class TblSeacheMetaResult(BaseTblSearch):
             if meta['tag']['xy']:
                 i_width, i_heigh = meta['tag']['xy']
 
-            icon = QIcon(
-                pixmap.scaled(i_width, i_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+            # icon = QIcon(
+            #     pixmap.scaled(i_width, i_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
             item = self.cell(color=self.item_background)
-            item.setIcon(icon)
-            item.setSizeHint(QSize(i_width + 5, i_heigh))
-            # pixmap = pixmap.scaled(i_width, i_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+            # item.setIcon(icon)
+            # item.setSizeHint(QSize(i_width + 5, i_heigh))
+            pixmap = pixmap.scaled(i_width, i_heigh, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
             # self.setImage(0, 0, pixmap)
+            # self.setItem(0, 0, item)
+            # item.setData(Qt.UserRole, meta)
+            # item.setTextAlignment(Qt.AlignCenter)
+
+            item.setData(Qt.DecorationRole,pixmap)
             self.setItem(0, 0, item)
-            item.setData(Qt.UserRole, meta)
 
         item = self.cell(text=meta.get('tag').get('video_id'), color=self.item_background)
+        item.setData(Qt.UserRole, meta)
         self.setItem(0, 1, item)
+
 
         title = ''
         if '标题' in meta:
@@ -62,14 +68,14 @@ class TblSeacheMetaResult(BaseTblSearch):
 
     def item_select(self):
         row = self.currentRow()
-        item = self.item(row, 0)
+        item = self.item(row, 1)
         if item:
             data = item.data(Qt.UserRole)
             return data
 
     def get_select_row_data(self):
         row = self.currentRow()
-        item = self.item(row, 0)
+        item = self.item(row, 1)
         if item:
             data = item.data(Qt.UserRole)
             return data

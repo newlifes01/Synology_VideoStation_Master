@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
+import string
 from datetime import datetime
 from time import mktime, strptime
 from urllib.parse import urlencode, quote
@@ -42,6 +43,8 @@ POSTER_FILE = 'poster.jpg'
 BACKDROP_FILE = 'backdrop.jpg'
 POSTER_PATH = os.path.join(CACHE_PATH, POSTER_FILE)
 BACKDROP_PATH = os.path.join(CACHE_PATH, BACKDROP_FILE)
+
+SAMPLES_SAVE_PACH = '/Users/syaofox/Downloads/dsm_master_samples'
 
 if not os.path.exists(CACHE_PATH):
     os.mkdir(CACHE_PATH)
@@ -786,6 +789,16 @@ def merge_image(poster, bakdrop):
     except Exception:
         pass
 
+
+def format_filename(s):
+
+    # remove_punctuation_map = dict((ord(char), None) for char in '\/*?:"<>|')
+    # return s.translate(remove_punctuation_map)
+
+    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    filename = ''.join(c for c in s if c in valid_chars)
+    filename = filename.replace(' ', '_')  # I don't like spaces in filenames.
+    return filename
 
 if __name__ == '__main__':
     str = quote('金髪天国',encoding='euc-jp')
