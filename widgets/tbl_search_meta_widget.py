@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPixmap, QIcon, QBrush
 
 import utils
-from widgets.tbl_search_widget import BaseTblSearch
+from widgets.tbl_base import BaseTblSearch
 
 
 class TblSeacheMetaResult(BaseTblSearch):

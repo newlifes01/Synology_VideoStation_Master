@@ -103,7 +103,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.cb_current_video.currentIndexChanged.connect(self.select_single_video)
         self.cb_current_video.currentIndexChanged[str].connect(self.status_msg)
 
-        self.btn_clear_table.clicked.connect(self.table_video_meta.clear_table)
+        self.btn_clear_table.clicked.connect(lambda :self.table_video_meta.clear_data(('','项目','内容')))
         self.btn_save.clicked.connect(self.save_to_dsm)
 
         self.btn_meta_search.clicked.connect(self.search_metadata)
